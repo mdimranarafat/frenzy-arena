@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Frenzy Sports Arena</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#061a2b; --navy-mid:#0c2e47; --pool:#00b8d9; --pool-bright:#3fe0ff;
+    --turf:#1fa25c; --flare:#ff5a36; --pending:#f2b705; --paper:#f2f6f5; --ink:#071018; --muted:#5c6b73;
+    --display:'Archivo Black', sans-serif; --body:'Manrope', sans-serif; --mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:var(--body); background:var(--paper); color:var(--ink); line-height:1.5;}
+  a{color:inherit;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px;}
+
+  /* ---- login ---- */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:var(--navy); color:#fff; padding:20px;
+  }
+  .login-card{
+    background:var(--navy-mid); border:1px solid rgba(255,255,255,0.14); border-radius:10px;
+    padding:36px 32px; width:100%; max-width:360px;
+  }
+  .brand{display:flex; align-items:center; gap:8px; font-family:var(--display); font-size:1rem; margin-bottom:8px;}
+  .spark{width:9px; height:9px; background:var(--flare); transform:rotate(45deg); display:inline-block;}
+  .login-card h1{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.4rem; margin:6px 0 22px;}
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+  .field label{font-size:0.8rem; font-weight:700; color:#b9c9d1;}
+  .field input{
+    font-family:var(--body); font-size:0.94rem; padding:11px 12px; border-radius:5px;
+    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); color:#fff;
+  }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    font-family:var(--body); font-weight:700; font-size:0.9rem;
+    padding:12px 20px; border-radius:5px; text-decoration:none; cursor:pointer; border:none;
+  }
+  .btn-flare{background:var(--flare); color:#fff; width:100%; margin-top:6px;}
+  .login-error{color:#ffb3a3; font-size:0.85rem; margin-top:12px; display:none;}
+  .login-error.show{display:block;}
+
+  /* ---- dashboard shell ---- */
+  #dashboard{display:none; min-height:100vh;}
+  #dashboard.show{display:block;}
+  header.admin-nav{
+    background:var(--navy); color:#fff; padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.1);
+  }
+  .admin-nav-inner{display:flex; align-items:center; justify-content:space-between; max-width:1180px; margin:0 auto; padding:0 20px;}
+  .admin-nav-right{display:flex; align-items:center; gap:16px;}
+  .admin-badge{
+    background:var(--flare); color:#fff; font-family:var(--mono); font-size:0.72rem;
+    padding:4px 10px; border-radius:12px; font-weight:700; display:none;
+  }
+  .admin-badge.show{display:inline-block;}
+  .logout-btn{background:none; border:1px solid rgba(255,255,255,0.25); color:#fff; padding:8px 14px; border-radius:5px; font-size:0.82rem; cursor:pointer;}
+
+  main{padding:32px 0 60px;}
+  h2{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.6rem; color:var(--navy); margin-bottom:20px;}
+
+  .filters{
+    display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; background:#fff;
+    border:1px solid #e2e8e7; border-radius:8px; padding:16px;
+  }
+  .filters input, .filters select{
+    font-family:var(--body); font-size:0.88rem; padding:9px 12px; border-radius:5px;
+    border:1px solid #d7dfde; background:var(--paper); color:var(--ink);
+  }
+  .filters input[type="text"]{flex:1; min-width:180px;}
+
+  .table-wrap{background:#fff; border:1px solid #e2e8e7; border-radius:8px; overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-size:0.86rem; min-width:920px;}
+  thead th{
+    text-align:left; padding:12px 14px; background:var(--paper); color:var(--muted);
+    font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; font-family:var(--mono); font-weight:600;
+    border-bottom:1px solid #e2e8e7; white-space:nowrap;
+  }
+  tbody td{padding:13px 14px; border-bottom:1px solid #edf1f0; vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr.new-row{background:rgba(242,183,5,0.06);}
+  .cell-name{font-weight:700;}
+  .cell-sub{font-size:0.78rem; color:var(--muted); margin-top:2px;}
+  .status-pill{
+    display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700;
+    font-family:var(--mono); text-transform:capitalize;
+  }
+  .status-pill.pending{background:rgba(242,183,5,0.16); color:#8a6800;}
+  .status-pill.approved{background:rgba(31,162,92,0.14); color:#166b3f;}
+  .status-pill.rejected{background:rgba(255,90,54,0.14); color:#a83a1f;}
+  .status-pill.cancelled{background:#e7e7e7; color:#5c5c5c;}
+  .status-pill.completed{background:rgba(0,184,217,0.14); color:#036078;}
+
+  .row-actions{display:flex; flex-wrap:wrap; gap:6px;}
+  .action-btn{
+    font-family:var(--body); font-size:0.76rem; font-weight:700; padding:6px 10px;
+    border-radius:4px; border:1px solid transparent; cursor:pointer;
+  }
+  .action-btn.approve{background:var(--turf); color:#fff;}
+  .action-btn.reject{background:#fff; color:var(--flare); border-color:var(--flare);}
+  .action-btn.cancel{background:#fff; color:var(--muted); border-color:#d7dfde;}
+  .action-btn.complete{background:var(--pool); color:var(--navy);}
+  .action-btn:disabled{opacity:0.5; cursor:not-allowed;}
+
+  .notes-cell{max-width:180px; font-size:0.8rem; color:var(--muted);}
+  .empty-state{padding:40px 20px; text-align:center; color:var(--muted);}
+  .loading-state{padding:40px 20px; text-align:center; color:var(--muted);}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="brand"><span class="spark"></span>FRENZY</div>
+    <h1>Admin Login</h1>
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-flare" id="loginBtn">Log In</button>
+      <p class="login-error" id="loginError">Incorrect email or password.</p>
+    </form>
+  </div>
+</div>
+
+<div id="dashboard">
+  <header class="admin-nav">
+    <div class="admin-nav-inner">
+      <div class="brand" style="color:#fff;"><span class="spark"></span>FRENZY ADMIN</div>
+      <div class="admin-nav-right">
+        <span class="admin-badge" id="newBadge">0 NEW</span>
+        <button class="logout-btn" id="logoutBtn">Log Out</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+      <h2>Booking Requests</h2>
+
+      <div class="filters">
+        <input type="text" id="searchInput" placeholder="Search name or phone…">
+        <select id="dateFilter">
+          <option value="">All dates</option>
+          <option value="today">Today</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="past">Past</option>
+        </select>
+        <select id="facilityFilter">
+          <option value="">All facilities</option>
+          <option value="futsalTurf">Futsal Turf</option>
+          <option value="swimmingPool">Swimming Pool</option>
+        </select>
+        <select id="statusFilter">
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Facility</th>
+              <th>Date &amp; Time</th>
+              <th>Notes</th>
+              <th>Requested</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="requestsBody"></tbody>
+        </table>
+        <div class="loading-state" id="loadingState">Loading requests…</div>
+        <div class="empty-state" id="emptyState" style="display:none;">No requests match these filters.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, writeBatch, updateDoc, onSnapshot, query, orderBy, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // Frenzy Arena's Firebase config — same project as index.html
+  const firebaseConfig = {
+    apiKey: "AIzaSyDCtXGoYt1znhi1wyUhgoOYLiNS-xekiYk",
+    authDomain: "frenzy-arena.firebaseapp.com",
+    projectId: "frenzy-arena",
+    storageBucket: "frenzy-arena.firebasestorage.app",
+    messagingSenderId: "921384529735",
+    appId: "1:921384529735:web:0f8228d244034cbc07a662"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const FACILITY_LABELS = { futsalTurf: "Futsal Turf", swimmingPool: "Swimming Pool" };
+
+  function slotLabel(hour) {
+    const h12 = hour % 12 === 0 ? 12 : hour % 12;
+    return `${h12}:00 ${hour < 12 ? "AM" : "PM"}`;
+  }
+  function slotDocId(facility, dateStr, hour) { return `${facility}_${dateStr}_${hour}`; }
+  function fmtTimestamp(ts) {
+    if (!ts) return '—';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+
+  // ---------- AUTH ----------
+  const loginScreen = document.getElementById('loginScreen');
+  const dashboard = document.getElementById('dashboard');
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+  const loginBtn = document.getElementById('loginBtn');
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginError.classList.remove('show');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Logging in…';
+    try {
+      await signInWithEmailAndPassword(
+        auth,
+        document.getElementById('loginEmail').value.trim(),
+        document.getElementById('loginPassword').value
+      );
+    } catch (err) {
+      console.error(err);
+      loginError.classList.add('show');
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Log In';
+    }
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+
+  let allRequests = [];
+  let requestsUnsub = null;
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loginScreen.style.display = 'none';
+      dashboard.classList.add('show');
+      subscribeRequests();
+    } else {
+      loginScreen.style.display = 'flex';
+      dashboard.classList.remove('show');
+      if (requestsUnsub) { requestsUnsub(); requestsUnsub = null; }
+    }
+  });
+
+  // ---------- DATA ----------
+  function subscribeRequests() {
+    const q = query(collection(db, 'bookingRequests'), orderBy('createdAt', 'desc'));
+    requestsUnsub = onSnapshot(q, (snap) => {
+      allRequests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderTable();
+    }, (err) => {
+      console.error(err);
+      document.getElementById('loadingState').textContent = 'Could not load requests — check Firestore rules and that this account is the admin.';
+    });
+  }
+
+  // ---------- FILTERS ----------
+  const searchInput = document.getElementById('searchInput');
+  const dateFilter = document.getElementById('dateFilter');
+  const facilityFilter = document.getElementById('facilityFilter');
+  const statusFilter = document.getElementById('statusFilter');
+  [searchInput, dateFilter, facilityFilter, statusFilter].forEach(el => el.addEventListener('input', renderTable));
+
+  function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('requestsBody');
+    const loadingState = document.getElementById('loadingState');
+    const emptyState = document.getElementById('emptyState');
+    loadingState.style.display = 'none';
+
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const today = todayKey();
+
+    let filtered = allRequests.filter(r => {
+      if (searchTerm && !(`${r.customerName} ${r.phone}`.toLowerCase().includes(searchTerm))) return false;
+      if (facilityFilter.value && r.facility !== facilityFilter.value) return false;
+      if (statusFilter.value && r.status !== statusFilter.value) return false;
+      if (dateFilter.value === 'today' && r.date !== today) return false;
+      if (dateFilter.value === 'upcoming' && !(r.date > today)) return false;
+      if (dateFilter.value === 'past' && !(r.date < today)) return false;
+      return true;
+    });
+
+    const pendingCount = allRequests.filter(r => r.status === 'pending').length;
+    const badge = document.getElementById('newBadge');
+    badge.textContent = `${pendingCount} NEW`;
+    badge.classList.toggle('show', pendingCount > 0);
+
+    tbody.innerHTML = '';
+    emptyState.style.display = filtered.length ? 'none' : 'block';
+
+    filtered.forEach(r => {
+      const tr = document.createElement('tr');
+      if (r.status === 'pending') tr.classList.add('new-row');
+      tr.innerHTML = `
+        <td>
+          <div class="cell-name">${escapeHtml(r.customerName || '—')}</div>
+          <div class="cell-sub">${escapeHtml(r.phone || '')}${r.email ? ' · ' + escapeHtml(r.email) : ''}</div>
+        </td>
+        <td>${FACILITY_LABELS[r.facility] || r.facility}</td>
+        <td>
+          <div>${r.date}</div>
+          <div class="cell-sub">${slotLabel(r.startHour)} – ${slotLabel(r.endHour === 24 ? 0 : r.endHour)} (${r.duration}h)</div>
+        </td>
+        <td class="notes-cell">${r.notes ? escapeHtml(r.notes) : '—'}</td>
+        <td class="cell-sub">${fmtTimestamp(r.createdAt)}</td>
+        <td><span class="status-pill ${r.status}">${r.status}</span></td>
+        <td class="row-actions">${renderActions(r)}</td>
+      `;
+      tbody.appendChild(tr);
+      tr.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => handleAction(btn.dataset.action, r));
+      });
+    });
+  }
+
+  function renderActions(r) {
+    if (r.status === 'pending') {
+      return `
+        <button class="action-btn approve" data-action="approve">Approve</button>
+        <button class="action-btn reject" data-action="reject">Reject</button>
+      `;
+    }
+    if (r.status === 'approved') {
+      return `
+        <button class="action-btn cancel" data-action="cancel">Cancel</button>
+        <button class="action-btn complete" data-action="complete">Mark Completed</button>
+      `;
+    }
+    return `<span class="cell-sub">No actions</span>`;
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ---------- ACTIONS ----------
+  async function handleAction(action, r) {
+    const ref = doc(db, 'bookingRequests', r.id);
+    try {
+      if (action === 'approve') {
+        const batch = writeBatch(db);
+        for (let h = r.startHour; h < r.endHour; h++) {
+          batch.update(doc(db, 'slots', slotDocId(r.facility, r.date, h)), { status: 'approved' });
+        }
+        batch.update(ref, { status: 'approved', approvedAt: serverTimestamp(), updatedAt: serverTimestamp() });
+        await batch.commit();
+      } else if (action === 'reject') {
+        const batch = writeBatch(db);
+        for (let h = r.startHour; h < r.endHour; h++) {
+          batch.delete(doc(db, 'slots', slotDocId(r.facility, r.date, h)));
+        }
+        batch.update(ref, { status: 'rejected', rejectedAt: serverTimestamp(), updatedAt: serverTimestamp() });
+        await batch.commit();
+      } else if (action === 'cancel') {
+        const batch = writeBatch(db);
+        for (let h = r.startHour; h < r.endHour; h++) {
+          batch.delete(doc(db, 'slots', slotDocId(r.facility, r.date, h)));
+        }
+        batch.update(ref, { status: 'cancelled', updatedAt: serverTimestamp() });
+        await batch.commit();
+      } else if (action === 'complete') {
+        await updateDoc(ref, { status: 'completed', updatedAt: serverTimestamp() });
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Action failed — check the browser console and your Firestore rules.');
+    }
+  }
+</script>
+
+</body>
+</html>
