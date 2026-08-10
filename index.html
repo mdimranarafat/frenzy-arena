@@ -16,6 +16,7 @@
     --pool-bright:#3fe0ff;
     --turf:#1fa25c;
     --flare:#ff5a36;
+    --pending:#f2b705;
     --paper:#f2f6f5;
     --ink:#071018;
     --muted:#5c6b73;
@@ -254,6 +255,7 @@
     cursor:pointer; text-align:left; font-family:var(--body); background:none;
   }
   .cal-slot.open{background:rgba(31,162,92,0.14); border-color:rgba(31,162,92,0.4);}
+  .cal-slot.pending{background:rgba(242,183,5,0.14); border-color:rgba(242,183,5,0.4);}
   .cal-slot.booked{background:rgba(255,90,54,0.12); border-color:rgba(255,90,54,0.35);}
   .cal-slot.past{opacity:0.35; cursor:not-allowed;}
   .cal-slot-time{font-size:0.85rem; font-weight:800; color:#fff;}
@@ -274,16 +276,41 @@
   .cal-form{padding:0 20px 22px; display:flex; flex-direction:column; gap:12px;}
   .cal-form .field{display:flex; flex-direction:column; gap:6px;}
   .cal-form .field label{color:#b9c9d1; font-size:0.82rem; font-weight:700;}
-  .cal-form .field input, .cal-form .field textarea{
+  .cal-form .field input, .cal-form .field textarea, .cal-form select{
     font-family:var(--body); font-size:0.94rem; padding:11px 12px; border-radius:4px;
     background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); color:#fff;
   }
   .cal-form .field textarea{resize:vertical; min-height:70px;}
   .cal-form .btn{width:100%; justify-content:center; margin-top:4px;}
   .cal-form .form-note, .book > .wrap > .form-note{font-size:0.8rem; color:#8ba0a9;}
-  .cal-cancel-body{padding:0 20px 22px;}
-  .cal-detail-row{font-size:0.85rem; color:#dbe6ea; margin-bottom:8px;}
-  .cal-notes-text{font-size:0.85rem; color:#b9c9d1; margin-bottom:16px; line-height:1.5;}
+
+  .cal-legend{display:flex; flex-wrap:wrap; gap:16px; margin-bottom:16px; font-size:0.78rem; color:#b9c9d1;}
+  .cal-legend span{display:flex; align-items:center; gap:6px;}
+  .cal-legend .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+  .cal-legend .dot.open{background:var(--turf);}
+  .cal-legend .dot.pending{background:var(--pending);}
+  .cal-legend .dot.booked{background:var(--flare);}
+  .cal-legend .dot.past{background:#4a5a63;}
+
+  .field-row-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .cal-readonly-row{
+    display:flex; justify-content:space-between; align-items:center;
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+    border-radius:6px; padding:10px 14px;
+  }
+  .cal-readonly-row > div{display:flex; justify-content:space-between; width:100%; align-items:center;}
+  .cal-ro-label{font-size:0.78rem; color:#8ba0a9;}
+  .cal-ro-value{font-size:0.92rem; font-weight:700; color:#fff;}
+  .cal-warning{
+    font-size:0.8rem; color:#ffcf8a; background:rgba(255,90,54,0.12);
+    border:1px solid rgba(255,90,54,0.3); border-radius:6px; padding:8px 12px;
+  }
+  .cal-success-msg{
+    background:rgba(31,162,92,0.14); border:1px solid rgba(31,162,92,0.4);
+    border-radius:6px; padding:14px 16px; color:#eafff2;
+  }
+  .cal-success-msg strong{display:block; margin-bottom:4px; font-size:0.95rem;}
+  .cal-success-msg p{font-size:0.85rem; color:#c7ead4;}
 
   .cal-toast{
     position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
@@ -430,8 +457,8 @@
     <div class="wrap">
       <div class="section-head">
         <p class="eyebrow" style="color:var(--pool-bright);">Live availability</p>
-        <h2>Book a Slot</h2>
-        <p>Pick a date and facility, then tap an open time to request it. Bookings are shared live &mdash; visible to anyone viewing this site.</p>
+        <h2>Request a Slot</h2>
+        <p>Pick a date and facility, tap an open hour, and choose how long you need. Your request goes to Frenzy's admin for review &mdash; it isn't confirmed until they approve it.</p>
       </div>
 
       <div class="cal-controls">
@@ -450,6 +477,13 @@
         </div>
       </div>
 
+      <div class="cal-legend">
+        <span><i class="dot open"></i>Open</span>
+        <span><i class="dot pending"></i>Pending</span>
+        <span><i class="dot booked"></i>Booked</span>
+        <span><i class="dot past"></i>Past</span>
+      </div>
+
       <div id="calStatus" class="cal-loading">Loading slots…</div>
       <div id="calGrid" class="cal-grid" hidden></div>
 
@@ -457,19 +491,41 @@
     </div>
   </section>
 
-  <!-- Booking form overlay -->
+  <!-- Request form overlay -->
   <div class="cal-overlay" id="bookOverlay" hidden>
     <div class="cal-panel">
       <div class="cal-panel-head">
         <div>
-          <p class="eyebrow" id="bookPanelFacility" style="color:var(--pool-bright);"></p>
-          <div class="cal-panel-title" id="bookPanelTitle"></div>
+          <p class="eyebrow" style="color:var(--pool-bright);">Request a Slot</p>
+          <div class="cal-panel-title" id="bookPanelFacility"></div>
         </div>
         <button class="cal-close" id="bookClose" aria-label="Close">&times;</button>
       </div>
       <form id="bookForm" class="cal-form">
+        <div class="cal-readonly-row">
+          <div><span class="cal-ro-label">Date</span><span id="bfDateDisplay" class="cal-ro-value"></span></div>
+        </div>
+        <div class="field-row-2">
+          <div class="field">
+            <label for="bfStart">Start Time</label>
+            <select id="bfStart"></select>
+          </div>
+          <div class="field">
+            <label for="bfDuration">Duration</label>
+            <select id="bfDuration">
+              <option value="1">1 Hour</option>
+              <option value="2">2 Hours</option>
+              <option value="3">3 Hours</option>
+              <option value="4">4 Hours</option>
+            </select>
+          </div>
+        </div>
+        <div class="cal-readonly-row">
+          <div><span class="cal-ro-label">End Time</span><span id="bfEndDisplay" class="cal-ro-value"></span></div>
+        </div>
+        <p id="bfRangeWarning" class="cal-warning" hidden></p>
         <div class="field">
-          <label for="bfName">Your Name</label>
+          <label for="bfName">Name</label>
           <input type="text" id="bfName" required>
         </div>
         <div class="field">
@@ -477,35 +533,20 @@
           <input type="tel" id="bfPhone" required>
         </div>
         <div class="field">
-          <label for="bfPlayers">Group Size (optional)</label>
-          <input type="number" id="bfPlayers" min="1">
+          <label for="bfEmail">Email (optional)</label>
+          <input type="email" id="bfEmail">
         </div>
         <div class="field">
-          <label for="bfNotes">Notes (optional)</label>
+          <label for="bfNotes">Message (optional)</label>
           <textarea id="bfNotes"></textarea>
         </div>
-        <button type="submit" class="btn btn-flare" id="bookSubmitBtn">Confirm Slot</button>
-        <p class="form-note">Visible to everyone viewing this site &mdash; avoid sharing anything sensitive.</p>
-      </form>
-    </div>
-  </div>
-
-  <!-- Cancel confirmation overlay -->
-  <div class="cal-overlay" id="cancelOverlay" hidden>
-    <div class="cal-panel">
-      <div class="cal-panel-head">
-        <div>
-          <p class="eyebrow" id="cancelPanelFacility" style="color:var(--pool-bright);"></p>
-          <div class="cal-panel-title" id="cancelPanelTitle"></div>
+        <button type="submit" class="btn btn-flare" id="bookSubmitBtn">Send Request</button>
+        <p class="form-note">This sends a request &mdash; it isn't booked until Frenzy's admin approves it.</p>
+        <div id="bookSuccessMsg" class="cal-success-msg" hidden>
+          <strong>Request Submitted Successfully</strong>
+          <p>Your request has been sent to our admin. We will contact you after reviewing availability.</p>
         </div>
-        <button class="cal-close" id="cancelClose" aria-label="Close">&times;</button>
-      </div>
-      <div class="cal-cancel-body">
-        <div class="cal-detail-row" id="cancelPhone"></div>
-        <div class="cal-detail-row" id="cancelPlayers"></div>
-        <p class="cal-notes-text" id="cancelNotes"></p>
-        <button class="btn btn-flare" id="cancelConfirmBtn" style="background:var(--flare); width:100%;">Cancel This Booking</button>
-      </div>
+      </form>
     </div>
   </div>
 
@@ -632,19 +673,23 @@
 
 <!--
   ===============================================================
-  BOOKING CALENDAR — Firebase Firestore setup required.
+  BOOKING REQUEST SYSTEM — Firebase setup required.
   1. Create a Firebase project at https://console.firebase.google.com
   2. Enable Firestore Database (Build → Firestore Database)
-  3. Register a Web App (Project settings → your apps → </> icon)
-  4. Copy the config object it gives you into firebaseConfig below
-  5. Set Firestore security rules (see README.md)
-  See README.md for the full walkthrough.
+  3. Enable Authentication → Sign-in method → Email/Password
+  4. Add an admin user under Authentication → Users (this is who can
+     approve/reject requests in admin.html)
+  5. Register a Web App (Project settings → your apps → </> icon),
+     copy the config into firebaseConfig below
+  6. Set Firestore security rules — see README.md (must reference
+     your admin's email address)
+  See README.md for the full walkthrough, including admin.html setup.
   ===============================================================
 -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, deleteField
+    getFirestore, collection, doc, writeBatch, serverTimestamp, onSnapshot, query, where
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // Frenzy Arena's Firebase config
@@ -660,7 +705,9 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  const HOURS = Array.from({ length: 18 }, (_, i) => i + 6); // 06:00 .. 23:00
+  const OPEN_HOUR = 6;
+  const CLOSE_HOUR = 24; // exclusive — last bookable slot starts at 23:00
+  const HOURS = Array.from({ length: CLOSE_HOUR - OPEN_HOUR }, (_, i) => i + OPEN_HOUR);
   const FACILITY_LABELS = { futsalTurf: "Futsal Turf", swimmingPool: "Swimming Pool" };
 
   function pad(n) { return String(n).padStart(2, "0"); }
@@ -681,12 +728,14 @@
     const d = new Date(dateStr + "T00:00:00");
     return d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
   }
+  function slotDocId(facility, dateStr, hour) { return `${facility}_${dateStr}_${hour}`; }
 
   const TODAY = todayKey();
   let currentDate = TODAY;
   let currentFacility = "futsalTurf";
   let unsubscribe = null;
-  let latestData = {};
+  let latestSlots = {}; // { [hour]: { status, requestId } }
+  let activeStartHour = null;
 
   const els = {
     dateLabel: document.getElementById('calDateLabel'),
@@ -701,56 +750,68 @@
 
     bookOverlay: document.getElementById('bookOverlay'),
     bookPanelFacility: document.getElementById('bookPanelFacility'),
-    bookPanelTitle: document.getElementById('bookPanelTitle'),
     bookClose: document.getElementById('bookClose'),
     bookForm: document.getElementById('bookForm'),
     bookSubmitBtn: document.getElementById('bookSubmitBtn'),
-
-    cancelOverlay: document.getElementById('cancelOverlay'),
-    cancelPanelFacility: document.getElementById('cancelPanelFacility'),
-    cancelPanelTitle: document.getElementById('cancelPanelTitle'),
-    cancelClose: document.getElementById('cancelClose'),
-    cancelPhone: document.getElementById('cancelPhone'),
-    cancelPlayers: document.getElementById('cancelPlayers'),
-    cancelNotes: document.getElementById('cancelNotes'),
-    cancelConfirmBtn: document.getElementById('cancelConfirmBtn'),
+    bfDateDisplay: document.getElementById('bfDateDisplay'),
+    bfStart: document.getElementById('bfStart'),
+    bfDuration: document.getElementById('bfDuration'),
+    bfEndDisplay: document.getElementById('bfEndDisplay'),
+    bfRangeWarning: document.getElementById('bfRangeWarning'),
+    bookSuccessMsg: document.getElementById('bookSuccessMsg'),
   };
-
-  let activeSlot = null;   // hour being booked
-  let cancelSlot = null;   // hour being cancelled
 
   function showToast(msg, isErr) {
     els.toast.textContent = msg;
     els.toast.classList.toggle('err', !!isErr);
     els.toast.hidden = false;
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => { els.toast.hidden = true; }, 3200);
+    showToast._t = setTimeout(() => { els.toast.hidden = true; }, 3800);
   }
 
   function renderDateHeader() {
     els.dateLabel.textContent = prettyDate(currentDate);
     els.todayTag.textContent = currentDate === TODAY ? 'Today' : '';
     els.dateInput.value = currentDate;
+    els.dateInput.min = TODAY;
+    els.prevDay.disabled = currentDate <= TODAY;
+  }
+
+  // Returns how many consecutive open hours are available starting at `hour`
+  function consecutiveOpenFrom(hour, isToday, nowHour) {
+    let count = 0;
+    for (let h = hour; h < CLOSE_HOUR; h++) {
+      const isPast = isToday && h < nowHour;
+      if (isPast || latestSlots[h]) break;
+      count++;
+    }
+    return count;
   }
 
   function renderGrid() {
-    const facilityMap = (latestData && latestData[currentFacility]) || {};
     const nowHour = new Date().getHours();
     const isToday = currentDate === TODAY;
 
     els.grid.innerHTML = '';
     HOURS.forEach(hour => {
-      const booking = facilityMap[hour] || facilityMap[String(hour)];
+      const slot = latestSlots[hour];
       const isPast = isToday && hour < nowHour;
+      let stateClass = 'open', label = 'Open';
+      if (isPast) { stateClass = 'past'; label = 'Past'; }
+      else if (slot && slot.status === 'approved') { stateClass = 'booked'; label = 'Booked'; }
+      else if (slot && slot.status === 'pending') { stateClass = 'pending'; label = 'Pending'; }
+
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = `cal-slot ${booking ? 'booked' : 'open'} ${isPast ? 'past' : ''}`;
-      btn.disabled = isPast;
+      btn.className = `cal-slot ${stateClass}`;
+      btn.disabled = stateClass !== 'open';
       btn.innerHTML = `
         <span class="cal-slot-time">${slotLabel(hour)}</span>
-        <span class="cal-slot-status">${isPast ? 'Past' : booking ? 'Booked · ' + booking.name : 'Open'}</span>
+        <span class="cal-slot-status">${label}</span>
       `;
-      btn.addEventListener('click', () => booking ? openCancelPanel(hour, booking) : openBookPanel(hour));
+      if (stateClass === 'open') {
+        btn.addEventListener('click', () => openRequestPanel(hour));
+      }
       els.grid.appendChild(btn);
     });
 
@@ -764,9 +825,14 @@
     els.grid.hidden = true;
     els.status.textContent = 'Loading slots…';
 
-    const ref = doc(db, 'bookings', dateStr);
-    unsubscribe = onSnapshot(ref, (snap) => {
-      latestData = snap.exists() ? snap.data() : {};
+    const q = query(collection(db, 'slots'), where('facility', '==', currentFacility), where('date', '==', dateStr));
+    unsubscribe = onSnapshot(q, (snap) => {
+      const map = {};
+      snap.forEach(d => {
+        const data = d.data();
+        map[data.hour] = { status: data.status, requestId: data.requestId };
+      });
+      latestSlots = map;
       renderGrid();
     }, (err) => {
       console.error(err);
@@ -777,6 +843,7 @@
   }
 
   function goToDate(dateStr) {
+    if (dateStr < TODAY) return;
     currentDate = dateStr;
     renderDateHeader();
     subscribeToDate(currentDate);
@@ -791,95 +858,120 @@
       els.tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentFacility = tab.dataset.facility;
-      renderGrid();
+      subscribeToDate(currentDate);
     });
   });
 
-  function openBookPanel(hour) {
-    closeCancelPanel();
-    activeSlot = hour;
+  function populateStartOptions(preferredHour) {
+    const nowHour = new Date().getHours();
+    const isToday = currentDate === TODAY;
+    els.bfStart.innerHTML = '';
+    HOURS.forEach(hour => {
+      const isPast = isToday && hour < nowHour;
+      if (isPast || latestSlots[hour]) return; // only truly open hours are selectable starts
+      const opt = document.createElement('option');
+      opt.value = hour;
+      opt.textContent = slotLabel(hour);
+      if (hour === preferredHour) opt.selected = true;
+      els.bfStart.appendChild(opt);
+    });
+  }
+
+  function refreshEndTimeAndValidity() {
+    const nowHour = new Date().getHours();
+    const isToday = currentDate === TODAY;
+    const start = Number(els.bfStart.value);
+    const duration = Number(els.bfDuration.value);
+    const end = start + duration;
+    els.bfEndDisplay.textContent = end <= CLOSE_HOUR ? slotLabel(end === 24 ? 0 : end) + (end === 24 ? ' (midnight)' : '') : '—';
+
+    const available = consecutiveOpenFrom(start, isToday, nowHour);
+    const fits = duration <= available && end <= CLOSE_HOUR;
+    els.bfRangeWarning.hidden = fits;
+    if (!fits) {
+      els.bfRangeWarning.textContent = available > 0
+        ? `Only ${available} consecutive hour${available === 1 ? '' : 's'} open from this start time.`
+        : `This start time no longer has open hours available.`;
+    }
+    els.bookSubmitBtn.disabled = !fits;
+    return fits;
+  }
+
+  function openRequestPanel(hour) {
+    activeStartHour = hour;
     els.bookPanelFacility.textContent = FACILITY_LABELS[currentFacility];
-    els.bookPanelTitle.textContent = `${slotLabel(hour)} on ${prettyDate(currentDate)}`;
+    els.bfDateDisplay.textContent = prettyDate(currentDate);
     els.bookForm.reset();
+    els.bookSuccessMsg.hidden = true;
+    els.bookForm.hidden = false;
+    populateStartOptions(hour);
+    els.bfDuration.value = '1';
+    refreshEndTimeAndValidity();
     els.bookOverlay.hidden = false;
   }
-  function closeBookPanel() { els.bookOverlay.hidden = true; activeSlot = null; }
+  function closeBookPanel() { els.bookOverlay.hidden = true; activeStartHour = null; }
   els.bookClose.addEventListener('click', closeBookPanel);
   els.bookOverlay.addEventListener('click', (e) => { if (e.target === els.bookOverlay) closeBookPanel(); });
+  els.bfStart.addEventListener('change', refreshEndTimeAndValidity);
+  els.bfDuration.addEventListener('change', refreshEndTimeAndValidity);
 
   els.bookForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (activeSlot === null) return;
+    if (!refreshEndTimeAndValidity()) return;
+
     const name = document.getElementById('bfName').value.trim();
     const phone = document.getElementById('bfPhone').value.trim();
-    const players = document.getElementById('bfPlayers').value.trim();
+    const email = document.getElementById('bfEmail').value.trim();
     const notes = document.getElementById('bfNotes').value.trim();
     if (!name || !phone) return;
 
+    const start = Number(els.bfStart.value);
+    const duration = Number(els.bfDuration.value);
+    const end = start + duration;
+
     els.bookSubmitBtn.disabled = true;
-    els.bookSubmitBtn.textContent = 'Booking…';
+    els.bookSubmitBtn.textContent = 'Sending…';
     try {
-      const ref = doc(db, 'bookings', currentDate);
-      const snap = await getDoc(ref);
-      const existing = snap.exists() ? snap.data() : {};
-      if ((existing[currentFacility] || {})[activeSlot]) {
-        showToast('That slot was just booked by someone else.', true);
-        closeBookPanel();
-        return;
-      }
-      if (!snap.exists()) {
-        await setDoc(ref, { futsalTurf: {}, swimmingPool: {} }, { merge: true });
-      }
-      await updateDoc(ref, {
-        [`${currentFacility}.${activeSlot}`]: {
-          name, phone,
-          players: players || null,
-          notes: notes || null,
-          bookedAt: new Date().toISOString()
-        }
+      const batch = writeBatch(db);
+      const reqRef = doc(collection(db, 'bookingRequests'));
+      batch.set(reqRef, {
+        customerName: name,
+        phone,
+        email: email || null,
+        facility: currentFacility,
+        date: currentDate,
+        startHour: start,
+        duration,
+        endHour: end,
+        notes: notes || null,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        approvedAt: null,
+        rejectedAt: null,
       });
-      showToast(`Booked ${slotLabel(activeSlot)} for ${FACILITY_LABELS[currentFacility]}`);
-      closeBookPanel();
+      for (let h = start; h < end; h++) {
+        const slotRef = doc(db, 'slots', slotDocId(currentFacility, currentDate, h));
+        batch.set(slotRef, {
+          facility: currentFacility,
+          date: currentDate,
+          hour: h,
+          status: 'pending',
+          requestId: reqRef.id,
+        });
+      }
+      await batch.commit();
+
+      els.bookForm.hidden = true;
+      els.bookSuccessMsg.hidden = false;
+      setTimeout(closeBookPanel, 3500);
     } catch (err) {
       console.error(err);
-      showToast('Could not save that booking — check your Firebase setup.', true);
+      showToast('One of those hours was just taken — please pick a different time.', true);
+      closeBookPanel();
     } finally {
       els.bookSubmitBtn.disabled = false;
-      els.bookSubmitBtn.textContent = 'Confirm Slot';
-    }
-  });
-
-  function openCancelPanel(hour, booking) {
-    closeBookPanel();
-    cancelSlot = hour;
-    els.cancelPanelFacility.textContent = FACILITY_LABELS[currentFacility];
-    els.cancelPanelTitle.textContent = `${slotLabel(hour)} on ${prettyDate(currentDate)}`;
-    els.cancelPhone.textContent = `📞 ${booking.phone || '—'}`;
-    els.cancelPlayers.textContent = booking.players ? `👥 ${booking.players} players` : '';
-    els.cancelPlayers.style.display = booking.players ? '' : 'none';
-    els.cancelNotes.textContent = booking.notes || '';
-    els.cancelNotes.style.display = booking.notes ? '' : 'none';
-    els.cancelOverlay.hidden = false;
-  }
-  function closeCancelPanel() { els.cancelOverlay.hidden = true; cancelSlot = null; }
-  els.cancelClose.addEventListener('click', closeCancelPanel);
-  els.cancelOverlay.addEventListener('click', (e) => { if (e.target === els.cancelOverlay) closeCancelPanel(); });
-
-  els.cancelConfirmBtn.addEventListener('click', async () => {
-    if (cancelSlot === null) return;
-    els.cancelConfirmBtn.disabled = true;
-    els.cancelConfirmBtn.textContent = 'Cancelling…';
-    try {
-      const ref = doc(db, 'bookings', currentDate);
-      await updateDoc(ref, { [`${currentFacility}.${cancelSlot}`]: deleteField() });
-      showToast(`Cancelled ${slotLabel(cancelSlot)}`);
-      closeCancelPanel();
-    } catch (err) {
-      console.error(err);
-      showToast('Could not cancel that booking — check your Firebase setup.', true);
-    } finally {
-      els.cancelConfirmBtn.disabled = false;
-      els.cancelConfirmBtn.textContent = 'Cancel This Booking';
+      els.bookSubmitBtn.textContent = 'Send Request';
     }
   });
 
