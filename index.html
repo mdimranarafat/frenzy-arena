@@ -258,8 +258,12 @@
   .cal-slot.pending{background:rgba(242,183,5,0.14); border-color:rgba(242,183,5,0.4);}
   .cal-slot.booked{background:rgba(255,90,54,0.12); border-color:rgba(255,90,54,0.35);}
   .cal-slot.past{opacity:0.35; cursor:not-allowed;}
+  /* Informational-only card: shows a previous booking's end boundary at the same
+     time label as the next slot's actionable Open card. Not clickable. */
+  .cal-slot.end-boundary{opacity:0.55; cursor:default;}
   .cal-slot-time{font-size:0.85rem; font-weight:800; color:#fff;}
   .cal-slot-status{font-size:0.72rem; color:#b9c9d1; font-family:var(--mono);}
+  .cal-slot-endtag{color:#8ba0a9; font-weight:600;}
 
   .cal-overlay{
     position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:100;
@@ -884,6 +888,23 @@
     return count;
   }
 
+  // Purely a display card — shows that the immediately preceding booking ends
+  // exactly at this time label. Not a real slot, not clickable, writes nothing
+  // and reserves nothing; the actual availability is still decided by
+  // `latestSlots[slot]` alone, same as always.
+  function renderEndBoundaryCard(slot, prevSlotData) {
+    const card = document.createElement('div');
+    card.className = 'cal-slot booked end-boundary';
+    const nameLine = prevSlotData.customerName
+      ? `<span class="cal-slot-name">${escapeHtml(prevSlotData.customerName)}</span>` : '';
+    card.innerHTML = `
+      <span class="cal-slot-time">${slotLabel(slot)}</span>
+      <span class="cal-slot-status">Booked <span class="cal-slot-endtag">· ends here</span></span>
+      ${nameLine}
+    `;
+    return card;
+  }
+
   function renderGrid() {
     const isToday = currentDate === TODAY;
     const { slot: nowSlot } = dhakaNow();
@@ -892,6 +913,18 @@
     for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
       const s = latestSlots[slot];
       const isPast = isToday && slot < nowSlot;
+
+      // If this slot is itself free, but the slot right before it was the tail
+      // end of an approved booking whose duration ends exactly here, show that
+      // booking's end boundary as its own informational card first — then the
+      // real, actionable Open card for this same time label right after it.
+      if (!s && !isPast) {
+        const prev = latestSlots[slot - 1];
+        if (prev && prev.status === 'approved' && prev.startSlot + prev.durationSlots === slot) {
+          els.grid.appendChild(renderEndBoundaryCard(slot, prev));
+        }
+      }
+
       let stateClass = 'open', label = 'Open';
       if (isPast) { stateClass = 'past'; label = 'Past'; }
       else if (s && s.status === 'approved') { stateClass = 'booked'; label = 'Booked'; }
