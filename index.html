@@ -350,6 +350,17 @@
   footer .brand{font-size:0.95rem;}
 
   a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--pool-bright); outline-offset:3px;}
+
+  /* ---------- EXTENDED BOOKING SYSTEM (3 facilities / 30-min slots) ---------- */
+  .cal-grid{grid-template-columns:repeat(2, 1fr);}
+  @media (min-width:600px){.cal-grid{grid-template-columns:repeat(4, 1fr);}}
+  @media (min-width:900px){.cal-grid{grid-template-columns:repeat(7, 1fr);}}
+  .cal-slot-name{font-size:0.68rem; color:#ffcf8a; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
+  .cal-slot.pending{cursor:not-allowed;}
+  .cal-form select#bfDuration{cursor:pointer;}
+  .cal-field-error{font-size:0.76rem; color:#ffb3a3; margin-top:-4px;}
+  .cal-field-error[hidden]{display:none;}
+  .cal-hint{font-size:0.76rem; color:#8ba0a9; margin-top:-4px;}
 </style>
 </head>
 <body>
@@ -430,6 +441,11 @@
           <p>An on-site pool for laps or a cool-down after your match.</p>
         </div>
         <div class="facility-card">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4"/><circle cx="8" cy="9" r="1"/><circle cx="16" cy="9" r="1"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg></span>
+          <h4>Carrom</h4>
+          <p>Indoor carrom boards for a quick game between matches.</p>
+        </div>
+        <div class="facility-card">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
           <h4>Always Open</h4>
           <p>No fixed hours — call ahead to lock in your slot any time.</p>
@@ -474,6 +490,7 @@
         <div class="cal-tabs">
           <button class="cal-tab active" data-facility="futsalTurf">Futsal Turf</button>
           <button class="cal-tab" data-facility="swimmingPool">Swimming Pool</button>
+          <button class="cal-tab" data-facility="carrom">Carrom</button>
         </div>
       </div>
 
@@ -512,12 +529,7 @@
           </div>
           <div class="field">
             <label for="bfDuration">Duration</label>
-            <select id="bfDuration">
-              <option value="1">1 Hour</option>
-              <option value="2">2 Hours</option>
-              <option value="3">3 Hours</option>
-              <option value="4">4 Hours</option>
-            </select>
+            <select id="bfDuration"></select>
           </div>
         </div>
         <div class="cal-readonly-row">
@@ -530,7 +542,9 @@
         </div>
         <div class="field">
           <label for="bfPhone">Phone Number</label>
-          <input type="tel" id="bfPhone" required>
+          <input type="tel" id="bfPhone" placeholder="01XXXXXXXXX" required>
+          <p class="cal-hint">Bangladesh mobile number, e.g. 01812345678 or +8801812345678</p>
+          <p id="bfPhoneError" class="cal-field-error" hidden>Enter a valid Bangladesh mobile number.</p>
         </div>
         <div class="field">
           <label for="bfEmail">Email (optional)</label>
@@ -547,6 +561,20 @@
           <p>Your request has been sent to our admin. We will contact you after reviewing availability.</p>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Booked-slot detail overlay (public-safe info only) -->
+  <div class="cal-overlay" id="detailOverlay" hidden>
+    <div class="cal-panel">
+      <div class="cal-panel-head">
+        <div>
+          <p class="eyebrow" style="color:var(--pool-bright);">Booking Details</p>
+          <div class="cal-panel-title">Booked Slot</div>
+        </div>
+        <button class="cal-close" id="detailClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="cal-form" id="detailBody"></div>
     </div>
   </div>
 
@@ -705,37 +733,94 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  const OPEN_HOUR = 6;
-  const CLOSE_HOUR = 24; // exclusive — last bookable slot starts at 23:00
-  const HOURS = Array.from({ length: CLOSE_HOUR - OPEN_HOUR }, (_, i) => i + OPEN_HOUR);
-  const FACILITY_LABELS = { futsalTurf: "Futsal Turf", swimmingPool: "Swimming Pool" };
+  // ---------- TIME MODEL: 48 x 30-minute start times/day, Asia/Dhaka ----------
+  const SLOTS_PER_DAY = 48;
+  const TZ = "Asia/Dhaka";
+  const FACILITY_LABELS = { futsalTurf: "Futsal Turf", swimmingPool: "Swimming Pool", carrom: "Carrom" };
+  const MAX_DURATION_SLOTS = 24; // cap duration dropdown at 12 hours
 
   function pad(n) { return String(n).padStart(2, "0"); }
-  function todayKey() {
-    const d = new Date();
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+  // "Right now" in Asia/Dhaka — independent of the visitor's own device timezone.
+  function dhakaNow() {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hour12: false
+    }).formatToParts(new Date());
+    const map = {};
+    parts.forEach(p => { map[p.type] = p.value; });
+    const dateStr = `${map.year}-${map.month}-${map.day}`;
+    const hour = Number(map.hour) % 24;
+    const minute = Number(map.minute);
+    const slot = hour * 2 + (minute >= 30 ? 1 : 0);
+    return { dateStr, slot };
   }
+
   function addDays(dateStr, delta) {
-    const d = new Date(dateStr + "T00:00:00");
-    d.setDate(d.getDate() + delta);
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const d = new Date(dateStr + "T00:00:00Z");
+    d.setUTCDate(d.getUTCDate() + delta);
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
   }
-  function slotLabel(hour) {
-    const h12 = hour % 12 === 0 ? 12 : hour % 12;
-    return `${h12}:00 ${hour < 12 ? "AM" : "PM"}`;
+
+  function slotLabel(slot) {
+    const s = ((slot % SLOTS_PER_DAY) + SLOTS_PER_DAY) % SLOTS_PER_DAY;
+    const totalMin = s * 30;
+    const h24 = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+    return `${h12}:${pad(m)} ${h24 < 12 ? "AM" : "PM"}`;
   }
+
+  function durationLabel(durationSlots) {
+    const totalMin = durationSlots * 30;
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    return m === 0 ? `${h} Hour${h === 1 ? "" : "s"}` : `${h} Hour${h === 1 ? "" : "s"} 30 Minutes`;
+  }
+
   function prettyDate(dateStr) {
     const d = new Date(dateStr + "T00:00:00");
     return d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
   }
-  function slotDocId(facility, dateStr, hour) { return `${facility}_${dateStr}_${hour}`; }
 
-  const TODAY = todayKey();
+  function slotDocId(facility, dateStr, slot) { return `${facility}_${dateStr}_${slot}`; }
+
+  // Every 30-minute interval a booking of `durationSlots` from (date, startSlot) occupies —
+  // rolls correctly into the next calendar date past midnight.
+  function coveredIntervals(date, startSlot, durationSlots) {
+    const out = [];
+    let d = date, s = startSlot;
+    for (let i = 0; i < durationSlots; i++) {
+      if (s >= SLOTS_PER_DAY) { s -= SLOTS_PER_DAY; d = addDays(d, 1); }
+      out.push({ date: d, slot: s });
+      s++;
+    }
+    return out;
+  }
+
+  // The (date, slot) marking the moment the booking ends.
+  function endPoint(date, startSlot, durationSlots) {
+    let d = date, s = startSlot + durationSlots;
+    while (s >= SLOTS_PER_DAY) { s -= SLOTS_PER_DAY; d = addDays(d, 1); }
+    return { date: d, slot: s };
+  }
+
+  // Bangladesh mobile numbers: 01XXXXXXXXX or +8801XXXXXXXXX
+  const BD_PHONE_RE = /^(?:\+?880|0)1[3-9]\d{8}$/;
+  function normalizePhone(raw) { return raw.replace(/[\s-]/g, ""); }
+  function isValidBDPhone(raw) { return BD_PHONE_RE.test(normalizePhone(raw)); }
+  function isValidName(raw) { return raw.trim().length > 0; }
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  const TODAY = dhakaNow().dateStr;
   let currentDate = TODAY;
   let currentFacility = "futsalTurf";
   let unsubscribe = null;
-  let latestSlots = {}; // { [hour]: { status, requestId } }
-  let activeStartHour = null;
+  let latestSlots = {}; // { [slot]: slotDocData }
 
   const els = {
     dateLabel: document.getElementById('calDateLabel'),
@@ -758,7 +843,16 @@
     bfDuration: document.getElementById('bfDuration'),
     bfEndDisplay: document.getElementById('bfEndDisplay'),
     bfRangeWarning: document.getElementById('bfRangeWarning'),
+    bfName: document.getElementById('bfName'),
+    bfPhone: document.getElementById('bfPhone'),
+    bfPhoneError: document.getElementById('bfPhoneError'),
+    bfEmail: document.getElementById('bfEmail'),
+    bfNotes: document.getElementById('bfNotes'),
     bookSuccessMsg: document.getElementById('bookSuccessMsg'),
+
+    detailOverlay: document.getElementById('detailOverlay'),
+    detailClose: document.getElementById('detailClose'),
+    detailBody: document.getElementById('detailBody'),
   };
 
   function showToast(msg, isErr) {
@@ -777,43 +871,47 @@
     els.prevDay.disabled = currentDate <= TODAY;
   }
 
-  // Returns how many consecutive open hours are available starting at `hour`
-  function consecutiveOpenFrom(hour, isToday, nowHour) {
+  // How many consecutive open 30-minute slots exist starting at `slot`, within this calendar day.
+  function consecutiveOpenFrom(slot, dateStr) {
+    const isToday = dateStr === TODAY;
+    const { slot: nowSlot } = dhakaNow();
     let count = 0;
-    for (let h = hour; h < CLOSE_HOUR; h++) {
-      const isPast = isToday && h < nowHour;
-      if (isPast || latestSlots[h]) break;
+    for (let s = slot; s < SLOTS_PER_DAY; s++) {
+      const isPast = isToday && s < nowSlot;
+      if (isPast || latestSlots[s]) break;
       count++;
     }
     return count;
   }
 
   function renderGrid() {
-    const nowHour = new Date().getHours();
     const isToday = currentDate === TODAY;
+    const { slot: nowSlot } = dhakaNow();
 
     els.grid.innerHTML = '';
-    HOURS.forEach(hour => {
-      const slot = latestSlots[hour];
-      const isPast = isToday && hour < nowHour;
+    for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
+      const s = latestSlots[slot];
+      const isPast = isToday && slot < nowSlot;
       let stateClass = 'open', label = 'Open';
       if (isPast) { stateClass = 'past'; label = 'Past'; }
-      else if (slot && slot.status === 'approved') { stateClass = 'booked'; label = 'Booked'; }
-      else if (slot && slot.status === 'pending') { stateClass = 'pending'; label = 'Pending'; }
+      else if (s && s.status === 'approved') { stateClass = 'booked'; label = 'Booked'; }
+      else if (s && s.status === 'pending') { stateClass = 'pending'; label = 'Pending'; }
 
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = `cal-slot ${stateClass}`;
-      btn.disabled = stateClass !== 'open';
+      btn.disabled = stateClass === 'past' || stateClass === 'pending';
+      const nameLine = (stateClass === 'booked' && s.customerName)
+        ? `<span class="cal-slot-name">${escapeHtml(s.customerName)}</span>` : '';
       btn.innerHTML = `
-        <span class="cal-slot-time">${slotLabel(hour)}</span>
+        <span class="cal-slot-time">${slotLabel(slot)}</span>
         <span class="cal-slot-status">${label}</span>
+        ${nameLine}
       `;
-      if (stateClass === 'open') {
-        btn.addEventListener('click', () => openRequestPanel(hour));
-      }
+      if (stateClass === 'open') btn.addEventListener('click', () => openRequestPanel(slot));
+      if (stateClass === 'booked') btn.addEventListener('click', () => openDetailPanel(s));
       els.grid.appendChild(btn);
-    });
+    }
 
     els.status.hidden = true;
     els.grid.hidden = false;
@@ -828,10 +926,7 @@
     const q = query(collection(db, 'slots'), where('facility', '==', currentFacility), where('date', '==', dateStr));
     unsubscribe = onSnapshot(q, (snap) => {
       const map = {};
-      snap.forEach(d => {
-        const data = d.data();
-        map[data.hour] = { status: data.status, requestId: data.requestId };
-      });
+      snap.forEach(d => { map[d.data().slot] = d.data(); });
       latestSlots = map;
       renderGrid();
     }, (err) => {
@@ -862,104 +957,174 @@
     });
   });
 
-  function populateStartOptions(preferredHour) {
-    const nowHour = new Date().getHours();
+  function populateStartOptions(preferredSlot) {
     const isToday = currentDate === TODAY;
+    const { slot: nowSlot } = dhakaNow();
     els.bfStart.innerHTML = '';
-    HOURS.forEach(hour => {
-      const isPast = isToday && hour < nowHour;
-      if (isPast || latestSlots[hour]) return; // only truly open hours are selectable starts
+    for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
+      const isPast = isToday && slot < nowSlot;
+      if (isPast || latestSlots[slot]) continue;
       const opt = document.createElement('option');
-      opt.value = hour;
-      opt.textContent = slotLabel(hour);
-      if (hour === preferredHour) opt.selected = true;
+      opt.value = slot;
+      opt.textContent = slotLabel(slot);
+      if (slot === preferredSlot) opt.selected = true;
       els.bfStart.appendChild(opt);
-    });
+    }
+  }
+
+  // Duration options: 1-hour minimum, 30-minute increments, capped by consecutive open slots.
+  function populateDurationOptions() {
+    const start = Number(els.bfStart.value);
+    const available = consecutiveOpenFrom(start, currentDate);
+    const maxSlots = Math.min(available, MAX_DURATION_SLOTS);
+    const preferred = els.bfDuration.value;
+    els.bfDuration.innerHTML = '';
+    for (let d = 2; d <= maxSlots; d++) { // 2 slots = 1 hour, the minimum booking duration
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = durationLabel(d);
+      els.bfDuration.appendChild(opt);
+    }
+    if (!els.bfDuration.options.length) {
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = 'No duration available';
+      els.bfDuration.appendChild(opt);
+    } else if (preferred && [...els.bfDuration.options].some(o => o.value === preferred)) {
+      els.bfDuration.value = preferred;
+    }
   }
 
   function refreshEndTimeAndValidity() {
-    const nowHour = new Date().getHours();
-    const isToday = currentDate === TODAY;
     const start = Number(els.bfStart.value);
-    const duration = Number(els.bfDuration.value);
-    const end = start + duration;
-    els.bfEndDisplay.textContent = end <= CLOSE_HOUR ? slotLabel(end === 24 ? 0 : end) + (end === 24 ? ' (midnight)' : '') : '—';
+    const duration = Number(els.bfDuration.value) || 0;
+    const available = consecutiveOpenFrom(start, currentDate);
 
-    const available = consecutiveOpenFrom(start, isToday, nowHour);
-    const fits = duration <= available && end <= CLOSE_HOUR;
+    if (duration > 0) {
+      const end = endPoint(currentDate, start, duration);
+      const crossesMidnight = end.date !== currentDate;
+      els.bfEndDisplay.textContent = slotLabel(end.slot) + (crossesMidnight ? ' (next day)' : '');
+    } else {
+      els.bfEndDisplay.textContent = '—';
+    }
+
+    const fits = duration > 0 && duration <= available;
     els.bfRangeWarning.hidden = fits;
     if (!fits) {
       els.bfRangeWarning.textContent = available > 0
-        ? `Only ${available} consecutive hour${available === 1 ? '' : 's'} open from this start time.`
-        : `This start time no longer has open hours available.`;
+        ? `Only ${durationLabel(available)} open consecutively from this start time.`
+        : `This start time no longer has open slots available.`;
     }
-    els.bookSubmitBtn.disabled = !fits;
+    updateSubmitState();
     return fits;
   }
 
-  function openRequestPanel(hour) {
-    activeStartHour = hour;
+  function updateSubmitState() {
+    const nameOk = isValidName(els.bfName.value);
+    const phoneOk = isValidBDPhone(els.bfPhone.value);
+    els.bfPhoneError.hidden = els.bfPhone.value.trim() === '' || phoneOk;
+    const durationOk = Number(els.bfDuration.value) > 0 && els.bfRangeWarning.hidden;
+    els.bookSubmitBtn.disabled = !(nameOk && phoneOk && durationOk);
+  }
+
+  function openRequestPanel(slot) {
     els.bookPanelFacility.textContent = FACILITY_LABELS[currentFacility];
     els.bfDateDisplay.textContent = prettyDate(currentDate);
     els.bookForm.reset();
     els.bookSuccessMsg.hidden = true;
     els.bookForm.hidden = false;
-    populateStartOptions(hour);
-    els.bfDuration.value = '1';
+    populateStartOptions(slot);
+    populateDurationOptions();
     refreshEndTimeAndValidity();
     els.bookOverlay.hidden = false;
   }
-  function closeBookPanel() { els.bookOverlay.hidden = true; activeStartHour = null; }
+  function closeBookPanel() { els.bookOverlay.hidden = true; }
   els.bookClose.addEventListener('click', closeBookPanel);
   els.bookOverlay.addEventListener('click', (e) => { if (e.target === els.bookOverlay) closeBookPanel(); });
-  els.bfStart.addEventListener('change', refreshEndTimeAndValidity);
+  els.bfStart.addEventListener('change', () => { populateDurationOptions(); refreshEndTimeAndValidity(); });
   els.bfDuration.addEventListener('change', refreshEndTimeAndValidity);
+  els.bfName.addEventListener('input', updateSubmitState);
+  els.bfPhone.addEventListener('input', updateSubmitState);
+
+  function openDetailPanel(slotData) {
+    const date = slotData.date || currentDate;
+    const end = endPoint(date, slotData.startSlot, slotData.durationSlots);
+    const feeLine = (slotData.showFeePublicly && slotData.bookingFee)
+      ? `<div class="cal-readonly-row"><div><span class="cal-ro-label">Booking Fee</span><span class="cal-ro-value">৳${Number(slotData.bookingFee).toLocaleString()}</span></div></div>`
+      : '';
+    els.detailBody.innerHTML = `
+      <div class="cal-readonly-row"><div><span class="cal-ro-label">Customer</span><span class="cal-ro-value">${escapeHtml(slotData.customerName || '—')}</span></div></div>
+      <div class="cal-readonly-row"><div><span class="cal-ro-label">Facility</span><span class="cal-ro-value">${FACILITY_LABELS[currentFacility]}</span></div></div>
+      <div class="cal-readonly-row"><div><span class="cal-ro-label">Date</span><span class="cal-ro-value">${prettyDate(date)}</span></div></div>
+      <div class="cal-readonly-row"><div><span class="cal-ro-label">Time</span><span class="cal-ro-value">${slotLabel(slotData.startSlot)} – ${slotLabel(end.slot)}${end.date !== date ? ' (next day)' : ''}</span></div></div>
+      <div class="cal-readonly-row"><div><span class="cal-ro-label">Duration</span><span class="cal-ro-value">${durationLabel(slotData.durationSlots)}</span></div></div>
+      <div class="cal-readonly-row"><div><span class="cal-ro-label">Status</span><span class="cal-ro-value">Booked</span></div></div>
+      ${feeLine}
+    `;
+    els.detailOverlay.hidden = false;
+  }
+  els.detailClose.addEventListener('click', () => { els.detailOverlay.hidden = true; });
+  els.detailOverlay.addEventListener('click', (e) => { if (e.target === els.detailOverlay) els.detailOverlay.hidden = true; });
 
   els.bookForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!refreshEndTimeAndValidity()) return;
 
-    const name = document.getElementById('bfName').value.trim();
-    const phone = document.getElementById('bfPhone').value.trim();
-    const email = document.getElementById('bfEmail').value.trim();
-    const notes = document.getElementById('bfNotes').value.trim();
-    if (!name || !phone) return;
+    const name = els.bfName.value.trim();
+    const phoneRaw = els.bfPhone.value.trim();
+    const email = els.bfEmail.value.trim();
+    const notes = els.bfNotes.value.trim();
+    if (!isValidName(name) || !isValidBDPhone(phoneRaw)) { updateSubmitState(); return; }
+    const phone = normalizePhone(phoneRaw);
 
     const start = Number(els.bfStart.value);
     const duration = Number(els.bfDuration.value);
-    const end = start + duration;
+    const intervals = coveredIntervals(currentDate, start, duration);
+    const end = endPoint(currentDate, start, duration);
 
     els.bookSubmitBtn.disabled = true;
     els.bookSubmitBtn.textContent = 'Sending…';
     try {
       const batch = writeBatch(db);
-      const reqRef = doc(collection(db, 'bookingRequests'));
-      batch.set(reqRef, {
+      const bookingRef = doc(collection(db, 'bookings'));
+      batch.set(bookingRef, {
         customerName: name,
         phone,
         email: email || null,
         facility: currentFacility,
-        date: currentDate,
-        startHour: start,
-        duration,
-        endHour: end,
-        notes: notes || null,
+        bookingDate: currentDate,
+        startSlot: start,
+        durationSlots: duration,
+        durationMinutes: duration * 30,
+        endDate: end.date,
+        endSlot: end.slot,
         status: 'pending',
+        bookingType: 'customer_request',
+        bookingSource: 'website',
+        bookingFee: null,
+        feeCurrency: 'BDT',
+        showFeePublicly: false,
+        recurringBookingId: null,
+        notes: notes || null,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         approvedAt: null,
         rejectedAt: null,
       });
-      for (let h = start; h < end; h++) {
-        const slotRef = doc(db, 'slots', slotDocId(currentFacility, currentDate, h));
+      intervals.forEach(({ date, slot }) => {
+        const slotRef = doc(db, 'slots', slotDocId(currentFacility, date, slot));
         batch.set(slotRef, {
           facility: currentFacility,
-          date: currentDate,
-          hour: h,
+          date, slot,
           status: 'pending',
-          requestId: reqRef.id,
+          bookingId: bookingRef.id,
+          customerName: name,
+          startSlot: start,
+          durationSlots: duration,
+          bookingFee: null,
+          showFeePublicly: false,
         });
-      }
+      });
       await batch.commit();
 
       els.bookForm.hidden = true;
@@ -967,7 +1132,7 @@
       setTimeout(closeBookPanel, 3500);
     } catch (err) {
       console.error(err);
-      showToast('One of those hours was just taken — please pick a different time.', true);
+      showToast('One of those slots was just taken — please pick a different time.', true);
       closeBookPanel();
     } finally {
       els.bookSubmitBtn.disabled = false;
