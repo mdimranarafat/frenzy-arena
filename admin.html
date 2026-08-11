@@ -37,6 +37,23 @@
     font-family:var(--body); font-size:0.94rem; padding:11px 12px; border-radius:5px;
     background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); color:#fff;
   }
+  /* Selects need an OPAQUE background (not the rgba above) — Windows Chrome/Edge
+     ignore translucent <select> backgrounds when painting the native dropdown
+     popup and fall back to a plain white list, which is unreadable against white
+     option text. #1b3b52 is the same visual shade as rgba(255,255,255,0.06) over
+     --navy-mid, just baked into an opaque color so the popup inherits it too. */
+  .field select{
+    background-color:#1b3b52;
+    color-scheme:dark;
+  }
+  .field select option{
+    background-color:#1b3b52;
+    color:#fff;
+  }
+  .field select option:checked{
+    background-color:var(--pool);
+    color:#061a2b;
+  }
   .field textarea{resize:vertical; min-height:64px;}
   .btn{
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
