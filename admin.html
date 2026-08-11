@@ -3,724 +3,501 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Frenzy Sports Arena | Futsal Turf &amp; Swimming Pool, Chittagong</title>
-<meta name="description" content="Frenzy Sports Arena — artificial futsal turf and swimming pool in Pahartali, Chittagong. Always open. Book your slot by phone or Facebook.">
+<title>Admin — Frenzy Sports Arena</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy:#061a2b;
-    --navy-mid:#0c2e47;
-    --pool:#00b8d9;
-    --pool-bright:#3fe0ff;
-    --turf:#1fa25c;
-    --flare:#ff5a36;
-    --pending:#f2b705;
-    --paper:#f2f6f5;
-    --ink:#071018;
-    --muted:#5c6b73;
-    --display:'Archivo Black', sans-serif;
-    --body:'Manrope', sans-serif;
-    --mono:'JetBrains Mono', monospace;
+    --navy:#061a2b; --navy-mid:#0c2e47; --pool:#00b8d9; --pool-bright:#3fe0ff;
+    --turf:#1fa25c; --flare:#ff5a36; --pending:#f2b705; --paper:#f2f6f5; --ink:#071018; --muted:#5c6b73;
+    --display:'Archivo Black', sans-serif; --body:'Manrope', sans-serif; --mono:'JetBrains Mono', monospace;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html{scroll-behavior:smooth;}
-  body{
-    font-family:var(--body);
-    color:var(--ink);
-    background:var(--paper);
-    line-height:1.55;
-    -webkit-font-smoothing:antialiased;
-  }
+  body{font-family:var(--body); background:var(--paper); color:var(--ink); line-height:1.5;}
   a{color:inherit;}
-  img{max-width:100%; display:block;}
-  .wrap{max-width:1140px; margin:0 auto; padding:0 24px;}
-  .eyebrow{
-    font-family:var(--mono); font-size:0.72rem;
-    letter-spacing:0.16em; text-transform:uppercase;
-    color:var(--pool); font-weight:600;
-  }
-  @media (prefers-reduced-motion: reduce){
-    html{scroll-behavior:auto;}
-    *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
-  }
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px;}
 
-  /* ---------- NAV ---------- */
-  header.nav{
-    position:sticky; top:0; z-index:50;
-    background:var(--navy);
-    border-bottom:1px solid rgba(63,224,255,0.15);
+  /* ---- login ---- */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:var(--navy); color:#fff; padding:20px;
   }
-  .nav-inner{
-    max-width:1140px; margin:0 auto; padding:14px 24px;
-    display:flex; align-items:center; justify-content:space-between;
+  .login-card{
+    background:var(--navy-mid); border:1px solid rgba(255,255,255,0.14); border-radius:10px;
+    padding:36px 32px; width:100%; max-width:360px;
   }
-  .brand{
-    display:flex; align-items:center; gap:10px;
-    font-family:var(--display); color:#fff; font-size:1.05rem;
-    text-decoration:none; letter-spacing:0.01em;
-  }
-  .brand .spark{
-    width:10px; height:10px; border-radius:2px;
-    background:var(--flare);
-    transform:rotate(45deg);
-  }
-  nav.links{display:flex; gap:26px; font-size:0.9rem; align-items:center;}
-  nav.links a{color:#c7d6de; text-decoration:none; font-weight:600; transition:color 0.2s;}
-  nav.links a:hover, nav.links a:focus-visible{color:var(--pool-bright);}
-  .nav-cta{
-    background:var(--flare); color:#fff !important; padding:9px 16px;
-    border-radius:3px; font-size:0.85rem !important;
-  }
-  .nav-toggle{display:none; background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;}
-  @media (max-width:760px){
-    nav.links{
-      position:absolute; top:100%; left:0; right:0;
-      background:var(--navy); flex-direction:column; align-items:stretch; gap:0;
-      max-height:0; overflow:hidden; transition:max-height 0.25s ease;
-    }
-    nav.links.open{max-height:320px;}
-    nav.links a{padding:14px 24px; border-top:1px solid rgba(255,255,255,0.08);}
-    .nav-cta{margin:14px 24px; text-align:center;}
-    .nav-toggle{display:block;}
-  }
-
-  /* ---------- HERO ---------- */
-  .hero{
-    position:relative; overflow:hidden;
-    background:
-      radial-gradient(ellipse 70% 60% at 80% 10%, rgba(0,184,217,0.35), transparent 60%),
-      radial-gradient(ellipse 50% 50% at 10% 90%, rgba(31,162,92,0.25), transparent 60%),
-      var(--navy);
-    color:#fff;
-    padding:90px 0 70px;
-  }
-  .ripple{
-    position:absolute; inset:0; z-index:0; opacity:0.35; pointer-events:none;
-  }
-  .hero-inner{position:relative; z-index:2; max-width:760px;}
-  .status-pill{
-    display:inline-flex; align-items:center; gap:8px;
-    background:rgba(31,162,92,0.16); border:1px solid rgba(31,162,92,0.5);
-    color:#6be8a3; font-family:var(--mono); font-size:0.75rem;
-    padding:6px 12px; border-radius:20px; margin-bottom:20px;
-  }
-  .status-pill .blip{width:7px; height:7px; border-radius:50%; background:#6be8a3;}
-  .hero h1{
-    font-family:var(--display); font-weight:400;
-    font-size:clamp(2.4rem, 6vw, 4.4rem);
-    line-height:1.02; text-transform:uppercase;
-    margin-bottom:20px;
-  }
-  .hero h1 span{color:var(--pool-bright);}
-  .hero p.lede{
-    font-size:1.08rem; color:#b9c9d1; max-width:520px; margin-bottom:32px;
-  }
-  .hero-cta{display:flex; gap:14px; flex-wrap:wrap;}
-  .btn{
-    display:inline-flex; align-items:center; gap:8px;
-    font-family:var(--body); font-weight:700; font-size:0.92rem;
-    padding:14px 24px; border-radius:3px; text-decoration:none; cursor:pointer;
-    border:2px solid transparent; transition:transform 0.15s ease;
-  }
-  .btn:hover{transform:translateY(-2px);}
-  .btn-flare{background:var(--flare); color:#fff;}
-  .btn-ghost{border-color:rgba(255,255,255,0.35); color:#fff;}
-  .btn-ghost:hover{border-color:var(--pool-bright); color:var(--pool-bright);}
-
-  .stat-strip{
-    margin-top:56px; display:flex; flex-wrap:wrap; gap:0;
-    border-top:1px solid rgba(255,255,255,0.15); padding-top:22px;
-  }
-  .stat-strip div{flex:1 1 140px; font-family:var(--mono); font-size:0.78rem; color:#9db1bb; padding-right:18px;}
-  .stat-strip strong{display:block; font-family:var(--body); font-weight:800; font-size:1.15rem; color:#fff; margin-top:4px;}
-
-  /* ---------- SECTIONS ---------- */
-  section{padding:78px 0;}
-  .section-head{max-width:620px; margin-bottom:42px;}
-  .section-head h2{
-    font-family:var(--display); font-weight:400; text-transform:uppercase;
-    font-size:clamp(1.8rem, 3.4vw, 2.4rem);
-    margin-top:8px; color:var(--navy);
-  }
-  .section-head p{color:var(--muted); margin-top:12px; font-size:1.02rem;}
-
-  /* ---------- ABOUT ---------- */
-  .about{background:#fff;}
-  .about-grid{display:grid; grid-template-columns:1.1fr 0.9fr; gap:40px; align-items:center;}
-  @media (max-width:800px){.about-grid{grid-template-columns:1fr;}}
-  .pool-card{
-    background:linear-gradient(160deg, var(--navy), var(--navy-mid));
-    border-radius:8px; padding:32px; color:#fff; position:relative; overflow:hidden;
-  }
-  .pool-card::after{
-    content:''; position:absolute; right:-40px; bottom:-40px;
-    width:180px; height:180px; border-radius:50%;
-    background:radial-gradient(circle, rgba(0,184,217,0.35), transparent 70%);
-  }
-  .pool-card .eyebrow{color:var(--pool-bright);}
-  .pool-card h3{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.5rem; margin:10px 0 14px;}
-  .pool-card p{color:#c7d6de; font-size:0.96rem; position:relative; z-index:1;}
-
-  .about p.body-text{color:var(--muted); margin-bottom:16px; font-size:1.02rem;}
-
-  /* ---------- FACILITIES ---------- */
-  .facilities{background:var(--paper);}
-  .facility-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:22px;}
-  @media (max-width:800px){.facility-grid{grid-template-columns:1fr 1fr;}}
-  @media (max-width:520px){.facility-grid{grid-template-columns:1fr;}}
-  .facility-card{
-    background:#fff; border-radius:6px; padding:26px 22px;
-    border:1px solid #e2e8e7;
-  }
-  .facility-card .ico{
-    width:44px; height:44px; border-radius:8px;
-    background:rgba(0,184,217,0.12); color:var(--pool);
-    display:flex; align-items:center; justify-content:center; margin-bottom:16px;
-  }
-  .facility-card .ico svg{width:22px; height:22px;}
-  .facility-card h4{font-size:1.02rem; font-weight:800; margin-bottom:6px;}
-  .facility-card p{font-size:0.88rem; color:var(--muted);}
-
-  /* ---------- REVIEWS ---------- */
-  .reviews{background:var(--navy); color:#fff; text-align:center;}
-  .reviews .eyebrow{justify-content:center; display:flex;}
-  .review-score{
-    font-family:var(--display); font-size:clamp(2.6rem, 6vw, 4rem);
-    color:var(--pool-bright); margin:14px 0 6px;
-  }
-  .reviews p.sub{color:#b9c9d1; margin-bottom:26px;}
-  .reviews .btn-ghost{margin:0 auto;}
-
-  /* ---------- CONTACT ---------- */
-  .contact{background:#fff;}
-  .contact-grid{display:grid; grid-template-columns:1fr 1fr; gap:36px; align-items:start;}
-  @media (max-width:800px){.contact-grid{grid-template-columns:1fr;}}
-  .contact-list{display:flex; flex-direction:column; gap:16px;}
-  .contact-row{
-    display:flex; gap:16px; align-items:flex-start;
-    background:var(--paper); border-radius:6px; padding:18px 20px;
-  }
-  .contact-row .ico{
-    flex:0 0 auto; width:38px; height:38px; border-radius:50%;
-    background:var(--navy); color:var(--pool-bright);
-    display:flex; align-items:center; justify-content:center;
-  }
-  .contact-row .ico svg{width:18px; height:18px;}
-  .contact-row b{display:block; font-size:0.95rem; margin-bottom:2px;}
-  .contact-row span{font-size:0.9rem; color:var(--muted);}
-  .contact-row a.plain{text-decoration:none; color:inherit;}
-  .map-frame{
-    width:100%; height:100%; min-height:340px;
-    border-radius:6px; overflow:hidden; border:1px solid #e2e8e7;
-  }
-  .map-frame iframe{width:100%; height:100%; min-height:340px; border:0;}
-
-  /* ---------- BOOKING CALENDAR ---------- */
-  .book{background:var(--navy); color:#fff;}
-  .book .section-head h2{color:#fff;}
-  .book .section-head p{color:#b9c9d1;}
-
-  .cal-controls{display:flex; flex-direction:column; gap:14px; margin-bottom:22px;}
-  @media (min-width:700px){.cal-controls{flex-direction:row; justify-content:space-between; align-items:center;}}
-  .cal-datenav{display:flex; align-items:center; gap:10px; position:relative;}
-  .cal-icon-btn{
-    width:36px; height:36px; border-radius:8px; border:1px solid rgba(255,255,255,0.18);
-    background:rgba(255,255,255,0.06); color:#fff; cursor:pointer; font-size:1.2rem; line-height:1;
-  }
-  .cal-datebox{
-    flex:1; min-width:190px; display:flex; flex-direction:column;
-    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14);
-    border-radius:8px; padding:8px 14px; cursor:pointer; position:relative;
-  }
-  .cal-date-main{font-size:0.92rem; font-weight:700;}
-  .cal-today-tag{font-family:var(--mono); font-size:0.68rem; color:#6be8a3;}
-  .cal-date-input{
-    position:absolute; inset:0; opacity:0; cursor:pointer; border:0; width:100%; height:100%;
-  }
-  .cal-tabs{display:flex; gap:8px;}
-  .cal-tab{
-    flex:1; padding:10px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.14);
-    background:transparent; color:#b9c9d1; font-family:var(--body); font-weight:700; font-size:0.85rem; cursor:pointer;
-  }
-  .cal-tab.active{background:var(--pool); border-color:var(--pool); color:var(--navy);}
-
-  .cal-loading{color:#b9c9d1; font-size:0.92rem; padding:24px 0;}
-  .cal-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:10px;}
-  .cal-grid[hidden]{display:none;}
-  .cal-slot{
-    display:flex; flex-direction:column; align-items:flex-start; gap:4px;
-    padding:12px 14px; border-radius:8px; border:1px solid transparent;
-    cursor:pointer; text-align:left; font-family:var(--body); background:none;
-  }
-  .cal-slot.open{background:rgba(31,162,92,0.14); border-color:rgba(31,162,92,0.4);}
-  .cal-slot.pending{background:rgba(242,183,5,0.14); border-color:rgba(242,183,5,0.4);}
-  .cal-slot.booked{background:rgba(255,90,54,0.12); border-color:rgba(255,90,54,0.35);}
-  .cal-slot.past{opacity:0.35; cursor:not-allowed;}
-  .cal-slot-time{font-size:0.85rem; font-weight:800; color:#fff;}
-  .cal-slot-status{font-size:0.72rem; color:#b9c9d1; font-family:var(--mono);}
-
-  .cal-overlay{
-    position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:100;
-    display:flex; align-items:center; justify-content:center; padding:16px;
-  }
-  .cal-overlay[hidden]{display:none;}
-  .cal-panel{
-    background:var(--navy-mid); border-radius:10px; width:100%; max-width:380px;
-    border:1px solid rgba(255,255,255,0.14); max-height:90vh; overflow-y:auto; color:#fff;
-  }
-  .cal-panel-head{display:flex; justify-content:space-between; align-items:flex-start; padding:20px 20px 14px;}
-  .cal-panel-title{font-size:0.95rem; font-weight:800; margin-top:4px;}
-  .cal-close{background:none; border:none; color:#b9c9d1; font-size:1.4rem; cursor:pointer; line-height:1;}
-  .cal-form{padding:0 20px 22px; display:flex; flex-direction:column; gap:12px;}
-  .cal-form .field{display:flex; flex-direction:column; gap:6px;}
-  .cal-form .field label{color:#b9c9d1; font-size:0.82rem; font-weight:700;}
-  .cal-form .field input, .cal-form .field textarea, .cal-form select{
-    font-family:var(--body); font-size:0.94rem; padding:11px 12px; border-radius:4px;
+  .brand{display:flex; align-items:center; gap:8px; font-family:var(--display); font-size:1rem; margin-bottom:8px;}
+  .spark{width:9px; height:9px; background:var(--flare); transform:rotate(45deg); display:inline-block;}
+  .login-card h1{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.4rem; margin:6px 0 22px;}
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+  .field label{font-size:0.8rem; font-weight:700; color:#b9c9d1;}
+  .field input, .field select, .field textarea{
+    font-family:var(--body); font-size:0.94rem; padding:11px 12px; border-radius:5px;
     background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); color:#fff;
   }
-  .cal-form .field textarea{resize:vertical; min-height:70px;}
-  .cal-form .btn{width:100%; justify-content:center; margin-top:4px;}
-  .cal-form .form-note, .book > .wrap > .form-note{font-size:0.8rem; color:#8ba0a9;}
-
-  .cal-legend{display:flex; flex-wrap:wrap; gap:16px; margin-bottom:16px; font-size:0.78rem; color:#b9c9d1;}
-  .cal-legend span{display:flex; align-items:center; gap:6px;}
-  .cal-legend .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
-  .cal-legend .dot.open{background:var(--turf);}
-  .cal-legend .dot.pending{background:var(--pending);}
-  .cal-legend .dot.booked{background:var(--flare);}
-  .cal-legend .dot.past{background:#4a5a63;}
-
-  .field-row-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  .cal-readonly-row{
-    display:flex; justify-content:space-between; align-items:center;
-    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
-    border-radius:6px; padding:10px 14px;
+  .field textarea{resize:vertical; min-height:64px;}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    font-family:var(--body); font-weight:700; font-size:0.9rem;
+    padding:12px 20px; border-radius:5px; text-decoration:none; cursor:pointer; border:none;
   }
-  .cal-readonly-row > div{display:flex; justify-content:space-between; width:100%; align-items:center;}
-  .cal-ro-label{font-size:0.78rem; color:#8ba0a9;}
-  .cal-ro-value{font-size:0.92rem; font-weight:700; color:#fff;}
-  .cal-warning{
+  .btn-flare{background:var(--flare); color:#fff;}
+  .btn-flare.full{width:100%; margin-top:6px;}
+  .btn-turf{background:var(--turf); color:#fff;}
+  .btn-ghost-dark{background:none; border:1px solid rgba(255,255,255,0.25); color:#fff;}
+  .btn-outline{background:#fff; border:1px solid #d7dfde; color:var(--ink);}
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .login-error{color:#ffb3a3; font-size:0.85rem; margin-top:12px; display:none;}
+  .login-error.show{display:block;}
+
+  /* ---- dashboard shell ---- */
+  #dashboard{display:none; min-height:100vh;}
+  #dashboard.show{display:block;}
+  header.admin-nav{
+    background:var(--navy); color:#fff; padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.1);
+  }
+  .admin-nav-inner{display:flex; align-items:center; justify-content:space-between; max-width:1180px; margin:0 auto; padding:0 20px; flex-wrap:wrap; gap:12px;}
+  .admin-nav-right{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .admin-badge{
+    background:var(--flare); color:#fff; font-family:var(--mono); font-size:0.72rem;
+    padding:4px 10px; border-radius:12px; font-weight:700; display:none;
+  }
+  .admin-badge.show{display:inline-block;}
+  .logout-btn{background:none; border:1px solid rgba(255,255,255,0.25); color:#fff; padding:8px 14px; border-radius:5px; font-size:0.82rem; cursor:pointer;}
+  .nav-btn{
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff;
+    padding:8px 14px; border-radius:5px; font-size:0.82rem; font-weight:700; cursor:pointer; font-family:var(--body);
+  }
+  .nav-btn.primary{background:var(--flare); border-color:var(--flare);}
+
+  main{padding:32px 0 60px;}
+  h2{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.6rem; color:var(--navy); margin-bottom:20px;}
+
+  /* ---- view tabs ---- */
+  .view-tabs{display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;}
+  .view-tab{
+    padding:10px 18px; border-radius:20px; border:1px solid #d7dfde; background:#fff;
+    color:var(--muted); font-family:var(--body); font-weight:700; font-size:0.85rem; cursor:pointer;
+  }
+  .view-tab.active{background:var(--navy); border-color:var(--navy); color:#fff;}
+  .view-panel[hidden]{display:none;}
+
+  .filters{
+    display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; background:#fff;
+    border:1px solid #e2e8e7; border-radius:8px; padding:16px;
+  }
+  .filters input, .filters select{
+    font-family:var(--body); font-size:0.88rem; padding:9px 12px; border-radius:5px;
+    border:1px solid #d7dfde; background:var(--paper); color:var(--ink);
+  }
+  .filters input[type="text"]{flex:1; min-width:180px;}
+
+  .table-wrap{background:#fff; border:1px solid #e2e8e7; border-radius:8px; overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-size:0.86rem; min-width:980px;}
+  thead th{
+    text-align:left; padding:12px 14px; background:var(--paper); color:var(--muted);
+    font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; font-family:var(--mono); font-weight:600;
+    border-bottom:1px solid #e2e8e7; white-space:nowrap;
+  }
+  tbody td{padding:13px 14px; border-bottom:1px solid #edf1f0; vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr.new-row{background:rgba(242,183,5,0.06);}
+  .cell-name{font-weight:700;}
+  .cell-sub{font-size:0.78rem; color:var(--muted); margin-top:2px;}
+  .status-pill{
+    display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700;
+    font-family:var(--mono); text-transform:capitalize;
+  }
+  .status-pill.pending{background:rgba(242,183,5,0.16); color:#8a6800;}
+  .status-pill.approved{background:rgba(31,162,92,0.14); color:#166b3f;}
+  .status-pill.rejected{background:rgba(255,90,54,0.14); color:#a83a1f;}
+  .status-pill.cancelled{background:#e7e7e7; color:#5c5c5c;}
+  .status-pill.completed{background:rgba(0,184,217,0.14); color:#036078;}
+  .type-pill{
+    display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.68rem; font-weight:700;
+    font-family:var(--mono); background:rgba(0,184,217,0.12); color:#036078; margin-top:3px;
+  }
+
+  .row-actions{display:flex; flex-wrap:wrap; gap:6px;}
+  .action-btn{
+    font-family:var(--body); font-size:0.76rem; font-weight:700; padding:6px 10px;
+    border-radius:4px; border:1px solid transparent; cursor:pointer;
+  }
+  .action-btn.approve{background:var(--turf); color:#fff;}
+  .action-btn.reject{background:#fff; color:var(--flare); border-color:var(--flare);}
+  .action-btn.cancel{background:#fff; color:var(--muted); border-color:#d7dfde;}
+  .action-btn.complete{background:var(--pool); color:var(--navy);}
+  .action-btn.edit{background:#fff; color:var(--navy); border-color:var(--navy);}
+  .action-btn.delete{background:#fff; color:#a83a1f; border-color:#f0c9bf;}
+  .action-btn:disabled{opacity:0.5; cursor:not-allowed;}
+
+  .notes-cell{max-width:160px; font-size:0.8rem; color:var(--muted);}
+  .empty-state{padding:40px 20px; text-align:center; color:var(--muted);}
+  .loading-state{padding:40px 20px; text-align:center; color:var(--muted);}
+
+  /* ---- modal overlay (admin panels) ---- */
+  .adm-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:200;
+    display:flex; align-items:flex-start; justify-content:center; padding:24px 16px; overflow-y:auto;
+  }
+  .adm-overlay[hidden]{display:none;}
+  .adm-panel{
+    background:var(--navy-mid); border-radius:10px; width:100%; max-width:520px;
+    border:1px solid rgba(255,255,255,0.14); color:#fff; margin:auto 0;
+  }
+  .adm-panel.wide{max-width:680px;}
+  .adm-panel-head{display:flex; justify-content:space-between; align-items:flex-start; padding:20px 22px 14px;}
+  .adm-panel-title{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.15rem;}
+  .adm-panel-sub{font-size:0.78rem; color:#8ba0a9; margin-top:4px;}
+  .adm-close{background:none; border:none; color:#b9c9d1; font-size:1.4rem; cursor:pointer; line-height:1;}
+  .adm-body{padding:0 22px 22px; display:flex; flex-direction:column; gap:12px; max-height:75vh; overflow-y:auto;}
+  .adm-body .field-row-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .adm-body .field-row-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+  @media (max-width:520px){.adm-body .field-row-2, .adm-body .field-row-3{grid-template-columns:1fr;}}
+  .adm-checkbox-row{display:flex; align-items:center; gap:8px; font-size:0.85rem; color:#c7d6de;}
+  .adm-checkbox-row input{width:16px; height:16px;}
+  .day-pill-row{display:flex; flex-wrap:wrap; gap:6px;}
+  .day-pill{
+    padding:7px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.05); color:#b9c9d1; font-size:0.76rem; cursor:pointer; font-family:var(--body);
+  }
+  .day-pill.active{background:var(--pool); border-color:var(--pool); color:var(--navy); font-weight:700;}
+  .adm-warning{
     font-size:0.8rem; color:#ffcf8a; background:rgba(255,90,54,0.12);
     border:1px solid rgba(255,90,54,0.3); border-radius:6px; padding:8px 12px;
   }
-  .cal-success-msg{
-    background:rgba(31,162,92,0.14); border:1px solid rgba(31,162,92,0.4);
-    border-radius:6px; padding:14px 16px; color:#eafff2;
+  .adm-warning[hidden]{display:none;}
+  .conflict-list{list-style:none; display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto;}
+  .conflict-list li{
+    background:rgba(255,90,54,0.1); border:1px solid rgba(255,90,54,0.28); border-radius:5px;
+    padding:8px 10px; font-size:0.8rem;
   }
-  .cal-success-msg strong{display:block; margin-bottom:4px; font-size:0.95rem;}
-  .cal-success-msg p{font-size:0.85rem; color:#c7ead4;}
-
-  .cal-toast{
-    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-    padding:10px 18px; border-radius:8px; font-size:0.85rem; font-weight:700; z-index:200;
-    background:var(--turf); color:#fff;
-  }
-  .cal-toast.err{background:var(--flare);}
-
-  /* ---------- FAQ ---------- */
-  .faq{background:var(--paper);}
-  .faq-list{max-width:760px;}
-  details{
-    background:#fff; border:1px solid #e2e8e7; border-radius:6px;
-    padding:18px 22px; margin-bottom:12px;
-  }
-  details summary{
-    cursor:pointer; font-weight:700; font-size:0.98rem;
-    list-style:none; display:flex; justify-content:space-between; align-items:center; gap:12px;
-  }
-  details summary::-webkit-details-marker{display:none;}
-  details summary::after{content:'+'; font-family:var(--mono); font-size:1.3rem; color:var(--pool); flex:0 0 auto;}
-  details[open] summary::after{content:'−';}
-  details p{margin-top:12px; color:var(--muted); font-size:0.94rem;}
-
-  /* ---------- CTA / FOOTER ---------- */
-  .cta-band{background:var(--flare); color:#fff; text-align:center;}
-  .cta-band h2{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:clamp(1.6rem,3.6vw,2.4rem); margin-bottom:14px;}
-  .cta-band p{color:#ffe2d9; margin-bottom:26px;}
-  .cta-band .btn-ghost{border-color:rgba(255,255,255,0.5);}
-  .cta-band .btn-ghost:hover{border-color:#fff; color:#fff; background:rgba(255,255,255,0.12);}
-
-  footer{background:var(--navy); color:#8fa2ab; padding:34px 0;}
-  .footer-inner{
-    display:flex; justify-content:space-between; align-items:center;
-    flex-wrap:wrap; gap:12px; font-size:0.82rem;
-  }
-  footer .brand{font-size:0.95rem;}
-
-  a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--pool-bright); outline-offset:3px;}
-
-  /* ---------- EXTENDED BOOKING SYSTEM (3 facilities / 30-min slots) ---------- */
-  .cal-grid{grid-template-columns:repeat(2, 1fr);}
-  @media (min-width:600px){.cal-grid{grid-template-columns:repeat(4, 1fr);}}
-  @media (min-width:900px){.cal-grid{grid-template-columns:repeat(7, 1fr);}}
-  .cal-slot-name{font-size:0.68rem; color:#ffcf8a; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
-  .cal-slot.pending{cursor:not-allowed;}
-  .cal-form select#bfDuration{cursor:pointer;}
-  .cal-field-error{font-size:0.76rem; color:#ffb3a3; margin-top:-4px;}
-  .cal-field-error[hidden]{display:none;}
-  .cal-hint{font-size:0.76rem; color:#8ba0a9; margin-top:-4px;}
+  .adm-form-note{font-size:0.78rem; color:#8ba0a9;}
 </style>
 </head>
 <body>
 
-<header class="nav">
-  <div class="nav-inner">
-    <a href="#top" class="brand"><span class="spark"></span>FRENZY</a>
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
-    <nav class="links" id="navLinks">
-      <a href="#about">About</a>
-      <a href="#facilities">Facilities</a>
-      <a href="#contact">Contact</a>
-      <a href="#faq">FAQ</a>
-      <a href="#book" class="nav-cta">Book a Slot</a>
-    </nav>
-  </div>
-</header>
-
-<main id="top">
-  <section class="hero">
-    <svg class="ripple" viewBox="0 0 1140 500" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <circle cx="950" cy="120" r="60" fill="none" stroke="#3fe0ff" stroke-width="1.5"/>
-      <circle cx="950" cy="120" r="100" fill="none" stroke="#3fe0ff" stroke-width="1" opacity="0.5"/>
-      <circle cx="950" cy="120" r="140" fill="none" stroke="#3fe0ff" stroke-width="0.75" opacity="0.3"/>
-      <line x1="0" y1="460" x2="1140" y2="460" stroke="#1fa25c" stroke-width="1" opacity="0.4"/>
-    </svg>
-    <div class="wrap hero-inner">
-      <span class="status-pill"><span class="blip"></span>Always Open</span>
-      <p class="eyebrow">Pahartali &middot; Chittagong, Bangladesh</p>
-      <h1>Frenzy <span>Sports Arena</span></h1>
-      <p class="lede">Artificial futsal turf and a swimming pool, side by side in Pahartali. Book your slot and bring the energy.</p>
-      <div class="hero-cta">
-        <a href="#book" class="btn btn-flare">Request a Slot</a>
-        <a href="tel:+8801881271887" class="btn btn-ghost">Call: 01881-271887</a>
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="brand"><span class="spark"></span>FRENZY</div>
+    <h1>Admin Login</h1>
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" required autocomplete="username">
       </div>
-      <div class="stat-strip">
-        <div>Facilities<strong>Futsal Turf + Pool</strong></div>
-        <div>Location<strong>Saraipara, Pahartali</strong></div>
-        <div>Hours<strong>Always Open</strong></div>
-        <div>Reviews<strong>72% recommend</strong></div>
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-flare full" id="loginBtn">Log In</button>
+      <p class="login-error" id="loginError">Incorrect email or password.</p>
+    </form>
+  </div>
+</div>
+
+<div id="dashboard">
+  <header class="admin-nav">
+    <div class="admin-nav-inner">
+      <div class="brand" style="color:#fff;"><span class="spark"></span>FRENZY ADMIN</div>
+      <div class="admin-nav-right">
+        <span class="admin-badge" id="newBadge">0 NEW</span>
+        <button class="nav-btn primary" id="openNewBookingBtn">+ New Booking</button>
+        <button class="nav-btn" id="openCorporateBtn">+ Corporate / Recurring</button>
+        <button class="logout-btn" id="logoutBtn">Log Out</button>
       </div>
     </div>
-  </section>
+  </header>
+  <main>
+    <div class="wrap">
+      <h2>Bookings</h2>
 
-  <section class="about" id="about">
-    <div class="wrap about-grid">
+      <div class="view-tabs">
+        <button class="view-tab active" data-view="pending">Pending Requests</button>
+        <button class="view-tab" data-view="all">All Bookings</button>
+        <button class="view-tab" data-view="recurring">Recurring Bookings</button>
+      </div>
+
+      <!-- ===== PENDING / ALL BOOKINGS (shared table) ===== -->
+      <div class="view-panel" id="viewBookings">
+        <div class="filters">
+          <input type="text" id="searchInput" placeholder="Search name or phone…">
+          <select id="dateFilter">
+            <option value="">All dates</option>
+            <option value="today">Today</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="past">Past</option>
+          </select>
+          <select id="facilityFilter">
+            <option value="">All facilities</option>
+            <option value="futsalTurf">Futsal Turf</option>
+            <option value="swimmingPool">Swimming Pool</option>
+            <option value="carrom">Carrom</option>
+          </select>
+          <select id="typeFilter">
+            <option value="">All types</option>
+            <option value="customer_request">Customer Request</option>
+            <option value="admin_direct">Admin Direct</option>
+            <option value="corporate_recurring">Corporate / Recurring</option>
+          </select>
+          <select id="statusFilter">
+            <option value="">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved / Booked</option>
+            <option value="rejected">Rejected</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Facility</th>
+                <th>Date &amp; Time</th>
+                <th>Type</th>
+                <th>Fee</th>
+                <th>Notes</th>
+                <th>Requested</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="requestsBody"></tbody>
+          </table>
+          <div class="loading-state" id="loadingState">Loading requests…</div>
+          <div class="empty-state" id="emptyState" style="display:none;">No requests match these filters.</div>
+        </div>
+      </div>
+
+      <!-- ===== RECURRING BOOKINGS ===== -->
+      <div class="view-panel" id="viewRecurring" hidden>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Facility</th>
+                <th>Pattern</th>
+                <th>Date Range</th>
+                <th>Time</th>
+                <th>Fee</th>
+                <th>Occurrences</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="recurringBody"></tbody>
+          </table>
+          <div class="loading-state" id="recurringLoadingState">Loading recurring bookings…</div>
+          <div class="empty-state" id="recurringEmptyState" style="display:none;">No recurring bookings yet.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ===== APPROVE MODAL ===== -->
+<div class="adm-overlay" id="approveOverlay" hidden>
+  <div class="adm-panel">
+    <div class="adm-panel-head">
       <div>
-        <p class="eyebrow">About Frenzy</p>
-        <h2 style="font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:clamp(1.8rem,3.4vw,2.4rem); color:var(--navy); margin:8px 0 18px;">Two ways to play</h2>
-        <p class="body-text">Frenzy Sports Arena brings artificial futsal turf and a swimming pool together on one site in Saraipara, Pahartali — beside Joy Nagar Jame Masjid, opposite the north Greenview gate.</p>
-        <p class="body-text">Whether it's a five-a-side match with your crew or laps in the pool, Frenzy keeps its doors open around the clock so you can play on your own schedule.</p>
-        <a href="#contact" class="btn btn-flare" style="background:var(--navy);">Get Directions</a>
+        <div class="adm-panel-title">Approve Request</div>
+        <div class="adm-panel-sub" id="approveSummary"></div>
       </div>
-      <div class="pool-card">
-        <p class="eyebrow">Right now</p>
-        <h3>Always Open</h3>
-        <p>No fixed closing time — call ahead to check turf and pool slot availability before you head over.</p>
-      </div>
+      <button class="adm-close" data-close="approveOverlay">&times;</button>
     </div>
-  </section>
-
-  <section class="facilities" id="facilities">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">What's here</p>
-        <h2>Facilities</h2>
-        <p>The essentials for a proper match or a swim session.</p>
+    <div class="adm-body">
+      <div class="field">
+        <label for="approveFee">Booking Fee (optional)</label>
+        <input type="number" id="approveFee" min="0" step="1" placeholder="e.g. 1500">
       </div>
-      <div class="facility-grid">
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M6 6l12 12M18 6 6 18"/></svg></span>
-          <h4>Artificial Futsal Turf</h4>
-          <p>A dedicated turf pitch for five-a-side and practice matches.</p>
-        </div>
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 15c1.5 1.5 3 1.5 4.5 0s3-1.5 4.5 0 3 1.5 4.5 0 3-1.5 4.5 0M2 19c1.5 1.5 3 1.5 4.5 0s3-1.5 4.5 0 3 1.5 4.5 0 3-1.5 4.5 0M6 11V6a2 2 0 0 1 2-2h1"/></svg></span>
-          <h4>Swimming Pool</h4>
-          <p>An on-site pool for laps or a cool-down after your match.</p>
-        </div>
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4"/><circle cx="8" cy="9" r="1"/><circle cx="16" cy="9" r="1"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg></span>
-          <h4>Carrom</h4>
-          <p>Indoor carrom boards for a quick game between matches.</p>
-        </div>
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
-          <h4>Always Open</h4>
-          <p>No fixed hours — call ahead to lock in your slot any time.</p>
-        </div>
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
-          <h4>Book by Phone</h4>
-          <p>Call or message on Facebook to check availability and confirm your slot.</p>
-        </div>
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
-          <h4>Easy to Find</h4>
-          <p>Beside Joy Nagar Jame Masjid, opposite the north Greenview gate on Port Connecting Road.</p>
-        </div>
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-          <h4>Group-Friendly</h4>
-          <p>Bring your team for a match or a group swim session.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="book" id="book">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow" style="color:var(--pool-bright);">Live availability</p>
-        <h2>Request a Slot</h2>
-        <p>Pick a date and facility, tap an open hour, and choose how long you need. Your request goes to Frenzy's admin for review &mdash; it isn't confirmed until they approve it.</p>
-      </div>
-
-      <div class="cal-controls">
-        <div class="cal-datenav">
-          <button class="cal-icon-btn" id="prevDay" aria-label="Previous day">&#8249;</button>
-          <div class="cal-datebox">
-            <span id="calDateLabel" class="cal-date-main">&nbsp;</span>
-            <span id="calTodayTag" class="cal-today-tag"></span>
-          </div>
-          <button class="cal-icon-btn" id="nextDay" aria-label="Next day">&#8250;</button>
-          <input type="date" id="calDateInput" class="cal-date-input" aria-label="Jump to date">
-        </div>
-        <div class="cal-tabs">
-          <button class="cal-tab active" data-facility="futsalTurf">Futsal Turf</button>
-          <button class="cal-tab" data-facility="swimmingPool">Swimming Pool</button>
-          <button class="cal-tab" data-facility="carrom">Carrom</button>
-        </div>
-      </div>
-
-      <div class="cal-legend">
-        <span><i class="dot open"></i>Open</span>
-        <span><i class="dot pending"></i>Pending</span>
-        <span><i class="dot booked"></i>Booked</span>
-        <span><i class="dot past"></i>Past</span>
-      </div>
-
-      <div id="calStatus" class="cal-loading">Loading slots…</div>
-      <div id="calGrid" class="cal-grid" hidden></div>
-
-      <p class="form-note" style="margin-top:16px;">Prefer to skip the form? Call <a href="tel:+8801881271887" style="color:var(--pool);">01881-271887</a> or <a href="https://www.facebook.com/FrenzyChittagong/" target="_blank" rel="noopener" style="color:var(--pool);">message on Facebook</a>.</p>
-    </div>
-  </section>
-
-  <!-- Request form overlay -->
-  <div class="cal-overlay" id="bookOverlay" hidden>
-    <div class="cal-panel">
-      <div class="cal-panel-head">
-        <div>
-          <p class="eyebrow" style="color:var(--pool-bright);">Request a Slot</p>
-          <div class="cal-panel-title" id="bookPanelFacility"></div>
-        </div>
-        <button class="cal-close" id="bookClose" aria-label="Close">&times;</button>
-      </div>
-      <form id="bookForm" class="cal-form">
-        <div class="cal-readonly-row">
-          <div><span class="cal-ro-label">Date</span><span id="bfDateDisplay" class="cal-ro-value"></span></div>
-        </div>
-        <div class="field-row-2">
-          <div class="field">
-            <label for="bfStart">Start Time</label>
-            <select id="bfStart"></select>
-          </div>
-          <div class="field">
-            <label for="bfDuration">Duration</label>
-            <select id="bfDuration"></select>
-          </div>
-        </div>
-        <div class="cal-readonly-row">
-          <div><span class="cal-ro-label">End Time</span><span id="bfEndDisplay" class="cal-ro-value"></span></div>
-        </div>
-        <p id="bfRangeWarning" class="cal-warning" hidden></p>
-        <div class="field">
-          <label for="bfName">Name</label>
-          <input type="text" id="bfName" required>
-        </div>
-        <div class="field">
-          <label for="bfPhone">Phone Number</label>
-          <input type="tel" id="bfPhone" placeholder="01XXXXXXXXX" required>
-          <p class="cal-hint">Bangladesh mobile number, e.g. 01812345678 or +8801812345678</p>
-          <p id="bfPhoneError" class="cal-field-error" hidden>Enter a valid Bangladesh mobile number.</p>
-        </div>
-        <div class="field">
-          <label for="bfEmail">Email (optional)</label>
-          <input type="email" id="bfEmail">
-        </div>
-        <div class="field">
-          <label for="bfNotes">Message (optional)</label>
-          <textarea id="bfNotes"></textarea>
-        </div>
-        <button type="submit" class="btn btn-flare" id="bookSubmitBtn">Send Request</button>
-        <p class="form-note">This sends a request &mdash; it isn't booked until Frenzy's admin approves it.</p>
-        <div id="bookSuccessMsg" class="cal-success-msg" hidden>
-          <strong>Request Submitted Successfully</strong>
-          <p>Your request has been sent to our admin. We will contact you after reviewing availability.</p>
-        </div>
-      </form>
+      <label class="adm-checkbox-row"><input type="checkbox" id="approveShowFee"> Show fee on website</label>
+      <p class="adm-form-note">Leave the fee blank if none applies. Approval books the slot either way.</p>
+      <button class="btn btn-turf full" id="approveConfirmBtn">Approve Booking</button>
     </div>
   </div>
+</div>
 
-  <!-- Booked-slot detail overlay (public-safe info only) -->
-  <div class="cal-overlay" id="detailOverlay" hidden>
-    <div class="cal-panel">
-      <div class="cal-panel-head">
-        <div>
-          <p class="eyebrow" style="color:var(--pool-bright);">Booking Details</p>
-          <div class="cal-panel-title">Booked Slot</div>
-        </div>
-        <button class="cal-close" id="detailClose" aria-label="Close">&times;</button>
+<!-- ===== NEW (ADMIN DIRECT) BOOKING MODAL ===== -->
+<div class="adm-overlay" id="newBookingOverlay" hidden>
+  <div class="adm-panel">
+    <div class="adm-panel-head">
+      <div><div class="adm-panel-title">New Booking</div><div class="adm-panel-sub">Creates a confirmed booking immediately — no customer approval needed.</div></div>
+      <button class="adm-close" data-close="newBookingOverlay">&times;</button>
+    </div>
+    <form class="adm-body" id="newBookingForm">
+      <div class="field"><label for="nbName">Customer Name *</label><input type="text" id="nbName" required></div>
+      <div class="field-row-2">
+        <div class="field"><label for="nbPhone">Phone Number *</label><input type="tel" id="nbPhone" placeholder="01XXXXXXXXX" required></div>
+        <div class="field"><label for="nbEmail">Email</label><input type="email" id="nbEmail"></div>
       </div>
-      <div class="cal-form" id="detailBody"></div>
+      <div class="field-row-2">
+        <div class="field"><label for="nbFacility">Facility *</label>
+          <select id="nbFacility">
+            <option value="futsalTurf">Futsal Turf</option>
+            <option value="swimmingPool">Swimming Pool</option>
+            <option value="carrom">Carrom</option>
+          </select>
+        </div>
+        <div class="field"><label for="nbDate">Date *</label><input type="date" id="nbDate" required></div>
+      </div>
+      <div class="field-row-2">
+        <div class="field"><label for="nbStart">Start Time *</label><select id="nbStart"></select></div>
+        <div class="field"><label for="nbDuration">Duration *</label><select id="nbDuration"></select></div>
+      </div>
+      <p id="nbWarning" class="adm-warning" hidden></p>
+      <div class="field"><label for="nbNotes">Notes</label><textarea id="nbNotes"></textarea></div>
+      <div class="field-row-2">
+        <div class="field"><label for="nbFee">Booking Fee</label><input type="number" id="nbFee" min="0" step="1"></div>
+        <label class="adm-checkbox-row" style="align-self:end; padding-bottom:10px;"><input type="checkbox" id="nbShowFee"> Show fee publicly</label>
+      </div>
+      <button type="submit" class="btn btn-flare full" id="nbSubmitBtn">Create Booking</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===== EDIT BOOKING MODAL ===== -->
+<div class="adm-overlay" id="editBookingOverlay" hidden>
+  <div class="adm-panel">
+    <div class="adm-panel-head">
+      <div><div class="adm-panel-title">Edit Booking</div></div>
+      <button class="adm-close" data-close="editBookingOverlay">&times;</button>
+    </div>
+    <form class="adm-body" id="editBookingForm">
+      <div class="field"><label for="ebName">Customer Name *</label><input type="text" id="ebName" required></div>
+      <div class="field-row-2">
+        <div class="field"><label for="ebPhone">Phone Number *</label><input type="tel" id="ebPhone" required></div>
+        <div class="field"><label for="ebEmail">Email</label><input type="email" id="ebEmail"></div>
+      </div>
+      <div class="field-row-2">
+        <div class="field"><label for="ebFacility">Facility *</label>
+          <select id="ebFacility">
+            <option value="futsalTurf">Futsal Turf</option>
+            <option value="swimmingPool">Swimming Pool</option>
+            <option value="carrom">Carrom</option>
+          </select>
+        </div>
+        <div class="field"><label for="ebDate">Date *</label><input type="date" id="ebDate" required></div>
+      </div>
+      <div class="field-row-2">
+        <div class="field"><label for="ebStart">Start Time *</label><select id="ebStart"></select></div>
+        <div class="field"><label for="ebDuration">Duration *</label><select id="ebDuration"></select></div>
+      </div>
+      <p id="ebWarning" class="adm-warning" hidden></p>
+      <div class="field"><label for="ebNotes">Notes</label><textarea id="ebNotes"></textarea></div>
+      <div class="field-row-2">
+        <div class="field"><label for="ebFee">Booking Fee</label><input type="number" id="ebFee" min="0" step="1"></div>
+        <label class="adm-checkbox-row" style="align-self:end; padding-bottom:10px;"><input type="checkbox" id="ebShowFee"> Show fee publicly</label>
+      </div>
+      <button type="submit" class="btn btn-flare full" id="ebSubmitBtn">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===== CORPORATE / RECURRING BOOKING MODAL ===== -->
+<div class="adm-overlay" id="corpOverlay" hidden>
+  <div class="adm-panel wide">
+    <div class="adm-panel-head">
+      <div><div class="adm-panel-title">Corporate / Recurring Booking</div><div class="adm-panel-sub">Generates one booking per matching date in the range.</div></div>
+      <button class="adm-close" data-close="corpOverlay">&times;</button>
+    </div>
+
+    <form class="adm-body" id="corpForm">
+      <div class="field"><label for="cbName">Customer / Corporate Name *</label><input type="text" id="cbName" required></div>
+      <div class="field-row-2">
+        <div class="field"><label for="cbPhone">Phone Number *</label><input type="tel" id="cbPhone" required></div>
+        <div class="field"><label for="cbEmail">Email</label><input type="email" id="cbEmail"></div>
+      </div>
+      <div class="field-row-2">
+        <div class="field"><label for="cbFacility">Facility *</label>
+          <select id="cbFacility">
+            <option value="futsalTurf">Futsal Turf</option>
+            <option value="swimmingPool">Swimming Pool</option>
+            <option value="carrom">Carrom</option>
+          </select>
+        </div>
+        <div class="field"><label for="cbPattern">Recurring Pattern *</label>
+          <select id="cbPattern"><option value="weekly">Weekly</option><option value="custom">Custom Days</option></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Day(s) of Week *</label>
+        <div class="day-pill-row" id="cbDayPills">
+          <button type="button" class="day-pill" data-day="0">Sun</button>
+          <button type="button" class="day-pill" data-day="1">Mon</button>
+          <button type="button" class="day-pill" data-day="2">Tue</button>
+          <button type="button" class="day-pill" data-day="3">Wed</button>
+          <button type="button" class="day-pill" data-day="4">Thu</button>
+          <button type="button" class="day-pill" data-day="5">Fri</button>
+          <button type="button" class="day-pill" data-day="6">Sat</button>
+        </div>
+      </div>
+      <div class="field-row-2">
+        <div class="field"><label for="cbStartDate">Start Date *</label><input type="date" id="cbStartDate" required></div>
+        <div class="field"><label for="cbEndDate">End Date *</label><input type="date" id="cbEndDate" required></div>
+      </div>
+      <div class="field-row-2">
+        <div class="field"><label for="cbStart">Start Time *</label><select id="cbStart"></select></div>
+        <div class="field"><label for="cbDuration">Duration *</label><select id="cbDuration"></select></div>
+      </div>
+      <div class="field-row-3">
+        <div class="field"><label for="cbFeeType">Fee Type</label>
+          <select id="cbFeeType"><option value="perOccurrence">Per occurrence</option><option value="monthly">Total / monthly</option></select>
+        </div>
+        <div class="field"><label for="cbFee">Booking Fee</label><input type="number" id="cbFee" min="0" step="1"></div>
+        <label class="adm-checkbox-row" style="align-self:end; padding-bottom:10px;"><input type="checkbox" id="cbShowFee"> Show fee publicly</label>
+      </div>
+      <div class="field"><label for="cbNotes">Notes</label><textarea id="cbNotes"></textarea></div>
+      <button type="submit" class="btn btn-flare full" id="cbCheckBtn">Check Availability &amp; Generate</button>
+      <p class="adm-form-note">This checks every matching date for conflicts before creating anything.</p>
+    </form>
+
+    <!-- Conflict review sub-panel -->
+    <div class="adm-body" id="corpConflictPanel" hidden>
+      <p class="adm-warning" id="corpConflictSummary"></p>
+      <ul class="conflict-list" id="corpConflictList"></ul>
+      <div class="field-row-2">
+        <button type="button" class="btn btn-turf" id="corpSkipCreateBtn">Skip Conflicting Dates &amp; Create Rest</button>
+        <button type="button" class="btn btn-outline" id="corpCancelSeriesBtn">Cancel Entire Series</button>
+      </div>
     </div>
   </div>
+</div>
 
-  <div id="calToast" class="cal-toast" hidden></div>
-
-  <section class="reviews">
-    <div class="wrap">
-      <p class="eyebrow">On Facebook</p>
-      <div class="review-score">72% Recommend</div>
-      <p class="sub">Based on 18 reviews from players who've booked a slot at Frenzy.</p>
-      <a href="https://www.facebook.com/FrenzyChittagong/" target="_blank" rel="noopener" class="btn btn-ghost">Read reviews on Facebook</a>
+<!-- ===== RECURRING OCCURRENCES MODAL ===== -->
+<div class="adm-overlay" id="occOverlay" hidden>
+  <div class="adm-panel wide">
+    <div class="adm-panel-head">
+      <div><div class="adm-panel-title">Series Occurrences</div><div class="adm-panel-sub" id="occSummary"></div></div>
+      <button class="adm-close" data-close="occOverlay">&times;</button>
     </div>
-  </section>
-
-  <section class="contact" id="contact">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">Get in touch</p>
-        <h2>Find &amp; book Frenzy</h2>
-        <p>Reach out by phone, email, or Facebook to check slot availability.</p>
-      </div>
-      <div class="contact-grid">
-        <div class="contact-list">
-          <div class="contact-row">
-            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
-            <div>
-              <b>Address</b>
-              <span>Beside Joy Nagar Jame Masjid (Opposite of North Greenview Gate), Port Connecting Road, Saraipara, Pahartali, Chittagong, Bangladesh</span>
-            </div>
-          </div>
-          <div class="contact-row">
-            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
-            <div>
-              <b>Call Us</b>
-              <a class="plain" href="tel:+8801881271887"><span>+880 1881-271887</span></a>
-            </div>
-          </div>
-          <div class="contact-row">
-            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z" opacity="0"/><path d="M22 6 12 13 2 6"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg></span>
-            <div>
-              <b>Email Us</b>
-              <a class="plain" href="mailto:frenzysportsctg@gmail.com"><span>frenzysportsctg@gmail.com</span></a>
-            </div>
-          </div>
-          <div class="contact-row">
-            <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></span>
-            <div>
-              <b>Facebook</b>
-              <a class="plain" href="https://www.facebook.com/FrenzyChittagong/" target="_blank" rel="noopener"><span>/FrenzyChittagong</span></a>
-            </div>
-          </div>
-        </div>
-        <div class="map-frame">
-          <iframe
-            src="https://www.google.com/maps?q=Frenzy%20Sports%20Arena%20Saraipara%20Pahartali%20Chittagong&output=embed"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            title="Map to Frenzy Sports Arena"></iframe>
-        </div>
+    <div class="adm-body">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="occBody"></tbody>
+        </table>
       </div>
     </div>
-  </section>
-
-  <section class="faq" id="faq">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">Good to know</p>
-        <h2>Frequently Asked Questions</h2>
-      </div>
-      <div class="faq-list">
-        <details open>
-          <summary>How do I book a slot at Frenzy?</summary>
-          <p>Use the "Request a Slot" form on this page, call +880 1881-271887, or message the Facebook page. Frenzy will confirm your turf or pool slot directly.</p>
-        </details>
-        <details>
-          <summary>What are Frenzy's opening hours?</summary>
-          <p>Frenzy is always open — call ahead to confirm the best time to come in, especially for peak evening slots.</p>
-        </details>
-        <details>
-          <summary>Where exactly is Frenzy located?</summary>
-          <p>On Port Connecting Road in Saraipara, Pahartali — beside Joy Nagar Jame Masjid and opposite the north Greenview gate.</p>
-        </details>
-        <details>
-          <summary>Can I book for a group or team event?</summary>
-          <p>Yes — call or message ahead to arrange a slot for your team or a group swim session.</p>
-        </details>
-        <details>
-          <summary>Do you have both futsal and swimming available the same day?</summary>
-          <p>Yes, both facilities operate on site — mention what you're looking to book when you call.</p>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <section class="cta-band">
-    <div class="wrap">
-      <h2>Ready to play?</h2>
-      <p>Call now to lock in your slot at Frenzy Sports Arena.</p>
-      <a href="tel:+8801881271887" class="btn btn-ghost">01881-271887</a>
-    </div>
-  </section>
-</main>
-
-<footer>
-  <div class="wrap footer-inner">
-    <span class="brand">FRENZY</span>
-    <span>© <span id="year"></span> Frenzy Sports Arena, Pahartali, Chittagong</span>
   </div>
-</footer>
+</div>
 
-<script>
-  document.getElementById('year').textContent = new Date().getFullYear();
-  const navToggle = document.getElementById('navToggle');
-  const navLinks = document.getElementById('navLinks');
-  navToggle.addEventListener('click', () => {
-    const open = navLinks.classList.toggle('open');
-    navToggle.setAttribute('aria-expanded', open);
-  });
-  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
-    navLinks.classList.remove('open');
-    navToggle.setAttribute('aria-expanded', 'false');
-  }));
-</script>
-
-<!--
-  ===============================================================
-  BOOKING REQUEST SYSTEM — Firebase setup required.
-  1. Create a Firebase project at https://console.firebase.google.com
-  2. Enable Firestore Database (Build → Firestore Database)
-  3. Enable Authentication → Sign-in method → Email/Password
-  4. Add an admin user under Authentication → Users (this is who can
-     approve/reject requests in admin.html)
-  5. Register a Web App (Project settings → your apps → </> icon),
-     copy the config into firebaseConfig below
-  6. Set Firestore security rules — see README.md (must reference
-     your admin's email address)
-  See README.md for the full walkthrough, including admin.html setup.
-  ===============================================================
--->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getFirestore, collection, doc, writeBatch, serverTimestamp, onSnapshot, query, where
+    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, writeBatch, updateDoc, deleteDoc, getDoc, getDocs,
+    onSnapshot, query, orderBy, where, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  // Frenzy Arena's Firebase config
+  // Frenzy Arena's Firebase config — same project as index.html
   const firebaseConfig = {
     apiKey: "AIzaSyDCtXGoYt1znhi1wyUhgoOYLiNS-xekiYk",
     authDomain: "frenzy-arena.firebaseapp.com",
@@ -731,417 +508,754 @@
   };
 
   const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // ---------- TIME MODEL: 48 x 30-minute start times/day, Asia/Dhaka ----------
+  // ---------- TIME MODEL (matches index.html) ----------
   const SLOTS_PER_DAY = 48;
   const TZ = "Asia/Dhaka";
   const FACILITY_LABELS = { futsalTurf: "Futsal Turf", swimmingPool: "Swimming Pool", carrom: "Carrom" };
-  const MAX_DURATION_SLOTS = 24; // cap duration dropdown at 12 hours
+  const MAX_DURATION_SLOTS = 24;
+  const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
   function pad(n) { return String(n).padStart(2, "0"); }
-
-  // "Right now" in Asia/Dhaka — independent of the visitor's own device timezone.
   function dhakaNow() {
     const parts = new Intl.DateTimeFormat("en-CA", {
       timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit",
       hour: "2-digit", minute: "2-digit", hour12: false
     }).formatToParts(new Date());
-    const map = {};
-    parts.forEach(p => { map[p.type] = p.value; });
+    const map = {}; parts.forEach(p => { map[p.type] = p.value; });
     const dateStr = `${map.year}-${map.month}-${map.day}`;
-    const hour = Number(map.hour) % 24;
-    const minute = Number(map.minute);
-    const slot = hour * 2 + (minute >= 30 ? 1 : 0);
-    return { dateStr, slot };
+    const hour = Number(map.hour) % 24, minute = Number(map.minute);
+    return { dateStr, slot: hour * 2 + (minute >= 30 ? 1 : 0) };
   }
-
   function addDays(dateStr, delta) {
     const d = new Date(dateStr + "T00:00:00Z");
     d.setUTCDate(d.getUTCDate() + delta);
     return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
   }
-
+  function dayOfWeek(dateStr) {
+    const d = new Date(dateStr + "T00:00:00Z");
+    return d.getUTCDay();
+  }
   function slotLabel(slot) {
     const s = ((slot % SLOTS_PER_DAY) + SLOTS_PER_DAY) % SLOTS_PER_DAY;
     const totalMin = s * 30;
-    const h24 = Math.floor(totalMin / 60);
-    const m = totalMin % 60;
+    const h24 = Math.floor(totalMin / 60), m = totalMin % 60;
     const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
     return `${h12}:${pad(m)} ${h24 < 12 ? "AM" : "PM"}`;
   }
-
   function durationLabel(durationSlots) {
     const totalMin = durationSlots * 30;
-    const h = Math.floor(totalMin / 60);
-    const m = totalMin % 60;
+    const h = Math.floor(totalMin / 60), m = totalMin % 60;
     return m === 0 ? `${h} Hour${h === 1 ? "" : "s"}` : `${h} Hour${h === 1 ? "" : "s"} 30 Minutes`;
   }
-
-  function prettyDate(dateStr) {
-    const d = new Date(dateStr + "T00:00:00");
-    return d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
-  }
-
   function slotDocId(facility, dateStr, slot) { return `${facility}_${dateStr}_${slot}`; }
-
-  // Every 30-minute interval a booking of `durationSlots` from (date, startSlot) occupies —
-  // rolls correctly into the next calendar date past midnight.
   function coveredIntervals(date, startSlot, durationSlots) {
-    const out = [];
-    let d = date, s = startSlot;
+    const out = []; let d = date, s = startSlot;
     for (let i = 0; i < durationSlots; i++) {
       if (s >= SLOTS_PER_DAY) { s -= SLOTS_PER_DAY; d = addDays(d, 1); }
-      out.push({ date: d, slot: s });
-      s++;
+      out.push({ date: d, slot: s }); s++;
     }
     return out;
   }
-
-  // The (date, slot) marking the moment the booking ends.
   function endPoint(date, startSlot, durationSlots) {
     let d = date, s = startSlot + durationSlots;
     while (s >= SLOTS_PER_DAY) { s -= SLOTS_PER_DAY; d = addDays(d, 1); }
     return { date: d, slot: s };
   }
-
-  // Bangladesh mobile numbers: 01XXXXXXXXX or +8801XXXXXXXXX
   const BD_PHONE_RE = /^(?:\+?880|0)1[3-9]\d{8}$/;
-  function normalizePhone(raw) { return raw.replace(/[\s-]/g, ""); }
+  function normalizePhone(raw) { return (raw || "").replace(/[\s-]/g, ""); }
   function isValidBDPhone(raw) { return BD_PHONE_RE.test(normalizePhone(raw)); }
-  function isValidName(raw) { return raw.trim().length > 0; }
+  function isValidName(raw) { return (raw || "").trim().length > 0; }
+  function fmtTimestamp(ts) {
+    if (!ts) return "—";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  }
   function escapeHtml(str) {
-    const d = document.createElement('div');
-    d.textContent = str;
-    return d.innerHTML;
+    const d = document.createElement("div"); d.textContent = str ?? ""; return d.innerHTML;
   }
+  function todayKey() { return dhakaNow().dateStr; }
 
-  const TODAY = dhakaNow().dateStr;
-  let currentDate = TODAY;
-  let currentFacility = "futsalTurf";
-  let unsubscribe = null;
-  let latestSlots = {}; // { [slot]: slotDocData }
-
-  const els = {
-    dateLabel: document.getElementById('calDateLabel'),
-    todayTag: document.getElementById('calTodayTag'),
-    dateInput: document.getElementById('calDateInput'),
-    prevDay: document.getElementById('prevDay'),
-    nextDay: document.getElementById('nextDay'),
-    tabs: document.querySelectorAll('.cal-tab'),
-    status: document.getElementById('calStatus'),
-    grid: document.getElementById('calGrid'),
-    toast: document.getElementById('calToast'),
-
-    bookOverlay: document.getElementById('bookOverlay'),
-    bookPanelFacility: document.getElementById('bookPanelFacility'),
-    bookClose: document.getElementById('bookClose'),
-    bookForm: document.getElementById('bookForm'),
-    bookSubmitBtn: document.getElementById('bookSubmitBtn'),
-    bfDateDisplay: document.getElementById('bfDateDisplay'),
-    bfStart: document.getElementById('bfStart'),
-    bfDuration: document.getElementById('bfDuration'),
-    bfEndDisplay: document.getElementById('bfEndDisplay'),
-    bfRangeWarning: document.getElementById('bfRangeWarning'),
-    bfName: document.getElementById('bfName'),
-    bfPhone: document.getElementById('bfPhone'),
-    bfPhoneError: document.getElementById('bfPhoneError'),
-    bfEmail: document.getElementById('bfEmail'),
-    bfNotes: document.getElementById('bfNotes'),
-    bookSuccessMsg: document.getElementById('bookSuccessMsg'),
-
-    detailOverlay: document.getElementById('detailOverlay'),
-    detailClose: document.getElementById('detailClose'),
-    detailBody: document.getElementById('detailBody'),
-  };
-
-  function showToast(msg, isErr) {
-    els.toast.textContent = msg;
-    els.toast.classList.toggle('err', !!isErr);
-    els.toast.hidden = false;
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => { els.toast.hidden = true; }, 3800);
-  }
-
-  function renderDateHeader() {
-    els.dateLabel.textContent = prettyDate(currentDate);
-    els.todayTag.textContent = currentDate === TODAY ? 'Today' : '';
-    els.dateInput.value = currentDate;
-    els.dateInput.min = TODAY;
-    els.prevDay.disabled = currentDate <= TODAY;
-  }
-
-  // How many consecutive open 30-minute slots exist starting at `slot`, within this calendar day.
-  function consecutiveOpenFrom(slot, dateStr) {
-    const isToday = dateStr === TODAY;
-    const { slot: nowSlot } = dhakaNow();
-    let count = 0;
-    for (let s = slot; s < SLOTS_PER_DAY; s++) {
-      const isPast = isToday && s < nowSlot;
-      if (isPast || latestSlots[s]) break;
-      count++;
+  function populateSlotSelect(selectEl, { excludeSlots = new Set(), minSlot = 0 } = {}) {
+    selectEl.innerHTML = "";
+    for (let s = minSlot; s < SLOTS_PER_DAY; s++) {
+      if (excludeSlots.has(s)) continue;
+      const opt = document.createElement("option");
+      opt.value = s; opt.textContent = slotLabel(s);
+      selectEl.appendChild(opt);
     }
-    return count;
   }
-
-  function renderGrid() {
-    const isToday = currentDate === TODAY;
-    const { slot: nowSlot } = dhakaNow();
-
-    els.grid.innerHTML = '';
-    for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
-      const s = latestSlots[slot];
-      const isPast = isToday && slot < nowSlot;
-      let stateClass = 'open', label = 'Open';
-      if (isPast) { stateClass = 'past'; label = 'Past'; }
-      else if (s && s.status === 'approved') { stateClass = 'booked'; label = 'Booked'; }
-      else if (s && s.status === 'pending') { stateClass = 'pending'; label = 'Pending'; }
-
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = `cal-slot ${stateClass}`;
-      btn.disabled = stateClass === 'past' || stateClass === 'pending';
-      const nameLine = (stateClass === 'booked' && s.customerName)
-        ? `<span class="cal-slot-name">${escapeHtml(s.customerName)}</span>` : '';
-      btn.innerHTML = `
-        <span class="cal-slot-time">${slotLabel(slot)}</span>
-        <span class="cal-slot-status">${label}</span>
-        ${nameLine}
-      `;
-      if (stateClass === 'open') btn.addEventListener('click', () => openRequestPanel(slot));
-      if (stateClass === 'booked') btn.addEventListener('click', () => openDetailPanel(s));
-      els.grid.appendChild(btn);
+  function populateDurationSelect(selectEl, maxSlots) {
+    const preferred = selectEl.value;
+    selectEl.innerHTML = "";
+    const cap = Math.max(2, Math.min(maxSlots, MAX_DURATION_SLOTS));
+    for (let d = 2; d <= cap; d++) {
+      const opt = document.createElement("option");
+      opt.value = d; opt.textContent = durationLabel(d);
+      selectEl.appendChild(opt);
     }
-
-    els.status.hidden = true;
-    els.grid.hidden = false;
+    if (preferred && [...selectEl.options].some(o => o.value === preferred)) selectEl.value = preferred;
   }
 
-  function subscribeToDate(dateStr) {
-    if (unsubscribe) unsubscribe();
-    els.status.hidden = false;
-    els.grid.hidden = true;
-    els.status.textContent = 'Loading slots…';
+  // ---------- AUTH ----------
+  const loginScreen = document.getElementById('loginScreen');
+  const dashboard = document.getElementById('dashboard');
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+  const loginBtn = document.getElementById('loginBtn');
 
-    const q = query(collection(db, 'slots'), where('facility', '==', currentFacility), where('date', '==', dateStr));
-    unsubscribe = onSnapshot(q, (snap) => {
-      const map = {};
-      snap.forEach(d => { map[d.data().slot] = d.data(); });
-      latestSlots = map;
-      renderGrid();
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginError.classList.remove('show');
+    loginBtn.disabled = true; loginBtn.textContent = 'Logging in…';
+    try {
+      await signInWithEmailAndPassword(auth,
+        document.getElementById('loginEmail').value.trim(),
+        document.getElementById('loginPassword').value);
+    } catch (err) {
+      console.error(err);
+      loginError.classList.add('show');
+    } finally {
+      loginBtn.disabled = false; loginBtn.textContent = 'Log In';
+    }
+  });
+  document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+
+  let allBookings = [];
+  let allRecurring = [];
+  let bookingsUnsub = null;
+  let recurringUnsub = null;
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loginScreen.style.display = 'none';
+      dashboard.classList.add('show');
+      subscribeBookings();
+      subscribeRecurring();
+    } else {
+      loginScreen.style.display = 'flex';
+      dashboard.classList.remove('show');
+      if (bookingsUnsub) { bookingsUnsub(); bookingsUnsub = null; }
+      if (recurringUnsub) { recurringUnsub(); recurringUnsub = null; }
+    }
+  });
+
+  // ---------- DATA SUBSCRIPTIONS ----------
+  function subscribeBookings() {
+    const q = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
+    bookingsUnsub = onSnapshot(q, (snap) => {
+      allBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderBookingsTable();
+      renderRecurringTable();
     }, (err) => {
       console.error(err);
-      els.status.textContent = 'Could not load slots — check your connection and Firebase setup.';
-      els.status.hidden = false;
-      els.grid.hidden = true;
+      document.getElementById('loadingState').textContent = 'Could not load bookings — check Firestore rules and that this account is the admin.';
+    });
+  }
+  function subscribeRecurring() {
+    const q = query(collection(db, 'recurringBookings'), orderBy('createdAt', 'desc'));
+    recurringUnsub = onSnapshot(q, (snap) => {
+      allRecurring = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderRecurringTable();
+    }, (err) => {
+      console.error(err);
+      document.getElementById('recurringLoadingState').textContent = 'Could not load recurring bookings.';
     });
   }
 
-  function goToDate(dateStr) {
-    if (dateStr < TODAY) return;
-    currentDate = dateStr;
-    renderDateHeader();
-    subscribeToDate(currentDate);
-  }
-
-  els.prevDay.addEventListener('click', () => goToDate(addDays(currentDate, -1)));
-  els.nextDay.addEventListener('click', () => goToDate(addDays(currentDate, 1)));
-  els.dateInput.addEventListener('change', (e) => { if (e.target.value) goToDate(e.target.value); });
-
-  els.tabs.forEach(tab => {
+  // ---------- VIEW TABS ----------
+  let currentView = 'pending';
+  document.querySelectorAll('.view-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      els.tabs.forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-      currentFacility = tab.dataset.facility;
-      subscribeToDate(currentDate);
+      currentView = tab.dataset.view;
+      document.getElementById('viewBookings').hidden = currentView === 'recurring';
+      document.getElementById('viewRecurring').hidden = currentView !== 'recurring';
+      renderBookingsTable();
     });
   });
 
-  function populateStartOptions(preferredSlot) {
-    const isToday = currentDate === TODAY;
-    const { slot: nowSlot } = dhakaNow();
-    els.bfStart.innerHTML = '';
-    for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
-      const isPast = isToday && slot < nowSlot;
-      if (isPast || latestSlots[slot]) continue;
-      const opt = document.createElement('option');
-      opt.value = slot;
-      opt.textContent = slotLabel(slot);
-      if (slot === preferredSlot) opt.selected = true;
-      els.bfStart.appendChild(opt);
-    }
+  // ---------- FILTERS ----------
+  const searchInput = document.getElementById('searchInput');
+  const dateFilter = document.getElementById('dateFilter');
+  const facilityFilter = document.getElementById('facilityFilter');
+  const typeFilter = document.getElementById('typeFilter');
+  const statusFilter = document.getElementById('statusFilter');
+  [searchInput, dateFilter, facilityFilter, typeFilter, statusFilter].forEach(el => el.addEventListener('input', renderBookingsTable));
+
+  function renderBookingsTable() {
+    const tbody = document.getElementById('requestsBody');
+    const loadingState = document.getElementById('loadingState');
+    const emptyState = document.getElementById('emptyState');
+    loadingState.style.display = 'none';
+
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const today = todayKey();
+
+    let filtered = allBookings.filter(r => {
+      if (currentView === 'pending' && r.status !== 'pending') return false;
+      if (searchTerm && !(`${r.customerName} ${r.phone}`.toLowerCase().includes(searchTerm))) return false;
+      if (facilityFilter.value && r.facility !== facilityFilter.value) return false;
+      if (typeFilter.value && r.bookingType !== typeFilter.value) return false;
+      if (statusFilter.value && r.status !== statusFilter.value) return false;
+      if (dateFilter.value === 'today' && r.bookingDate !== today) return false;
+      if (dateFilter.value === 'upcoming' && !(r.bookingDate > today)) return false;
+      if (dateFilter.value === 'past' && !(r.bookingDate < today)) return false;
+      return true;
+    });
+
+    const pendingCount = allBookings.filter(r => r.status === 'pending').length;
+    const badge = document.getElementById('newBadge');
+    badge.textContent = `${pendingCount} NEW`;
+    badge.classList.toggle('show', pendingCount > 0);
+
+    tbody.innerHTML = '';
+    emptyState.style.display = filtered.length ? 'none' : 'block';
+
+    const TYPE_LABEL = { customer_request: 'Customer Request', admin_direct: 'Admin Direct', corporate_recurring: 'Corporate' };
+
+    filtered.forEach(r => {
+      const tr = document.createElement('tr');
+      if (r.status === 'pending') tr.classList.add('new-row');
+      const feeText = r.bookingFee ? `৳${Number(r.bookingFee).toLocaleString()}${r.showFeePublicly ? '' : ' (hidden)'}` : '—';
+      tr.innerHTML = `
+        <td>
+          <div class="cell-name">${escapeHtml(r.customerName || '—')}</div>
+          <div class="cell-sub">${escapeHtml(r.phone || '')}${r.email ? ' · ' + escapeHtml(r.email) : ''}</div>
+        </td>
+        <td>${FACILITY_LABELS[r.facility] || r.facility}</td>
+        <td>
+          <div>${r.bookingDate}${r.endDate && r.endDate !== r.bookingDate ? ' → ' + r.endDate : ''}</div>
+          <div class="cell-sub">${slotLabel(r.startSlot)} – ${slotLabel(r.endSlot)} (${durationLabel(r.durationSlots)})</div>
+        </td>
+        <td><span class="type-pill">${TYPE_LABEL[r.bookingType] || r.bookingType}</span></td>
+        <td class="cell-sub">${feeText}</td>
+        <td class="notes-cell">${r.notes ? escapeHtml(r.notes) : '—'}</td>
+        <td class="cell-sub">${fmtTimestamp(r.createdAt)}</td>
+        <td><span class="status-pill ${r.status}">${r.status}</span></td>
+        <td class="row-actions">${renderActions(r)}</td>
+      `;
+      tbody.appendChild(tr);
+      tr.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => handleAction(btn.dataset.action, r));
+      });
+    });
   }
 
-  // Duration options: 1-hour minimum, 30-minute increments, capped by consecutive open slots.
-  function populateDurationOptions() {
-    const start = Number(els.bfStart.value);
-    const available = consecutiveOpenFrom(start, currentDate);
-    const maxSlots = Math.min(available, MAX_DURATION_SLOTS);
-    const preferred = els.bfDuration.value;
-    els.bfDuration.innerHTML = '';
-    for (let d = 2; d <= maxSlots; d++) { // 2 slots = 1 hour, the minimum booking duration
-      const opt = document.createElement('option');
-      opt.value = d;
-      opt.textContent = durationLabel(d);
-      els.bfDuration.appendChild(opt);
-    }
-    if (!els.bfDuration.options.length) {
-      const opt = document.createElement('option');
-      opt.value = '';
-      opt.textContent = 'No duration available';
-      els.bfDuration.appendChild(opt);
-    } else if (preferred && [...els.bfDuration.options].some(o => o.value === preferred)) {
-      els.bfDuration.value = preferred;
-    }
-  }
-
-  function refreshEndTimeAndValidity() {
-    const start = Number(els.bfStart.value);
-    const duration = Number(els.bfDuration.value) || 0;
-    const available = consecutiveOpenFrom(start, currentDate);
-
-    if (duration > 0) {
-      const end = endPoint(currentDate, start, duration);
-      const crossesMidnight = end.date !== currentDate;
-      els.bfEndDisplay.textContent = slotLabel(end.slot) + (crossesMidnight ? ' (next day)' : '');
+  function renderActions(r) {
+    let html = '';
+    if (r.status === 'pending') {
+      html += `<button class="action-btn approve" data-action="approve">Approve</button>
+               <button class="action-btn reject" data-action="reject">Reject</button>`;
+    } else if (r.status === 'approved') {
+      html += `<button class="action-btn edit" data-action="edit">Edit</button>
+               <button class="action-btn cancel" data-action="cancel">Cancel</button>
+               <button class="action-btn complete" data-action="complete">Mark Completed</button>`;
+    } else if (r.status === 'rejected' || r.status === 'cancelled') {
+      html += `<button class="action-btn delete" data-action="delete">Delete</button>`;
     } else {
-      els.bfEndDisplay.textContent = '—';
+      html += `<span class="cell-sub">No actions</span>`;
     }
+    return html;
+  }
 
-    const fits = duration > 0 && duration <= available;
-    els.bfRangeWarning.hidden = fits;
-    if (!fits) {
-      els.bfRangeWarning.textContent = available > 0
-        ? `Only ${durationLabel(available)} open consecutively from this start time.`
-        : `This start time no longer has open slots available.`;
+  // ---------- ACTIONS ----------
+  let pendingApproveBooking = null;
+  function openOverlay(id) { document.getElementById(id).hidden = false; }
+  function closeOverlay(id) { document.getElementById(id).hidden = true; }
+  document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeOverlay(btn.dataset.close)));
+
+  async function handleAction(action, r) {
+    const ref = doc(db, 'bookings', r.id);
+    try {
+      if (action === 'approve') {
+        pendingApproveBooking = r;
+        document.getElementById('approveSummary').textContent =
+          `${r.customerName} · ${FACILITY_LABELS[r.facility]} · ${r.bookingDate} ${slotLabel(r.startSlot)}–${slotLabel(r.endSlot)}`;
+        document.getElementById('approveFee').value = '';
+        document.getElementById('approveShowFee').checked = false;
+        openOverlay('approveOverlay');
+      } else if (action === 'reject') {
+        const batch = writeBatch(db);
+        coveredIntervals(r.bookingDate, r.startSlot, r.durationSlots).forEach(({date, slot}) => {
+          batch.delete(doc(db, 'slots', slotDocId(r.facility, date, slot)));
+        });
+        batch.update(ref, { status: 'rejected', rejectedAt: serverTimestamp(), updatedAt: serverTimestamp() });
+        await batch.commit();
+      } else if (action === 'cancel') {
+        const batch = writeBatch(db);
+        coveredIntervals(r.bookingDate, r.startSlot, r.durationSlots).forEach(({date, slot}) => {
+          batch.delete(doc(db, 'slots', slotDocId(r.facility, date, slot)));
+        });
+        batch.update(ref, { status: 'cancelled', updatedAt: serverTimestamp() });
+        await batch.commit();
+      } else if (action === 'complete') {
+        await updateDoc(ref, { status: 'completed', updatedAt: serverTimestamp() });
+      } else if (action === 'delete') {
+        await deleteDoc(ref);
+      } else if (action === 'edit') {
+        openEditModal(r);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Action failed — check the browser console and your Firestore rules.');
     }
-    updateSubmitState();
-    return fits;
   }
 
-  function updateSubmitState() {
-    const nameOk = isValidName(els.bfName.value);
-    const phoneOk = isValidBDPhone(els.bfPhone.value);
-    els.bfPhoneError.hidden = els.bfPhone.value.trim() === '' || phoneOk;
-    const durationOk = Number(els.bfDuration.value) > 0 && els.bfRangeWarning.hidden;
-    els.bookSubmitBtn.disabled = !(nameOk && phoneOk && durationOk);
-  }
-
-  function openRequestPanel(slot) {
-    els.bookPanelFacility.textContent = FACILITY_LABELS[currentFacility];
-    els.bfDateDisplay.textContent = prettyDate(currentDate);
-    els.bookForm.reset();
-    els.bookSuccessMsg.hidden = true;
-    els.bookForm.hidden = false;
-    populateStartOptions(slot);
-    populateDurationOptions();
-    refreshEndTimeAndValidity();
-    els.bookOverlay.hidden = false;
-  }
-  function closeBookPanel() { els.bookOverlay.hidden = true; }
-  els.bookClose.addEventListener('click', closeBookPanel);
-  els.bookOverlay.addEventListener('click', (e) => { if (e.target === els.bookOverlay) closeBookPanel(); });
-  els.bfStart.addEventListener('change', () => { populateDurationOptions(); refreshEndTimeAndValidity(); });
-  els.bfDuration.addEventListener('change', refreshEndTimeAndValidity);
-  els.bfName.addEventListener('input', updateSubmitState);
-  els.bfPhone.addEventListener('input', updateSubmitState);
-
-  function openDetailPanel(slotData) {
-    const date = slotData.date || currentDate;
-    const end = endPoint(date, slotData.startSlot, slotData.durationSlots);
-    const feeLine = (slotData.showFeePublicly && slotData.bookingFee)
-      ? `<div class="cal-readonly-row"><div><span class="cal-ro-label">Booking Fee</span><span class="cal-ro-value">৳${Number(slotData.bookingFee).toLocaleString()}</span></div></div>`
-      : '';
-    els.detailBody.innerHTML = `
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Customer</span><span class="cal-ro-value">${escapeHtml(slotData.customerName || '—')}</span></div></div>
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Facility</span><span class="cal-ro-value">${FACILITY_LABELS[currentFacility]}</span></div></div>
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Date</span><span class="cal-ro-value">${prettyDate(date)}</span></div></div>
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Time</span><span class="cal-ro-value">${slotLabel(slotData.startSlot)} – ${slotLabel(end.slot)}${end.date !== date ? ' (next day)' : ''}</span></div></div>
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Duration</span><span class="cal-ro-value">${durationLabel(slotData.durationSlots)}</span></div></div>
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Status</span><span class="cal-ro-value">Booked</span></div></div>
-      ${feeLine}
-    `;
-    els.detailOverlay.hidden = false;
-  }
-  els.detailClose.addEventListener('click', () => { els.detailOverlay.hidden = true; });
-  els.detailOverlay.addEventListener('click', (e) => { if (e.target === els.detailOverlay) els.detailOverlay.hidden = true; });
-
-  els.bookForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!refreshEndTimeAndValidity()) return;
-
-    const name = els.bfName.value.trim();
-    const phoneRaw = els.bfPhone.value.trim();
-    const email = els.bfEmail.value.trim();
-    const notes = els.bfNotes.value.trim();
-    if (!isValidName(name) || !isValidBDPhone(phoneRaw)) { updateSubmitState(); return; }
-    const phone = normalizePhone(phoneRaw);
-
-    const start = Number(els.bfStart.value);
-    const duration = Number(els.bfDuration.value);
-    const intervals = coveredIntervals(currentDate, start, duration);
-    const end = endPoint(currentDate, start, duration);
-
-    els.bookSubmitBtn.disabled = true;
-    els.bookSubmitBtn.textContent = 'Sending…';
+  document.getElementById('approveConfirmBtn').addEventListener('click', async () => {
+    if (!pendingApproveBooking) return;
+    const r = pendingApproveBooking;
+    const feeRaw = document.getElementById('approveFee').value;
+    const fee = feeRaw ? Number(feeRaw) : null;
+    const showFee = document.getElementById('approveShowFee').checked;
     try {
       const batch = writeBatch(db);
-      const bookingRef = doc(collection(db, 'bookings'));
-      batch.set(bookingRef, {
-        customerName: name,
-        phone,
-        email: email || null,
-        facility: currentFacility,
-        bookingDate: currentDate,
-        startSlot: start,
-        durationSlots: duration,
-        durationMinutes: duration * 30,
-        endDate: end.date,
-        endSlot: end.slot,
-        status: 'pending',
-        bookingType: 'customer_request',
-        bookingSource: 'website',
-        bookingFee: null,
-        feeCurrency: 'BDT',
-        showFeePublicly: false,
-        recurringBookingId: null,
-        notes: notes || null,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        approvedAt: null,
-        rejectedAt: null,
+      const ref = doc(db, 'bookings', r.id);
+      batch.update(ref, {
+        status: 'approved', approvedAt: serverTimestamp(), updatedAt: serverTimestamp(),
+        bookingFee: fee, showFeePublicly: !!showFee,
       });
-      intervals.forEach(({ date, slot }) => {
-        const slotRef = doc(db, 'slots', slotDocId(currentFacility, date, slot));
-        batch.set(slotRef, {
-          facility: currentFacility,
-          date, slot,
-          status: 'pending',
-          bookingId: bookingRef.id,
-          customerName: name,
-          startSlot: start,
-          durationSlots: duration,
-          bookingFee: null,
-          showFeePublicly: false,
+      coveredIntervals(r.bookingDate, r.startSlot, r.durationSlots).forEach(({date, slot}) => {
+        batch.update(doc(db, 'slots', slotDocId(r.facility, date, slot)), {
+          status: 'approved', bookingFee: fee, showFeePublicly: !!showFee,
         });
       });
       await batch.commit();
-
-      els.bookForm.hidden = true;
-      els.bookSuccessMsg.hidden = false;
-      setTimeout(closeBookPanel, 3500);
+      closeOverlay('approveOverlay');
+      pendingApproveBooking = null;
     } catch (err) {
       console.error(err);
-      showToast('One of those slots was just taken — please pick a different time.', true);
-      closeBookPanel();
-    } finally {
-      els.bookSubmitBtn.disabled = false;
-      els.bookSubmitBtn.textContent = 'Send Request';
+      alert('Approval failed — check the browser console and your Firestore rules.');
     }
   });
 
-  renderDateHeader();
-  subscribeToDate(currentDate);
+  // ---------- NEW (ADMIN DIRECT) BOOKING ----------
+  const nb = {
+    name: document.getElementById('nbName'), phone: document.getElementById('nbPhone'),
+    email: document.getElementById('nbEmail'), facility: document.getElementById('nbFacility'),
+    date: document.getElementById('nbDate'), start: document.getElementById('nbStart'),
+    duration: document.getElementById('nbDuration'), notes: document.getElementById('nbNotes'),
+    fee: document.getElementById('nbFee'), showFee: document.getElementById('nbShowFee'),
+    warning: document.getElementById('nbWarning'), submitBtn: document.getElementById('nbSubmitBtn'),
+  };
+
+  document.getElementById('openNewBookingBtn').addEventListener('click', async () => {
+    document.getElementById('newBookingForm').reset();
+    nb.date.value = todayKey();
+    nb.date.min = todayKey();
+    nb.warning.hidden = true;
+    await refreshNbAvailability();
+    openOverlay('newBookingOverlay');
+  });
+
+  async function existingSlotsForDate(facility, dateStr) {
+    const q = query(collection(db, 'slots'), where('facility', '==', facility), where('date', '==', dateStr));
+    const snap = await getDocs(q);
+    const set = new Set();
+    snap.forEach(d => set.add(d.data().slot));
+    return set;
+  }
+
+  async function refreshNbAvailability() {
+    const occupied = await existingSlotsForDate(nb.facility.value, nb.date.value);
+    const isToday = nb.date.value === todayKey();
+    const nowSlot = isToday ? dhakaNow().slot : 0;
+    for (let s = 0; s < (isToday ? nowSlot : 0); s++) occupied.add(s);
+    populateSlotSelect(nb.start, { excludeSlots: occupied });
+    updateNbDuration(occupied);
+  }
+  function updateNbDuration(occupied) {
+    const start = Number(nb.start.value) || 0;
+    let count = 0;
+    for (let s = start; s < SLOTS_PER_DAY; s++) { if (occupied.has(s)) break; count++; }
+    populateDurationSelect(nb.duration, count);
+  }
+  nb.facility.addEventListener('change', refreshNbAvailability);
+  nb.date.addEventListener('change', refreshNbAvailability);
+  nb.start.addEventListener('change', async () => {
+    const occupied = await existingSlotsForDate(nb.facility.value, nb.date.value);
+    updateNbDuration(occupied);
+  });
+
+  document.getElementById('newBookingForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    nb.warning.hidden = true;
+    if (!isValidName(nb.name.value) || !isValidBDPhone(nb.phone.value)) {
+      nb.warning.hidden = false; nb.warning.textContent = 'Enter a valid name and Bangladesh phone number.'; return;
+    }
+    const facility = nb.facility.value, date = nb.date.value;
+    const start = Number(nb.start.value), duration = Number(nb.duration.value);
+    if (!duration) { nb.warning.hidden = false; nb.warning.textContent = 'No open duration available at this start time.'; return; }
+    const intervals = coveredIntervals(date, start, duration);
+    const end = endPoint(date, start, duration);
+
+    nb.submitBtn.disabled = true; nb.submitBtn.textContent = 'Checking availability…';
+    try {
+      // Re-verify each interval is still free right before writing (backend-enforced by create-only rule too).
+      const checks = await Promise.all(intervals.map(({date, slot}) => getDoc(doc(db, 'slots', slotDocId(facility, date, slot)))));
+      if (checks.some(s => s.exists())) {
+        nb.warning.hidden = false; nb.warning.textContent = 'One or more of those slots were just taken — refresh and try again.';
+        return;
+      }
+      const feeRaw = nb.fee.value; const fee = feeRaw ? Number(feeRaw) : null;
+      const showFee = nb.showFee.checked;
+      const batch = writeBatch(db);
+      const ref = doc(collection(db, 'bookings'));
+      batch.set(ref, {
+        customerName: nb.name.value.trim(), phone: normalizePhone(nb.phone.value), email: nb.email.value.trim() || null,
+        facility, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
+        endDate: end.date, endSlot: end.slot,
+        status: 'approved', bookingType: 'admin_direct', bookingSource: 'admin',
+        bookingFee: fee, feeCurrency: 'BDT', showFeePublicly: !!showFee, recurringBookingId: null,
+        notes: nb.notes.value.trim() || null,
+        createdAt: serverTimestamp(), updatedAt: serverTimestamp(), approvedAt: serverTimestamp(), rejectedAt: null,
+      });
+      intervals.forEach(({date, slot}) => {
+        batch.set(doc(db, 'slots', slotDocId(facility, date, slot)), {
+          facility, date, slot, status: 'approved', bookingId: ref.id, customerName: nb.name.value.trim(),
+          startSlot: start, durationSlots: duration, bookingFee: fee, showFeePublicly: !!showFee,
+        });
+      });
+      await batch.commit();
+      closeOverlay('newBookingOverlay');
+    } catch (err) {
+      console.error(err);
+      nb.warning.hidden = false; nb.warning.textContent = 'Could not create the booking — check the console.';
+    } finally {
+      nb.submitBtn.disabled = false; nb.submitBtn.textContent = 'Create Booking';
+    }
+  });
+
+  // ---------- EDIT BOOKING ----------
+  const eb = {
+    name: document.getElementById('ebName'), phone: document.getElementById('ebPhone'),
+    email: document.getElementById('ebEmail'), facility: document.getElementById('ebFacility'),
+    date: document.getElementById('ebDate'), start: document.getElementById('ebStart'),
+    duration: document.getElementById('ebDuration'), notes: document.getElementById('ebNotes'),
+    fee: document.getElementById('ebFee'), showFee: document.getElementById('ebShowFee'),
+    warning: document.getElementById('ebWarning'), submitBtn: document.getElementById('ebSubmitBtn'),
+  };
+  let editingBooking = null;
+
+  async function openEditModal(r) {
+    editingBooking = r;
+    eb.name.value = r.customerName || ''; eb.phone.value = r.phone || ''; eb.email.value = r.email || '';
+    eb.facility.value = r.facility; eb.date.value = r.bookingDate; eb.date.min = todayKey();
+    eb.notes.value = r.notes || ''; eb.fee.value = r.bookingFee || ''; eb.showFee.checked = !!r.showFeePublicly;
+    eb.warning.hidden = true;
+    await refreshEbAvailability(r.startSlot, r.durationSlots);
+    openOverlay('editBookingOverlay');
+  }
+
+  async function refreshEbAvailability(preferredStart, preferredDuration) {
+    const occupied = await existingSlotsForDate(eb.facility.value, eb.date.value);
+    // Exclude this booking's own current slots from the conflict set so re-selecting the same time works.
+    if (editingBooking && editingBooking.bookingDate === eb.date.value && editingBooking.facility === eb.facility.value) {
+      coveredIntervals(editingBooking.bookingDate, editingBooking.startSlot, editingBooking.durationSlots).forEach(({date, slot}) => {
+        if (date === eb.date.value) occupied.delete(slot);
+      });
+    }
+    const isToday = eb.date.value === todayKey();
+    const nowSlot = isToday ? dhakaNow().slot : 0;
+    for (let s = 0; s < (isToday ? nowSlot : 0); s++) occupied.add(s);
+    populateSlotSelect(eb.start, { excludeSlots: occupied });
+    if (preferredStart !== undefined && [...eb.start.options].some(o => Number(o.value) === preferredStart)) eb.start.value = preferredStart;
+    let count = 0; const start = Number(eb.start.value) || 0;
+    for (let s = start; s < SLOTS_PER_DAY; s++) { if (occupied.has(s)) break; count++; }
+    populateDurationSelect(eb.duration, count);
+    if (preferredDuration && [...eb.duration.options].some(o => Number(o.value) === preferredDuration)) eb.duration.value = preferredDuration;
+  }
+  eb.facility.addEventListener('change', () => refreshEbAvailability());
+  eb.date.addEventListener('change', () => refreshEbAvailability());
+  eb.start.addEventListener('change', () => refreshEbAvailability(Number(eb.start.value)));
+
+  document.getElementById('editBookingForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!editingBooking) return;
+    eb.warning.hidden = true;
+    if (!isValidName(eb.name.value) || !isValidBDPhone(eb.phone.value)) {
+      eb.warning.hidden = false; eb.warning.textContent = 'Enter a valid name and Bangladesh phone number.'; return;
+    }
+    const facility = eb.facility.value, date = eb.date.value;
+    const start = Number(eb.start.value), duration = Number(eb.duration.value);
+    if (!duration) { eb.warning.hidden = false; eb.warning.textContent = 'No open duration available at this start time.'; return; }
+
+    eb.submitBtn.disabled = true; eb.submitBtn.textContent = 'Saving…';
+    try {
+      const oldIntervals = coveredIntervals(editingBooking.bookingDate, editingBooking.startSlot, editingBooking.durationSlots);
+      const newIntervals = coveredIntervals(date, start, duration);
+      const end = endPoint(date, start, duration);
+      const fee = eb.fee.value ? Number(eb.fee.value) : null;
+      const showFee = eb.showFee.checked;
+
+      const batch = writeBatch(db);
+      oldIntervals.forEach(({date, slot}) => batch.delete(doc(db, 'slots', slotDocId(editingBooking.facility, date, slot))));
+      newIntervals.forEach(({date, slot}) => {
+        batch.set(doc(db, 'slots', slotDocId(facility, date, slot)), {
+          facility, date, slot, status: editingBooking.status === 'pending' ? 'pending' : 'approved',
+          bookingId: editingBooking.id, customerName: eb.name.value.trim(),
+          startSlot: start, durationSlots: duration, bookingFee: fee, showFeePublicly: !!showFee,
+        });
+      });
+      batch.update(doc(db, 'bookings', editingBooking.id), {
+        customerName: eb.name.value.trim(), phone: normalizePhone(eb.phone.value), email: eb.email.value.trim() || null,
+        facility, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
+        endDate: end.date, endSlot: end.slot, notes: eb.notes.value.trim() || null,
+        bookingFee: fee, showFeePublicly: !!showFee, updatedAt: serverTimestamp(),
+      });
+      await batch.commit();
+      closeOverlay('editBookingOverlay');
+      editingBooking = null;
+    } catch (err) {
+      console.error(err);
+      eb.warning.hidden = false; eb.warning.textContent = 'Could not save changes — the new time may have just been taken.';
+    } finally {
+      eb.submitBtn.disabled = false; eb.submitBtn.textContent = 'Save Changes';
+    }
+  });
+
+  // ---------- CORPORATE / RECURRING BOOKING ----------
+  const cb = {
+    name: document.getElementById('cbName'), phone: document.getElementById('cbPhone'), email: document.getElementById('cbEmail'),
+    facility: document.getElementById('cbFacility'), pattern: document.getElementById('cbPattern'),
+    startDate: document.getElementById('cbStartDate'), endDate: document.getElementById('cbEndDate'),
+    start: document.getElementById('cbStart'), duration: document.getElementById('cbDuration'),
+    feeType: document.getElementById('cbFeeType'), fee: document.getElementById('cbFee'), showFee: document.getElementById('cbShowFee'),
+    notes: document.getElementById('cbNotes'), checkBtn: document.getElementById('cbCheckBtn'),
+  };
+  let selectedDays = new Set();
+  document.querySelectorAll('#cbDayPills .day-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const d = Number(pill.dataset.day);
+      if (selectedDays.has(d)) { selectedDays.delete(d); pill.classList.remove('active'); }
+      else { selectedDays.add(d); pill.classList.add('active'); }
+    });
+  });
+
+  document.getElementById('openCorporateBtn').addEventListener('click', () => {
+    document.getElementById('corpForm').reset();
+    document.getElementById('corpForm').hidden = false;
+    document.getElementById('corpConflictPanel').hidden = true;
+    selectedDays = new Set();
+    document.querySelectorAll('#cbDayPills .day-pill').forEach(p => p.classList.remove('active'));
+    populateSlotSelect(cb.start, {});
+    populateDurationSelect(cb.duration, SLOTS_PER_DAY);
+    cb.startDate.min = todayKey();
+    openOverlay('corpOverlay');
+  });
+
+  function occurrenceDates(startDate, endDate, days) {
+    const out = [];
+    let d = startDate;
+    let guard = 0;
+    while (d <= endDate && guard < 1000) {
+      if (days.has(dayOfWeek(d))) out.push(d);
+      d = addDays(d, 1);
+      guard++;
+    }
+    return out;
+  }
+
+  let pendingCorpPlan = null; // { occurrences: [{date, conflict:bool}], formSnapshot }
+
+  document.getElementById('corpForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!isValidName(cb.name.value) || !isValidBDPhone(cb.phone.value)) {
+      alert('Enter a valid name and Bangladesh phone number.'); return;
+    }
+    if (!selectedDays.size) { alert('Pick at least one day of the week.'); return; }
+    if (!cb.startDate.value || !cb.endDate.value || cb.endDate.value < cb.startDate.value) {
+      alert('Pick a valid start and end date.'); return;
+    }
+    const facility = cb.facility.value;
+    const start = Number(cb.start.value), duration = Number(cb.duration.value);
+    const dates = occurrenceDates(cb.startDate.value, cb.endDate.value, selectedDays);
+    if (!dates.length) { alert('No matching dates in that range.'); return; }
+
+    cb.checkBtn.disabled = true; cb.checkBtn.textContent = 'Checking…';
+    try {
+      const occurrences = [];
+      for (const date of dates) {
+        const intervals = coveredIntervals(date, start, duration);
+        const checks = await Promise.all(intervals.map(iv => getDoc(doc(db, 'slots', slotDocId(facility, iv.date, iv.slot)))));
+        occurrences.push({ date, intervals, conflict: checks.some(s => s.exists()) });
+      }
+      pendingCorpPlan = {
+        occurrences, facility, start, duration,
+        name: cb.name.value.trim(), phone: normalizePhone(cb.phone.value), email: cb.email.value.trim() || null,
+        feeType: cb.feeType.value, fee: cb.fee.value ? Number(cb.fee.value) : null, showFee: cb.showFee.checked,
+        notes: cb.notes.value.trim() || null,
+      };
+      const conflicts = occurrences.filter(o => o.conflict);
+      if (conflicts.length) {
+        document.getElementById('corpForm').hidden = true;
+        const panel = document.getElementById('corpConflictPanel');
+        panel.hidden = false;
+        document.getElementById('corpConflictSummary').textContent =
+          `Conflict Found — ${conflicts.length} of ${occurrences.length} date(s) already have a booking in this time range.`;
+        document.getElementById('corpConflictList').innerHTML = conflicts.map(c =>
+          `<li>${c.date} — ${slotLabel(start)}–${slotLabel(endPoint(c.date, start, duration).slot)} conflicts with an existing booking.</li>`
+        ).join('');
+      } else {
+        await createRecurringSeries(pendingCorpPlan, occurrences);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Could not check availability — see console.');
+    } finally {
+      cb.checkBtn.disabled = false; cb.checkBtn.textContent = 'Check Availability & Generate';
+    }
+  });
+
+  document.getElementById('corpSkipCreateBtn').addEventListener('click', async () => {
+    if (!pendingCorpPlan) return;
+    const usable = pendingCorpPlan.occurrences.filter(o => !o.conflict);
+    await createRecurringSeries(pendingCorpPlan, usable, pendingCorpPlan.occurrences.filter(o => o.conflict).map(o => o.date));
+  });
+  document.getElementById('corpCancelSeriesBtn').addEventListener('click', () => {
+    pendingCorpPlan = null;
+    closeOverlay('corpOverlay');
+  });
+
+  async function createRecurringSeries(plan, occurrences, skippedDates = []) {
+    if (!occurrences.length) { alert('No open dates left to book — series cancelled.'); closeOverlay('corpOverlay'); return; }
+    try {
+      const seriesRef = doc(collection(db, 'recurringBookings'));
+      await writeBatch(db).set(seriesRef, {
+        customerName: plan.name, phone: plan.phone, email: plan.email, facility: plan.facility,
+        pattern: 'weekly', daysOfWeek: [...selectedDays], startDate: cb.startDate.value, endDate: cb.endDate.value,
+        startSlot: plan.start, durationSlots: plan.duration,
+        feeType: plan.feeType, bookingFee: plan.fee, feeCurrency: 'BDT', showFeePublicly: plan.showFee,
+        notes: plan.notes, status: 'active', occurrenceCount: occurrences.length, skippedDates,
+        createdAt: serverTimestamp(),
+      }).commit();
+
+      for (const occ of occurrences) {
+        const end = endPoint(occ.date, plan.start, plan.duration);
+        const perOccBatch = writeBatch(db);
+        const bookingRef = doc(collection(db, 'bookings'));
+        perOccBatch.set(bookingRef, {
+          customerName: plan.name, phone: plan.phone, email: plan.email, facility: plan.facility,
+          bookingDate: occ.date, startSlot: plan.start, durationSlots: plan.duration, durationMinutes: plan.duration * 30,
+          endDate: end.date, endSlot: end.slot,
+          status: 'approved', bookingType: 'corporate_recurring', bookingSource: 'admin',
+          bookingFee: plan.feeType === 'perOccurrence' ? plan.fee : null,
+          feeCurrency: 'BDT', showFeePublicly: plan.showFee, recurringBookingId: seriesRef.id,
+          notes: plan.notes, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+          approvedAt: serverTimestamp(), rejectedAt: null,
+        });
+        occ.intervals.forEach(({date, slot}) => {
+          perOccBatch.set(doc(db, 'slots', slotDocId(plan.facility, date, slot)), {
+            facility: plan.facility, date, slot, status: 'approved', bookingId: bookingRef.id, customerName: plan.name,
+            startSlot: plan.start, durationSlots: plan.duration,
+            bookingFee: plan.feeType === 'perOccurrence' ? plan.fee : null, showFeePublicly: plan.showFee,
+          });
+        });
+        await perOccBatch.commit();
+      }
+      pendingCorpPlan = null;
+      closeOverlay('corpOverlay');
+    } catch (err) {
+      console.error(err);
+      alert('Could not create the recurring series — see console. Some occurrences may already be booked.');
+    }
+  }
+
+  // ---------- RECURRING TABLE + OCCURRENCES ----------
+  function renderRecurringTable() {
+    const tbody = document.getElementById('recurringBody');
+    const loadingState = document.getElementById('recurringLoadingState');
+    const emptyState = document.getElementById('recurringEmptyState');
+    loadingState.style.display = 'none';
+    tbody.innerHTML = '';
+    emptyState.style.display = allRecurring.length ? 'none' : 'block';
+
+    allRecurring.forEach(series => {
+      const occs = allBookings.filter(b => b.recurringBookingId === series.id);
+      const activeOccs = occs.filter(b => b.status !== 'cancelled' && b.status !== 'rejected');
+      const feeText = series.bookingFee ? `৳${Number(series.bookingFee).toLocaleString()} (${series.feeType === 'monthly' ? 'total' : 'per visit'})${series.showFeePublicly ? '' : ' · hidden'}` : '—';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <div class="cell-name">${escapeHtml(series.customerName || '—')}</div>
+          <div class="cell-sub">${escapeHtml(series.phone || '')}</div>
+        </td>
+        <td>${FACILITY_LABELS[series.facility] || series.facility}</td>
+        <td class="cell-sub">Weekly · ${(series.daysOfWeek || []).map(d => DAY_NAMES[d]).join(', ')}</td>
+        <td class="cell-sub">${series.startDate} → ${series.endDate}</td>
+        <td class="cell-sub">${slotLabel(series.startSlot)} (${durationLabel(series.durationSlots)})</td>
+        <td class="cell-sub">${feeText}</td>
+        <td class="cell-sub">${activeOccs.length} active${series.skippedDates && series.skippedDates.length ? `, ${series.skippedDates.length} skipped` : ''}</td>
+        <td><span class="status-pill ${series.status === 'active' ? 'approved' : 'cancelled'}">${series.status}</span></td>
+        <td class="row-actions">
+          <button class="action-btn edit" data-occ="${series.id}">View Occurrences</button>
+          ${series.status === 'active' ? `<button class="action-btn cancel" data-cancel-series="${series.id}">Cancel Series</button>` : ''}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('[data-occ]').forEach(btn => btn.addEventListener('click', () => openOccurrencesModal(btn.dataset.occ)));
+    tbody.querySelectorAll('[data-cancel-series]').forEach(btn => btn.addEventListener('click', () => cancelSeries(btn.dataset.cancelSeries)));
+  }
+
+  function openOccurrencesModal(seriesId) {
+    const series = allRecurring.find(s => s.id === seriesId);
+    if (!series) return;
+    document.getElementById('occSummary').textContent = `${series.customerName} · ${FACILITY_LABELS[series.facility]}`;
+    const occs = allBookings.filter(b => b.recurringBookingId === seriesId).sort((a,b) => a.bookingDate.localeCompare(b.bookingDate));
+    const tbody = document.getElementById('occBody');
+    tbody.innerHTML = occs.map(o => `
+      <tr>
+        <td>${o.bookingDate}</td>
+        <td class="cell-sub">${slotLabel(o.startSlot)} – ${slotLabel(o.endSlot)}</td>
+        <td><span class="status-pill ${o.status}">${o.status}</span></td>
+        <td class="row-actions">${o.status === 'approved' ? `<button class="action-btn cancel" data-occ-id="${o.id}">Cancel Occurrence</button>` : '<span class="cell-sub">—</span>'}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="4" class="cell-sub">No occurrences.</td></tr>';
+    tbody.querySelectorAll('[data-occ-id]').forEach(btn => btn.addEventListener('click', () => cancelOccurrence(btn.dataset.occId, seriesId)));
+    openOverlay('occOverlay');
+  }
+
+  async function cancelOccurrence(bookingId, seriesId) {
+    const r = allBookings.find(b => b.id === bookingId);
+    if (!r) return;
+    try {
+      const batch = writeBatch(db);
+      coveredIntervals(r.bookingDate, r.startSlot, r.durationSlots).forEach(({date, slot}) => {
+        batch.delete(doc(db, 'slots', slotDocId(r.facility, date, slot)));
+      });
+      batch.update(doc(db, 'bookings', r.id), { status: 'cancelled', updatedAt: serverTimestamp() });
+      await batch.commit();
+      openOccurrencesModal(seriesId);
+    } catch (err) {
+      console.error(err);
+      alert('Could not cancel that occurrence — see console.');
+    }
+  }
+
+  async function cancelSeries(seriesId) {
+    if (!confirm('Cancel this entire recurring series? Past occurrences are kept as history; future ones are freed up.')) return;
+    const today = todayKey();
+    try {
+      const occs = allBookings.filter(b => b.recurringBookingId === seriesId && b.status === 'approved' && b.bookingDate >= today);
+      for (const r of occs) {
+        const batch = writeBatch(db);
+        coveredIntervals(r.bookingDate, r.startSlot, r.durationSlots).forEach(({date, slot}) => {
+          batch.delete(doc(db, 'slots', slotDocId(r.facility, date, slot)));
+        });
+        batch.update(doc(db, 'bookings', r.id), { status: 'cancelled', updatedAt: serverTimestamp() });
+        await batch.commit();
+      }
+      await updateDoc(doc(db, 'recurringBookings', seriesId), { status: 'cancelled' });
+    } catch (err) {
+      console.error(err);
+      alert('Could not cancel the series — see console.');
+    }
+  }
 </script>
 
 </body>
