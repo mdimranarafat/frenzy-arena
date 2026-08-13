@@ -1,0 +1,226 @@
+# Frenzy Sports Arena — Website
+
+A single-page site for Frenzy Sports Arena (artificial futsal turf, swimming pool, and carrom), Pahartali, Chittagong — with a request-based, admin-approved booking system covering all three facilities in 30-minute slots, 24 hours a day.
+
+## What's in here
+- `index.html` — the public site, including the live booking calendar
+- `admin.html` — password-protected admin dashboard for managing bookings, direct admin bookings, and corporate/recurring series
+
+## Info used (pulled from Frenzy's Facebook page)
+- Address: Beside Joy Nagar Jame Masjid (Opposite of North Greenview Gate), Port Connecting Road, Saraipara, Pahartali, Chittagong
+- Phone: +880 1881-271887
+- Email: frenzysportsctg@gmail.com
+- Facebook: facebook.com/FrenzyChittagong
+- Hours: Always open
+- Reviews: 72% recommend (18 reviews)
+
+Facility descriptions, FAQ answers, and section copy were written fresh for this site — double check them against what Frenzy actually offers before publishing.
+
+---
+
+## Booking system v2 — three facilities, 30-minute slots, admin-approved
+
+This is **not** a self-serve, instant-booking system. Every customer booking starts as a request; only admin action makes it Booked. Admin can also create confirmed bookings directly, and set up recurring corporate bookings.
+
+### Facilities
+Futsal Turf, Swimming Pool, and Carrom, each with **fully independent** availability — booking one never blocks the others.
+
+### Time model
+- 48 possible **start times** per day, one every 30 minutes, covering the full 24 hours (12:00 AM through 11:30 PM).
+- Minimum booking **duration** is 1 hour; duration options increase in 30-minute steps from there (1h, 1h30, 2h, 2h30, …), dynamically capped by however many consecutive 30-minute slots are actually open from the chosen start time.
+- Bookings that cross midnight are handled correctly: the system tracks which calendar date each 30-minute interval falls on, so an 11:30 PM start with a 1.5-hour duration correctly reserves 11:30 PM–12:00 AM, 12:00 AM–12:30 AM, and 12:30 AM–1:00 AM (the last two on the next calendar date), all as **one** booking record. This has always been true of how a booking is *written* (`coveredIntervals`/`endPoint`, both pure Date-arithmetic, never string comparison) — but until this pass, the *duration dropdown* on both the public site and the admin panel only ever looked at the current calendar day's own availability, so a late-night start time couldn't actually be offered a duration that reached past midnight (and 11:30 PM specifically had no valid duration at all, since even the 1-hour minimum didn't fit in the 30 minutes left in the day). Start-time selection, the live calendar grid, and the admin bookings table were all already correct; only the duration calculation needed the fix. `consecutiveOpenFrom` (public site) and the New/Edit Booking duration calculators (admin) now also read a one-day lookahead of the same `slots` collection — same collection, same public security rules, just one calendar date further — so a duration crossing into the next day is offered and validated against that day's real occupancy. Wherever the UI shows a time that lands on the following calendar date, it's now labeled `(+1 day)` (booking form preview, detail panel, admin New/Edit Booking preview, admin bookings table, and the corporate-booking conflict list). No Firestore schema or security rule changes were needed — `endDate`/`endSlot` already existed on every booking record and were already being computed and stored correctly.
+- All "today / past" logic runs on **Asia/Dhaka** time, computed from the visitor's device clock via `Intl.DateTimeFormat`, not the visitor's own timezone — so the site behaves the same for a customer in Dhaka and one browsing from abroad.
+
+### Customer flow
+Date → Facility → Start Time → Duration → Name & Phone (required; email/notes optional) → Review → **Send Request** → status `pending`. The visitor always sees **"Request Submitted Successfully,"** never "Booking confirmed."
+
+**Validation before the button is enabled:**
+- Name: required, cannot be blank or spaces-only.
+- Phone: required, must match a Bangladesh mobile format — `01XXXXXXXXX` or `+8801XXXXXXXXX` (checked with `/^(?:\+?880|0)1[3-9]\d{8}$/`).
+
+Once a slot is **Booked**, the public calendar shows the customer's first name/name under the time — tapping it opens a details panel with customer name, facility, date, time range, duration, and status. Phone, email, notes, and any internal/admin fields are **never** shown publicly — that data lives only in the admin-only `bookings` collection; the public `slots` collection only ever carries the name and (if the admin explicitly enabled it) the fee.
+
+**End-of-booking display card:** when a booking's end time lands exactly on an otherwise-open slot (e.g. a 9:00–10:00 PM booking ending right at 10:00 PM), the calendar shows two cards at that 10:00 PM label: a dimmed, non-clickable "Booked · ends here" card carrying the outgoing customer's name, immediately followed by the normal actionable **Open** card. This is purely a rendering choice in `index.html` — it reads the previous slot's booking data, doesn't write anything, and doesn't change which slot is actually available. The underlying slot model is unchanged: bookings still only lock `[startSlot, startSlot + durationSlots)`, so 10:00 PM was already open and bookable before this card existed — the card just makes that boundary visible instead of customers having to infer it.
+
+### Admin flow
+In `admin.html`:
+- **Pending Requests** — approve (with an optional booking fee, shown or hidden on the public site per your choice) or reject.
+- **All Bookings** — every booking regardless of type/status, filterable by type, status, facility, date, and customer name/phone. Approved bookings can be edited, cancelled, or marked completed; rejected/cancelled ones can be deleted.
+- **+ New Booking** — creates an already-Booked slot directly (no customer approval step), with the same name/phone/fee fields.
+- **+ Corporate / Recurring** — pick a customer, facility, day(s) of week, date range, start time, and duration; the system checks every matching date for conflicts first. If any date already has a booking in that window, admin sees a **Conflict Found** list and chooses to skip those dates (creating the rest) or cancel the whole series. Each generated occurrence is its own booking record (`bookingType: "corporate_recurring"`, sharing one `recurringBookingId`) — never a single record standing in for the whole month.
+- **Recurring Bookings** — lists every series with its occurrence count; "View Occurrences" lets admin cancel an individual date without touching the rest of the series; "Cancel Series" cancels every future (not past) occurrence and marks the series cancelled.
+
+### Booking fee
+Optional on approval, on direct admin bookings, and on corporate bookings. Stored as `bookingFee` / `feeCurrency` / `showFeePublicly`. It's purely informational — approval always books the slot whether or not a fee is entered — and customers can never set or see it unless `showFeePublicly` is `true`.
+
+### Conflict prevention (still the important part)
+Every booking — customer request, admin-direct, or a corporate occurrence — writes one lock-document per covered 30-minute interval (`slots/{facility}_{date}_{slotIndex}`) in the same atomic batch as the booking record. Firestore Security Rules only allow *creating* a slot document if it doesn't already exist (for the public path) or if the request comes from the admin account. Because the batch is all-or-nothing, if even one interval in a multi-hour request was just taken, the whole write fails and the visitor/admin is told to pick a different time — enforced inside Firestore itself, not just in page JavaScript. Admin-side flows (New Booking, Corporate Booking, Edit) also run a client-side availability check immediately before writing, purely to give a friendlier error message; the Firestore rule is what actually prevents the double-booking.
+
+---
+
+## Data model
+
+### `bookings` (admin-only read)
+```
+bookingId          (doc id)
+customerName, phone, email
+facility            "futsalTurf" | "swimmingPool" | "carrom"
+bookingDate         "YYYY-MM-DD" (the start date)
+startSlot           0-47 (30-minute index into bookingDate)
+durationSlots       number of 30-minute units (min 2 = 1 hour)
+durationMinutes
+endDate, endSlot     where the booking actually ends (may be the next calendar date)
+status              "pending" | "approved" | "rejected" | "cancelled" | "completed"
+bookingType         "customer_request" | "admin_direct" | "corporate_recurring"
+bookingSource       "website" | "admin"
+bookingFee, feeCurrency, showFeePublicly
+recurringBookingId  set on corporate occurrences, else null
+notes
+createdAt, updatedAt, approvedAt, rejectedAt
+```
+
+### `slots` (public read — the ONLY collection the public site queries)
+One doc per occupied 30-minute interval, `{facility}_{date}_{slotIndex}`:
+```
+facility, date, slot
+status              "pending" | "approved"
+bookingId
+customerName        shown publicly once status is "approved"
+startSlot, durationSlots   (so the UI can reconstruct the full booked range)
+bookingFee, showFeePublicly
+```
+Phone, email, and notes are intentionally **never** written here.
+
+### `recurringBookings` (admin-only)
+```
+recurringBookingId (doc id)
+customerName, phone, email, facility
+pattern "weekly", daysOfWeek [0-6]
+startDate, endDate, startSlot, durationSlots
+feeType "perOccurrence" | "monthly", bookingFee, feeCurrency, showFeePublicly
+notes, status "active" | "cancelled"
+occurrenceCount, skippedDates
+createdAt
+```
+
+---
+
+## Set it up (required before any of this works)
+
+### 1. Create the Firebase project
+1. Go to [console.firebase.google.com](https://console.firebase.google.com) → **Add project** → name it (e.g. `frenzy-arena`) → Analytics is optional.
+2. **Build → Firestore Database → Create database**. Start in **production mode**. Pick a region close to Bangladesh (e.g. `asia-south1` or `asia-southeast1`).
+3. **Build → Authentication → Get started → Sign-in method → Email/Password → Enable**.
+4. **Authentication → Users → Add user** — the admin's login for `admin.html`. Remember this email exactly; it goes into the rules below.
+5. **Project settings → Your apps → </> (Web)** → register (skip Hosting) → copy the `firebaseConfig` object.
+
+### 2. Add your config
+Both `index.html` and `admin.html` already have Frenzy's real project config filled in (search for `firebaseConfig` in either file if you ever need to point them at a new Firebase project — keep both files in sync).
+
+### 3. Set Firestore security rules
+Firestore → **Rules** tab → replace everything with this (swap in the real admin email):
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null &&
+             request.auth.token.email == "YOUR_ADMIN_EMAIL@example.com"; // <-- change this
+    }
+
+    match /slots/{slotId} {
+      allow read: if true;
+
+      // Public can place a "hold" on a slot only if it doesn't exist yet and
+      // the fields look exactly like a fresh customer-request lock (status pending,
+      // no fee visible). Admin bypasses this shape check entirely.
+      allow create: if isAdmin() || (
+        !exists(/databases/$(database)/documents/slots/$(slotId)) &&
+        request.resource.data.status == "pending" &&
+        request.resource.data.showFeePublicly == false &&
+        request.resource.data.bookingFee == null &&
+        request.resource.data.keys().hasOnly([
+          "facility","date","slot","status","bookingId","customerName",
+          "startSlot","durationSlots","bookingFee","showFeePublicly"
+        ])
+      );
+
+      // Only the admin can approve/edit (update) or free up (delete) a slot —
+      // this is what actually turns Pending into Booked, or frees a rejected/cancelled one.
+      allow update, delete: if isAdmin();
+    }
+
+    match /bookings/{bookingId} {
+      // Public can submit a new pending customer request with exactly this shape —
+      // they can never set status to "approved", set a fee, or mark it admin/corporate.
+      allow create: if isAdmin() || (
+        request.resource.data.status == "pending" &&
+        request.resource.data.bookingType == "customer_request" &&
+        request.resource.data.bookingSource == "website" &&
+        request.resource.data.bookingFee == null &&
+        request.resource.data.showFeePublicly == false &&
+        request.resource.data.recurringBookingId == null &&
+        request.resource.data.keys().hasOnly([
+          "customerName","phone","email","facility","bookingDate","startSlot",
+          "durationSlots","durationMinutes","endDate","endSlot","status","bookingType",
+          "bookingSource","bookingFee","feeCurrency","showFeePublicly","recurringBookingId",
+          "notes","createdAt","updatedAt","approvedAt","rejectedAt"
+        ])
+      );
+
+      // Only the admin can read the customer list (protects phone/email) or
+      // change status, fees, or any other field.
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /recurringBookings/{seriesId} {
+      // Entirely an admin/internal collection — the public site never reads or writes it.
+      allow read, write: if isAdmin();
+    }
+  }
+}
+```
+
+This design means: anyone can submit a pending customer request and place its slot locks; nobody but the logged-in admin account can read customer contact details, approve/reject/edit a booking, create an admin-direct or corporate booking, or set/reveal a fee — enforced by Firestore itself, not just the page's JavaScript.
+
+### 4. Firestore index (may be needed)
+The public calendar queries `slots` by `facility` + `date` together; the admin panel queries `bookings` ordered by `createdAt`, and filters `recurringBookings` similarly. Firestore usually creates the needed composite indexes automatically — if the browser console shows a "query requires an index" error with a link, click it; it finishes in a few seconds.
+
+### 5. Push to GitHub and go live
+See below. Once your config + rules + admin user are in place, `index.html` shows live availability across all three facilities and `admin.html` lets you log in and run the whole booking desk.
+
+**Cost:** Firestore + Authentication's free tier (Spark plan) comfortably covers a single-venue system like this, even with three facilities and 48 daily slots.
+
+### Migrating from the previous (hourly, 2-facility) version
+If you had live data under the old `bookingRequests` collection with hourly slot docs, it predates this schema (48×30-min slots, 3 facilities, `bookings` collection, fee fields). There's no automatic migration script here — recreate any still-relevant bookings through the admin panel's **+ New Booking**, or write a one-off script if you have many to carry over. Nothing here assumes the old data exists, so a fresh Firestore database works immediately.
+
+## Admin access
+Go to `https://<your-username>.github.io/<your-repo>/admin.html`, log in with the email/password you created in Firebase Authentication → Users. Keep this URL and password private — it's not linked from the public site. Anyone who knows the URL but doesn't have valid admin credentials just sees a login screen; they can't read or act on bookings without logging in (enforced by the security rules, not just the page hiding itself).
+
+## Push to GitHub
+
+```bash
+cd frenzy-arena
+git init
+git add .
+git commit -m "Initial site"
+git branch -M main
+git remote add origin https://github.com/<your-username>/<your-repo>.git
+git push -u origin main
+```
+
+## Go live with GitHub Pages
+1. Repo → **Settings** → **Pages**
+2. Source: `Deploy from a branch`
+3. Branch: `main`, folder `/ (root)` → **Save**
+4. Live at `https://<your-username>.github.io/<your-repo>/` within a minute or two
+
+## Known limitations of this pass
+- Editing a **whole recurring series at once** (e.g. "shift every future Sunday to 6pm") isn't built — admin can cancel individual occurrences or the entire remaining series, and edit any single booking (including one recurring occurrence) on its own via **Edit**. Shifting a whole series is a reasonable next feature if you need it.
+- The admin-side availability checks (New Booking, Corporate Booking, Edit) are client-side reads done right before writing, to give a friendly error message — the actual guarantee against double-booking is the Firestore security rule requiring a slot document not already exist, same as the original design.
+- This was built and reviewed as code; it hasn't been exercised against a live Firebase project in this environment (no network access here), so run through the test list below once your Firebase project is wired up.
+
+## Suggested test pass
+Covers the full 24-hour/48-slot range including 12:00/12:30 AM and 11:00/11:30 PM, a booking that crosses midnight, all three facilities independently, customer name/phone validation (including spaces-only names and non-BD numbers), pending → approve/reject → booked/rejected on the public calendar, an admin-direct booking appearing instantly as Booked, a corporate series with a deliberate conflict on one date (confirm "Skip Conflicting Dates" behavior), cancelling a single occurrence vs. the whole series, editing an approved booking to a new valid time, and confirming phone/email/notes never appear in the public calendar or its detail panel.
