@@ -367,6 +367,7 @@
         <div class="field"><label for="nbStart">Start Time *</label><select id="nbStart"></select></div>
         <div class="field"><label for="nbDuration">Duration *</label><select id="nbDuration"></select></div>
       </div>
+      <p id="nbEndPreview" class="cell-sub" style="margin:-6px 0 10px;"></p>
       <p id="nbWarning" class="adm-warning" hidden></p>
       <div class="field"><label for="nbNotes">Notes</label><textarea id="nbNotes"></textarea></div>
       <div class="field-row-2">
@@ -405,6 +406,7 @@
         <div class="field"><label for="ebStart">Start Time *</label><select id="ebStart"></select></div>
         <div class="field"><label for="ebDuration">Duration *</label><select id="ebDuration"></select></div>
       </div>
+      <p id="ebEndPreview" class="cell-sub" style="margin:-6px 0 10px;"></p>
       <p id="ebWarning" class="adm-warning" hidden></p>
       <div class="field"><label for="ebNotes">Notes</label><textarea id="ebNotes"></textarea></div>
       <div class="field-row-2">
@@ -746,7 +748,7 @@
         <td>${FACILITY_LABELS[r.facility] || r.facility}</td>
         <td>
           <div>${r.bookingDate}${r.endDate && r.endDate !== r.bookingDate ? ' → ' + r.endDate : ''}</div>
-          <div class="cell-sub">${slotLabel(r.startSlot)} – ${slotLabel(r.endSlot)} (${durationLabel(r.durationSlots)})</div>
+          <div class="cell-sub">${slotLabel(r.startSlot)} – ${slotLabel(r.endSlot)}${r.endDate && r.endDate !== r.bookingDate ? ' (+1 day)' : ''} (${durationLabel(r.durationSlots)})</div>
         </td>
         <td><span class="type-pill">${TYPE_LABEL[r.bookingType] || r.bookingType}</span></td>
         <td class="cell-sub">${feeText}</td>
@@ -857,6 +859,7 @@
     duration: document.getElementById('nbDuration'), notes: document.getElementById('nbNotes'),
     fee: document.getElementById('nbFee'), showFee: document.getElementById('nbShowFee'),
     warning: document.getElementById('nbWarning'), submitBtn: document.getElementById('nbSubmitBtn'),
+    endPreview: document.getElementById('nbEndPreview'),
   };
 
   document.getElementById('openNewBookingBtn').addEventListener('click', async () => {
@@ -876,26 +879,51 @@
     return set;
   }
 
+  // `occupiedNext` is the same facility's occupied set for the following calendar date — needed so a
+  // late-night start time (e.g. 11:30 PM) can offer real durations that cross midnight instead of
+  // being cut off at the end of the day. Bounded by MAX_DURATION_SLOTS (24 = 12h), so start (max 47)
+  // + that bound never reaches past 71 — i.e. never more than one date ahead.
   async function refreshNbAvailability() {
-    const occupied = await existingSlotsForDate(nb.facility.value, nb.date.value);
+    const [occupied, occupiedNext] = await Promise.all([
+      existingSlotsForDate(nb.facility.value, nb.date.value),
+      existingSlotsForDate(nb.facility.value, addDays(nb.date.value, 1)),
+    ]);
     const isToday = nb.date.value === todayKey();
     const nowSlot = isToday ? dhakaNow().slot : 0;
     for (let s = 0; s < (isToday ? nowSlot : 0); s++) occupied.add(s);
     populateSlotSelect(nb.start, { excludeSlots: occupied });
-    updateNbDuration(occupied);
+    updateNbDuration(occupied, occupiedNext);
   }
-  function updateNbDuration(occupied) {
+  function updateNbDuration(occupied, occupiedNext) {
     const start = Number(nb.start.value) || 0;
     let count = 0;
-    for (let s = start; s < SLOTS_PER_DAY; s++) { if (occupied.has(s)) break; count++; }
+    for (let i = 0; i < MAX_DURATION_SLOTS; i++) {
+      const s = start + i;
+      const isOccupied = s < SLOTS_PER_DAY ? occupied.has(s) : occupiedNext.has(s - SLOTS_PER_DAY);
+      if (isOccupied) break;
+      count++;
+    }
     populateDurationSelect(nb.duration, count);
+    updateNbEndPreview();
+  }
+  function updateNbEndPreview() {
+    const start = Number(nb.start.value) || 0;
+    const duration = Number(nb.duration.value) || 0;
+    if (!duration) { nb.endPreview.textContent = ''; return; }
+    const end = endPoint(nb.date.value, start, duration);
+    const crosses = end.date !== nb.date.value;
+    nb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''}`;
   }
   nb.facility.addEventListener('change', refreshNbAvailability);
   nb.date.addEventListener('change', refreshNbAvailability);
   nb.start.addEventListener('change', async () => {
-    const occupied = await existingSlotsForDate(nb.facility.value, nb.date.value);
-    updateNbDuration(occupied);
+    const [occupied, occupiedNext] = await Promise.all([
+      existingSlotsForDate(nb.facility.value, nb.date.value),
+      existingSlotsForDate(nb.facility.value, addDays(nb.date.value, 1)),
+    ]);
+    updateNbDuration(occupied, occupiedNext);
   });
+  nb.duration.addEventListener('change', updateNbEndPreview);
 
   document.getElementById('newBookingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -954,6 +982,7 @@
     duration: document.getElementById('ebDuration'), notes: document.getElementById('ebNotes'),
     fee: document.getElementById('ebFee'), showFee: document.getElementById('ebShowFee'),
     warning: document.getElementById('ebWarning'), submitBtn: document.getElementById('ebSubmitBtn'),
+    endPreview: document.getElementById('ebEndPreview'),
   };
   let editingBooking = null;
 
@@ -968,11 +997,17 @@
   }
 
   async function refreshEbAvailability(preferredStart, preferredDuration) {
-    const occupied = await existingSlotsForDate(eb.facility.value, eb.date.value);
-    // Exclude this booking's own current slots from the conflict set so re-selecting the same time works.
+    const [occupied, occupiedNext] = await Promise.all([
+      existingSlotsForDate(eb.facility.value, eb.date.value),
+      existingSlotsForDate(eb.facility.value, addDays(eb.date.value, 1)),
+    ]);
+    // Exclude this booking's own current slots from the conflict set so re-selecting the same time
+    // works — including the portion of its own old booking that had already rolled into the next date.
     if (editingBooking && editingBooking.bookingDate === eb.date.value && editingBooking.facility === eb.facility.value) {
+      const nextDateStr = addDays(eb.date.value, 1);
       coveredIntervals(editingBooking.bookingDate, editingBooking.startSlot, editingBooking.durationSlots).forEach(({date, slot}) => {
         if (date === eb.date.value) occupied.delete(slot);
+        else if (date === nextDateStr) occupiedNext.delete(slot);
       });
     }
     const isToday = eb.date.value === todayKey();
@@ -981,13 +1016,28 @@
     populateSlotSelect(eb.start, { excludeSlots: occupied });
     if (preferredStart !== undefined && [...eb.start.options].some(o => Number(o.value) === preferredStart)) eb.start.value = preferredStart;
     let count = 0; const start = Number(eb.start.value) || 0;
-    for (let s = start; s < SLOTS_PER_DAY; s++) { if (occupied.has(s)) break; count++; }
+    for (let i = 0; i < MAX_DURATION_SLOTS; i++) {
+      const s = start + i;
+      const isOccupied = s < SLOTS_PER_DAY ? occupied.has(s) : occupiedNext.has(s - SLOTS_PER_DAY);
+      if (isOccupied) break;
+      count++;
+    }
     populateDurationSelect(eb.duration, count);
     if (preferredDuration && [...eb.duration.options].some(o => Number(o.value) === preferredDuration)) eb.duration.value = preferredDuration;
+    updateEbEndPreview();
+  }
+  function updateEbEndPreview() {
+    const start = Number(eb.start.value) || 0;
+    const duration = Number(eb.duration.value) || 0;
+    if (!duration) { eb.endPreview.textContent = ''; return; }
+    const end = endPoint(eb.date.value, start, duration);
+    const crosses = end.date !== eb.date.value;
+    eb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''}`;
   }
   eb.facility.addEventListener('change', () => refreshEbAvailability());
   eb.date.addEventListener('change', () => refreshEbAvailability());
   eb.start.addEventListener('change', () => refreshEbAvailability(Number(eb.start.value)));
+  eb.duration.addEventListener('change', updateEbEndPreview);
 
   document.getElementById('editBookingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1113,9 +1163,11 @@
         panel.hidden = false;
         document.getElementById('corpConflictSummary').textContent =
           `Conflict Found — ${conflicts.length} of ${occurrences.length} date(s) already have a booking in this time range.`;
-        document.getElementById('corpConflictList').innerHTML = conflicts.map(c =>
-          `<li>${c.date} — ${slotLabel(start)}–${slotLabel(endPoint(c.date, start, duration).slot)} conflicts with an existing booking.</li>`
-        ).join('');
+        document.getElementById('corpConflictList').innerHTML = conflicts.map(c => {
+          const end = endPoint(c.date, start, duration);
+          const crosses = end.date !== c.date;
+          return `<li>${c.date} — ${slotLabel(start)}–${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''} conflicts with an existing booking.</li>`;
+        }).join('');
       } else {
         await createRecurringSeries(pendingCorpPlan, occurrences);
       }
