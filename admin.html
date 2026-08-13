@@ -249,7 +249,8 @@
           </select>
           <select id="facilityFilter">
             <option value="">All facilities</option>
-            <option value="futsalTurf">Futsal Turf</option>
+            <option value="sixASideTurf">6A Side Turf</option>
+            <option value="fourASideTurf">4A Side Turf</option>
             <option value="swimmingPool">Swimming Pool</option>
             <option value="carrom">Carrom</option>
           </select>
@@ -277,6 +278,7 @@
                 <th>Facility</th>
                 <th>Date &amp; Time</th>
                 <th>Type</th>
+                <th>Price</th>
                 <th>Fee</th>
                 <th>Notes</th>
                 <th>Requested</th>
@@ -329,12 +331,13 @@
       <button class="adm-close" data-close="approveOverlay">&times;</button>
     </div>
     <div class="adm-body">
+      <p class="cell-sub" id="approveCalculatedPrice" style="margin-bottom:10px;"></p>
       <div class="field">
         <label for="approveFee">Booking Fee (optional)</label>
         <input type="number" id="approveFee" min="0" step="1" placeholder="e.g. 1500">
       </div>
       <label class="adm-checkbox-row"><input type="checkbox" id="approveShowFee"> Show fee on website</label>
-      <p class="adm-form-note">Leave the fee blank if none applies. Approval books the slot either way.</p>
+      <p class="adm-form-note">Leave the fee blank if none applies. Approval books the slot either way. The Booking Fee here is a separate, optional admin override — it doesn't replace the calculated price above.</p>
       <button class="btn btn-turf full" id="approveConfirmBtn">Approve Booking</button>
     </div>
   </div>
@@ -356,7 +359,8 @@
       <div class="field-row-2">
         <div class="field"><label for="nbFacility">Facility *</label>
           <select id="nbFacility">
-            <option value="futsalTurf">Futsal Turf</option>
+            <option value="sixASideTurf">6A Side Turf</option>
+            <option value="fourASideTurf">4A Side Turf</option>
             <option value="swimmingPool">Swimming Pool</option>
             <option value="carrom">Carrom</option>
           </select>
@@ -395,7 +399,8 @@
       <div class="field-row-2">
         <div class="field"><label for="ebFacility">Facility *</label>
           <select id="ebFacility">
-            <option value="futsalTurf">Futsal Turf</option>
+            <option value="sixASideTurf">6A Side Turf</option>
+            <option value="fourASideTurf">4A Side Turf</option>
             <option value="swimmingPool">Swimming Pool</option>
             <option value="carrom">Carrom</option>
           </select>
@@ -435,7 +440,8 @@
       <div class="field-row-2">
         <div class="field"><label for="cbFacility">Facility *</label>
           <select id="cbFacility">
-            <option value="futsalTurf">Futsal Turf</option>
+            <option value="sixASideTurf">6A Side Turf</option>
+            <option value="fourASideTurf">4A Side Turf</option>
             <option value="swimmingPool">Swimming Pool</option>
             <option value="carrom">Carrom</option>
           </select>
@@ -498,7 +504,7 @@
     <div class="adm-body">
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Date</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Date</th><th>Time</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody id="occBody"></tbody>
         </table>
       </div>
@@ -515,6 +521,7 @@
     getFirestore, collection, doc, writeBatch, updateDoc, deleteDoc, getDoc, getDocs,
     onSnapshot, query, orderBy, where, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { FACILITY_LABELS, calculateBookingPrice } from "./pricing.js";
 
   // Frenzy Arena's Firebase config — same project as index.html
   const firebaseConfig = {
@@ -533,9 +540,12 @@
   // ---------- TIME MODEL (matches index.html) ----------
   const SLOTS_PER_DAY = 48;
   const TZ = "Asia/Dhaka";
-  const FACILITY_LABELS = { futsalTurf: "Futsal Turf", swimmingPool: "Swimming Pool", carrom: "Carrom" };
+  // FACILITIES / FACILITY_LABELS now come from pricing.js — the one shared source of truth for the
+  // facility list, used identically by index.html and admin.html.
   const MAX_DURATION_SLOTS = 24;
   const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  function formatBDT(amount) { return `৳${Number(amount).toLocaleString()}`; }
 
   function pad(n) { return String(n).padStart(2, "0"); }
   function dhakaNow() {
@@ -751,6 +761,7 @@
           <div class="cell-sub">${slotLabel(r.startSlot)} – ${slotLabel(r.endSlot)}${r.endDate && r.endDate !== r.bookingDate ? ' (+1 day)' : ''} (${durationLabel(r.durationSlots)})</div>
         </td>
         <td><span class="type-pill">${TYPE_LABEL[r.bookingType] || r.bookingType}</span></td>
+        <td class="cell-sub">${r.calculatedPrice != null ? formatBDT(r.calculatedPrice) : '—'}</td>
         <td class="cell-sub">${feeText}</td>
         <td class="notes-cell">${r.notes ? escapeHtml(r.notes) : '—'}</td>
         <td class="cell-sub">${fmtTimestamp(r.createdAt)}</td>
@@ -794,6 +805,8 @@
         pendingApproveBooking = r;
         document.getElementById('approveSummary').textContent =
           `${r.customerName} · ${FACILITY_LABELS[r.facility]} · ${r.bookingDate} ${slotLabel(r.startSlot)}–${slotLabel(r.endSlot)}`;
+        document.getElementById('approveCalculatedPrice').textContent =
+          r.calculatedPrice != null ? `Calculated Price: ${formatBDT(r.calculatedPrice)}` : 'Calculated Price: not available for this booking';
         document.getElementById('approveFee').value = '';
         document.getElementById('approveShowFee').checked = false;
         openOverlay('approveOverlay');
@@ -912,7 +925,8 @@
     if (!duration) { nb.endPreview.textContent = ''; return; }
     const end = endPoint(nb.date.value, start, duration);
     const crosses = end.date !== nb.date.value;
-    nb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''}`;
+    const price = calculateBookingPrice({ facility: nb.facility.value, bookingDate: nb.date.value, startSlot: start, durationSlots: duration });
+    nb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''} · Calculated Price: ${formatBDT(price.finalPrice)}`;
   }
   nb.facility.addEventListener('change', refreshNbAvailability);
   nb.date.addEventListener('change', refreshNbAvailability);
@@ -936,6 +950,7 @@
     if (!duration) { nb.warning.hidden = false; nb.warning.textContent = 'No open duration available at this start time.'; return; }
     const intervals = coveredIntervals(date, start, duration);
     const end = endPoint(date, start, duration);
+    const price = calculateBookingPrice({ facility, bookingDate: date, startSlot: start, durationSlots: duration });
 
     nb.submitBtn.disabled = true; nb.submitBtn.textContent = 'Checking availability…';
     try {
@@ -954,7 +969,7 @@
         facility, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
         endDate: end.date, endSlot: end.slot,
         status: 'approved', bookingType: 'admin_direct', bookingSource: 'admin',
-        bookingFee: fee, feeCurrency: 'BDT', showFeePublicly: !!showFee, recurringBookingId: null,
+        bookingFee: fee, feeCurrency: 'BDT', showFeePublicly: !!showFee, calculatedPrice: price.finalPrice, recurringBookingId: null,
         notes: nb.notes.value.trim() || null,
         createdAt: serverTimestamp(), updatedAt: serverTimestamp(), approvedAt: serverTimestamp(), rejectedAt: null,
       });
@@ -1032,7 +1047,8 @@
     if (!duration) { eb.endPreview.textContent = ''; return; }
     const end = endPoint(eb.date.value, start, duration);
     const crosses = end.date !== eb.date.value;
-    eb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''}`;
+    const price = calculateBookingPrice({ facility: eb.facility.value, bookingDate: eb.date.value, startSlot: start, durationSlots: duration });
+    eb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''} · Calculated Price: ${formatBDT(price.finalPrice)}`;
   }
   eb.facility.addEventListener('change', () => refreshEbAvailability());
   eb.date.addEventListener('change', () => refreshEbAvailability());
@@ -1057,6 +1073,9 @@
       const end = endPoint(date, start, duration);
       const fee = eb.fee.value ? Number(eb.fee.value) : null;
       const showFee = eb.showFee.checked;
+      // Recomputed because the admin edited this specific booking's own parameters (facility/date/
+      // start/duration) — not a retroactive repricing of history if the pricing table itself changes.
+      const price = calculateBookingPrice({ facility, bookingDate: date, startSlot: start, durationSlots: duration });
 
       const batch = writeBatch(db);
       oldIntervals.forEach(({date, slot}) => batch.delete(doc(db, 'slots', slotDocId(editingBooking.facility, date, slot))));
@@ -1071,7 +1090,7 @@
         customerName: eb.name.value.trim(), phone: normalizePhone(eb.phone.value), email: eb.email.value.trim() || null,
         facility, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
         endDate: end.date, endSlot: end.slot, notes: eb.notes.value.trim() || null,
-        bookingFee: fee, showFeePublicly: !!showFee, updatedAt: serverTimestamp(),
+        bookingFee: fee, showFeePublicly: !!showFee, calculatedPrice: price.finalPrice, updatedAt: serverTimestamp(),
       });
       await batch.commit();
       closeOverlay('editBookingOverlay');
@@ -1157,20 +1176,22 @@
         notes: cb.notes.value.trim() || null,
       };
       const conflicts = occurrences.filter(o => o.conflict);
-      if (conflicts.length) {
-        document.getElementById('corpForm').hidden = true;
-        const panel = document.getElementById('corpConflictPanel');
-        panel.hidden = false;
-        document.getElementById('corpConflictSummary').textContent =
-          `Conflict Found — ${conflicts.length} of ${occurrences.length} date(s) already have a booking in this time range.`;
-        document.getElementById('corpConflictList').innerHTML = conflicts.map(c => {
-          const end = endPoint(c.date, start, duration);
-          const crosses = end.date !== c.date;
-          return `<li>${c.date} — ${slotLabel(start)}–${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''} conflicts with an existing booking.</li>`;
-        }).join('');
-      } else {
-        await createRecurringSeries(pendingCorpPlan, occurrences);
-      }
+      document.getElementById('corpForm').hidden = true;
+      const panel = document.getElementById('corpConflictPanel');
+      panel.hidden = false;
+      document.getElementById('corpConflictSummary').textContent = conflicts.length
+        ? `Conflict Found — ${conflicts.length} of ${occurrences.length} date(s) already have a booking in this time range.`
+        : `${occurrences.length} date(s) ready to book — review the calculated price for each before confirming.`;
+      document.getElementById('corpConflictList').innerHTML = occurrences.map(o => {
+        const end = endPoint(o.date, start, duration);
+        const crosses = end.date !== o.date;
+        const timeRange = `${slotLabel(start)}–${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''}`;
+        if (o.conflict) return `<li>${o.date} — ${timeRange} conflicts with an existing booking.</li>`;
+        const price = calculateBookingPrice({ facility, bookingDate: o.date, startSlot: start, durationSlots: duration });
+        return `<li>${o.date} — ${timeRange} — Open — ${formatBDT(price.finalPrice)}</li>`;
+      }).join('');
+      document.getElementById('corpSkipCreateBtn').textContent = conflicts.length
+        ? 'Skip Conflicting Dates & Create Rest' : 'Create Series';
     } catch (err) {
       console.error(err);
       alert('Could not check availability — see console.');
@@ -1204,6 +1225,9 @@
 
       for (const occ of occurrences) {
         const end = endPoint(occ.date, plan.start, plan.duration);
+        // Priced per-occurrence, not once for the whole series — a pattern spanning more than one
+        // day of the week (e.g. Sunday AND Thursday) can have different prices on different dates.
+        const price = calculateBookingPrice({ facility: plan.facility, bookingDate: occ.date, startSlot: plan.start, durationSlots: plan.duration });
         const perOccBatch = writeBatch(db);
         const bookingRef = doc(collection(db, 'bookings'));
         perOccBatch.set(bookingRef, {
@@ -1213,6 +1237,7 @@
           status: 'approved', bookingType: 'corporate_recurring', bookingSource: 'admin',
           bookingFee: plan.feeType === 'perOccurrence' ? plan.fee : null,
           feeCurrency: 'BDT', showFeePublicly: plan.showFee, recurringBookingId: seriesRef.id,
+          calculatedPrice: price.finalPrice,
           notes: plan.notes, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
           approvedAt: serverTimestamp(), rejectedAt: null,
         });
@@ -1281,10 +1306,11 @@
       <tr>
         <td>${o.bookingDate}</td>
         <td class="cell-sub">${slotLabel(o.startSlot)} – ${slotLabel(o.endSlot)}</td>
+        <td class="cell-sub">${o.calculatedPrice != null ? formatBDT(o.calculatedPrice) : '—'}</td>
         <td><span class="status-pill ${o.status}">${o.status}</span></td>
         <td class="row-actions">${o.status === 'approved' ? `<button class="action-btn cancel" data-occ-id="${o.id}">Cancel Occurrence</button>` : '<span class="cell-sub">—</span>'}</td>
       </tr>
-    `).join('') || '<tr><td colspan="4" class="cell-sub">No occurrences.</td></tr>';
+    `).join('') || '<tr><td colspan="5" class="cell-sub">No occurrences.</td></tr>';
     tbody.querySelectorAll('[data-occ-id]').forEach(btn => btn.addEventListener('click', () => cancelOccurrence(btn.dataset.occId, seriesId)));
     openOverlay('occOverlay');
   }
