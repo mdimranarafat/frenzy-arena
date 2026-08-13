@@ -824,7 +824,11 @@
   let currentDate = TODAY;
   let currentFacility = "futsalTurf";
   let unsubscribe = null;
-  let latestSlots = {}; // { [slot]: slotDocData }
+  let unsubscribeNextDay = null;
+  let latestSlots = {}; // { [slot]: slotDocData } — currentDate
+  let latestSlotsNextDay = {}; // { [slot]: slotDocData } — currentDate + 1, read-only lookahead so a
+  // late-night start time (e.g. 11:30 PM) can see real availability past midnight instead of being
+  // artificially cut off at the end of the calendar day.
 
   const els = {
     dateLabel: document.getElementById('calDateLabel'),
@@ -875,14 +879,26 @@
     els.prevDay.disabled = currentDate <= TODAY;
   }
 
-  // How many consecutive open 30-minute slots exist starting at `slot`, within this calendar day.
+  // How many consecutive open 30-minute slots exist starting at `slot` on `dateStr`, continuing past
+  // midnight into the next calendar date's own occupancy when the count runs off the end of the day.
+  // Bounded by MAX_DURATION_SLOTS (24 = 12h), so a start slot of at most 47 (11:30 PM) plus that bound
+  // never reaches past 71 — i.e. never more than one day ahead — so only `latestSlotsNextDay` (not a
+  // second day further out) is ever needed here.
   function consecutiveOpenFrom(slot, dateStr) {
     const isToday = dateStr === TODAY;
     const { slot: nowSlot } = dhakaNow();
     let count = 0;
-    for (let s = slot; s < SLOTS_PER_DAY; s++) {
-      const isPast = isToday && s < nowSlot;
-      if (isPast || latestSlots[s]) break;
+    for (let i = 0; i < MAX_DURATION_SLOTS; i++) {
+      const s = slot + i;
+      let occupied;
+      if (s < SLOTS_PER_DAY) {
+        if (isToday && s < nowSlot) break; // past — only meaningful on today's own date
+        occupied = !!latestSlots[s];
+      } else {
+        // Rolled into dateStr + 1 — a future calendar date is never "past"; only occupancy matters.
+        occupied = !!latestSlotsNextDay[s - SLOTS_PER_DAY];
+      }
+      if (occupied) break;
       count++;
     }
     return count;
@@ -952,6 +968,7 @@
 
   function subscribeToDate(dateStr) {
     if (unsubscribe) unsubscribe();
+    if (unsubscribeNextDay) unsubscribeNextDay();
     els.status.hidden = false;
     els.grid.hidden = true;
     els.status.textContent = 'Loading slots…';
@@ -968,6 +985,21 @@
       els.status.hidden = false;
       els.grid.hidden = true;
     });
+
+    // Read-only lookahead into tomorrow's occupancy — same public `slots` collection, same security
+    // rules (allow read: if true), just one calendar date ahead. Used only by consecutiveOpenFrom so
+    // duration options for a late-night start time correctly reflect real availability past midnight;
+    // it never drives the visible grid, which still only ever shows `dateStr` itself.
+    const nextDateStr = addDays(dateStr, 1);
+    const qNext = query(collection(db, 'slots'), where('facility', '==', currentFacility), where('date', '==', nextDateStr));
+    unsubscribeNextDay = onSnapshot(qNext, (snap) => {
+      const map = {};
+      snap.forEach(d => { map[d.data().slot] = d.data(); });
+      latestSlotsNextDay = map;
+      // If the booking panel is open on a late-night start time, tomorrow's availability may have
+      // just changed (e.g. someone else just booked into it) — recompute duration options live.
+      if (!els.bookOverlay.hidden) { populateDurationOptions(); refreshEndTimeAndValidity(); }
+    }, (err) => console.error(err));
   }
 
   function goToDate(dateStr) {
@@ -1036,7 +1068,7 @@
     if (duration > 0) {
       const end = endPoint(currentDate, start, duration);
       const crossesMidnight = end.date !== currentDate;
-      els.bfEndDisplay.textContent = slotLabel(end.slot) + (crossesMidnight ? ' (next day)' : '');
+      els.bfEndDisplay.textContent = slotLabel(end.slot) + (crossesMidnight ? ' (+1 day)' : '');
     } else {
       els.bfEndDisplay.textContent = '—';
     }
@@ -1089,7 +1121,7 @@
       <div class="cal-readonly-row"><div><span class="cal-ro-label">Customer</span><span class="cal-ro-value">${escapeHtml(slotData.customerName || '—')}</span></div></div>
       <div class="cal-readonly-row"><div><span class="cal-ro-label">Facility</span><span class="cal-ro-value">${FACILITY_LABELS[currentFacility]}</span></div></div>
       <div class="cal-readonly-row"><div><span class="cal-ro-label">Date</span><span class="cal-ro-value">${prettyDate(date)}</span></div></div>
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Time</span><span class="cal-ro-value">${slotLabel(slotData.startSlot)} – ${slotLabel(end.slot)}${end.date !== date ? ' (next day)' : ''}</span></div></div>
+      <div class="cal-readonly-row"><div><span class="cal-ro-label">Time</span><span class="cal-ro-value">${slotLabel(slotData.startSlot)} – ${slotLabel(end.slot)}${end.date !== date ? ' (+1 day)' : ''}</span></div></div>
       <div class="cal-readonly-row"><div><span class="cal-ro-label">Duration</span><span class="cal-ro-value">${durationLabel(slotData.durationSlots)}</span></div></div>
       <div class="cal-readonly-row"><div><span class="cal-ro-label">Status</span><span class="cal-ro-value">Booked</span></div></div>
       ${feeLine}
