@@ -492,7 +492,8 @@
           <input type="date" id="calDateInput" class="cal-date-input" aria-label="Jump to date">
         </div>
         <div class="cal-tabs">
-          <button class="cal-tab active" data-facility="futsalTurf">Futsal Turf</button>
+          <button class="cal-tab active" data-facility="sixASideTurf">6A Side Turf</button>
+          <button class="cal-tab" data-facility="fourASideTurf">4A Side Turf</button>
           <button class="cal-tab" data-facility="swimmingPool">Swimming Pool</button>
           <button class="cal-tab" data-facility="carrom">Carrom</button>
         </div>
@@ -538,6 +539,9 @@
         </div>
         <div class="cal-readonly-row">
           <div><span class="cal-ro-label">End Time</span><span id="bfEndDisplay" class="cal-ro-value"></span></div>
+        </div>
+        <div class="cal-readonly-row">
+          <div><span class="cal-ro-label">Estimated Price</span><span id="bfPriceDisplay" class="cal-ro-value"></span></div>
         </div>
         <p id="bfRangeWarning" class="cal-warning" hidden></p>
         <div class="field">
@@ -723,6 +727,7 @@
   import {
     getFirestore, collection, doc, writeBatch, serverTimestamp, onSnapshot, query, where
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { FACILITY_LABELS, calculateBookingPrice } from "./pricing.js";
 
   // Frenzy Arena's Firebase config
   const firebaseConfig = {
@@ -740,7 +745,8 @@
   // ---------- TIME MODEL: 48 x 30-minute start times/day, Asia/Dhaka ----------
   const SLOTS_PER_DAY = 48;
   const TZ = "Asia/Dhaka";
-  const FACILITY_LABELS = { futsalTurf: "Futsal Turf", swimmingPool: "Swimming Pool", carrom: "Carrom" };
+  // FACILITIES / FACILITY_LABELS now come from pricing.js — the one shared source of truth for the
+  // facility list, used identically by index.html and admin.html.
   const MAX_DURATION_SLOTS = 24; // cap duration dropdown at 12 hours
 
   function pad(n) { return String(n).padStart(2, "0"); }
@@ -787,6 +793,8 @@
     return d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
   }
 
+  function formatBDT(amount) { return `৳${Number(amount).toLocaleString()}`; }
+
   function slotDocId(facility, dateStr, slot) { return `${facility}_${dateStr}_${slot}`; }
 
   // Every 30-minute interval a booking of `durationSlots` from (date, startSlot) occupies —
@@ -822,7 +830,7 @@
 
   const TODAY = dhakaNow().dateStr;
   let currentDate = TODAY;
-  let currentFacility = "futsalTurf";
+  let currentFacility = "sixASideTurf";
   let unsubscribe = null;
   let unsubscribeNextDay = null;
   let latestSlots = {}; // { [slot]: slotDocData } — currentDate
@@ -850,6 +858,7 @@
     bfStart: document.getElementById('bfStart'),
     bfDuration: document.getElementById('bfDuration'),
     bfEndDisplay: document.getElementById('bfEndDisplay'),
+    bfPriceDisplay: document.getElementById('bfPriceDisplay'),
     bfRangeWarning: document.getElementById('bfRangeWarning'),
     bfName: document.getElementById('bfName'),
     bfPhone: document.getElementById('bfPhone'),
@@ -1069,8 +1078,11 @@
       const end = endPoint(currentDate, start, duration);
       const crossesMidnight = end.date !== currentDate;
       els.bfEndDisplay.textContent = slotLabel(end.slot) + (crossesMidnight ? ' (+1 day)' : '');
+      const price = calculateBookingPrice({ facility: currentFacility, bookingDate: currentDate, startSlot: start, durationSlots: duration });
+      els.bfPriceDisplay.textContent = formatBDT(price.finalPrice);
     } else {
       els.bfEndDisplay.textContent = '—';
+      els.bfPriceDisplay.textContent = '—';
     }
 
     const fits = duration > 0 && duration <= available;
@@ -1146,6 +1158,7 @@
     const duration = Number(els.bfDuration.value);
     const intervals = coveredIntervals(currentDate, start, duration);
     const end = endPoint(currentDate, start, duration);
+    const price = calculateBookingPrice({ facility: currentFacility, bookingDate: currentDate, startSlot: start, durationSlots: duration });
 
     els.bookSubmitBtn.disabled = true;
     els.bookSubmitBtn.textContent = 'Sending…';
@@ -1169,6 +1182,7 @@
         bookingFee: null,
         feeCurrency: 'BDT',
         showFeePublicly: false,
+        calculatedPrice: price.finalPrice,
         recurringBookingId: null,
         notes: notes || null,
         createdAt: serverTimestamp(),
