@@ -211,6 +211,7 @@
       </div>
       <button type="submit" class="btn btn-flare full" id="loginBtn">Log In</button>
       <p class="login-error" id="loginError">Incorrect email or password.</p>
+      <p class="login-error" id="accessDeniedMsg"></p>
     </form>
   </div>
 </div>
@@ -220,6 +221,7 @@
     <div class="admin-nav-inner">
       <div class="brand" style="color:#fff;"><span class="spark"></span>FRENZY ADMIN</div>
       <div class="admin-nav-right">
+        <span class="admin-badge" id="roleBadge" style="background:rgba(255,255,255,0.12);"></span>
         <span class="admin-badge" id="newBadge">0 NEW</span>
         <button class="nav-btn primary" id="openNewBookingBtn">+ New Booking</button>
         <button class="nav-btn" id="openCorporateBtn">+ Corporate / Recurring</button>
@@ -544,6 +546,7 @@
   // facility list, used identically by index.html and admin.html.
   const MAX_DURATION_SLOTS = 24;
   const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const BUSINESS_ID = "frenzy_001"; // single-business system — every booking/slot/recurring record carries this
 
   function formatBDT(amount) { return `৳${Number(amount).toLocaleString()}`; }
 
@@ -638,6 +641,7 @@
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     loginError.classList.remove('show');
+    document.getElementById('accessDeniedMsg').classList.remove('show');
     loginBtn.disabled = true; loginBtn.textContent = 'Logging in…';
     try {
       await signInWithEmailAndPassword(auth,
@@ -656,14 +660,98 @@
   let allRecurring = [];
   let bookingsUnsub = null;
   let recurringUnsub = null;
+  let currentRole = null; // "super_admin" | "manager" | null
+
+  function showAccessDenied(message) {
+    document.getElementById('loginError').classList.remove('show');
+    const el = document.getElementById('accessDeniedMsg');
+    el.textContent = message;
+    el.classList.add('show');
+  }
+  function clearAccessDenied() {
+    document.getElementById('accessDeniedMsg').classList.remove('show');
+  }
+
+  // Client-side gate — purely for a clean UX (immediate feedback, no flash of the dashboard for an
+  // unauthorized account). This is NOT the real security boundary: every read/write below is also
+  // independently enforced by the Firestore Security Rules' own isAdmin()/isActiveManager() checks,
+  // so even if this function were skipped entirely, an unauthorized or suspended account still
+  // can't actually read or write anything — the rules re-check role + subscription on every request,
+  // not just at login.
+  async function resolveRoleAndEnterDashboard(user) {
+    let userSnap;
+    try {
+      userSnap = await getDoc(doc(db, 'users', user.uid));
+    } catch (err) {
+      console.error(err);
+      showAccessDenied('Could not verify your account access. Please try again.');
+      await signOut(auth);
+      return;
+    }
+    if (!userSnap.exists()) {
+      showAccessDenied('This account has no Admin Panel access assigned. Contact the business owner.');
+      await signOut(auth);
+      return;
+    }
+    const userData = userSnap.data();
+    if (userData.role === 'super_admin') {
+      currentRole = 'super_admin';
+      document.getElementById('roleBadge').textContent = 'SUPER ADMIN';
+      enterDashboard();
+      return;
+    }
+    if (userData.role === 'manager') {
+      if (userData.businessId !== 'frenzy_001') {
+        showAccessDenied('This manager account is not assigned to Frenzy.');
+        await signOut(auth);
+        return;
+      }
+      let bizSnap;
+      try {
+        bizSnap = await getDoc(doc(db, 'businesses', 'frenzy_001'));
+      } catch (err) {
+        console.error(err);
+        showAccessDenied('Could not verify the Frenzy subscription. Contact the business owner.');
+        await signOut(auth);
+        return;
+      }
+      const biz = bizSnap.exists() ? bizSnap.data() : null;
+      const subEndMs = biz && biz.subscriptionEnd && typeof biz.subscriptionEnd.toDate === 'function'
+        ? biz.subscriptionEnd.toDate().getTime() : 0;
+      const isActive = !!biz && biz.subscriptionStatus === 'active' && subEndMs > Date.now();
+      if (!isActive) {
+        showAccessDenied(
+          biz && biz.subscriptionStatus === 'suspended'
+            ? 'Frenzy\u2019s subscription is currently suspended. Contact the business owner to restore access.'
+            : 'Frenzy\u2019s subscription has expired. Contact the business owner to renew.'
+        );
+        await signOut(auth);
+        return;
+      }
+      currentRole = 'manager';
+      const until = biz.subscriptionEnd.toDate().toLocaleDateString();
+      document.getElementById('roleBadge').textContent = `MANAGER \u00b7 active until ${until}`;
+      enterDashboard();
+      return;
+    }
+    // role is "customer" or anything unrecognized — never grants Admin Panel access.
+    showAccessDenied('This account does not have Admin Panel access.');
+    await signOut(auth);
+  }
+
+  function enterDashboard() {
+    clearAccessDenied();
+    loginScreen.style.display = 'none';
+    dashboard.classList.add('show');
+    subscribeBookings();
+    subscribeRecurring();
+  }
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      loginScreen.style.display = 'none';
-      dashboard.classList.add('show');
-      subscribeBookings();
-      subscribeRecurring();
+      resolveRoleAndEnterDashboard(user);
     } else {
+      currentRole = null;
       loginScreen.style.display = 'flex';
       dashboard.classList.remove('show');
       if (bookingsUnsub) { bookingsUnsub(); bookingsUnsub = null; }
@@ -966,7 +1054,7 @@
       const ref = doc(collection(db, 'bookings'));
       batch.set(ref, {
         customerName: nb.name.value.trim(), phone: normalizePhone(nb.phone.value), email: nb.email.value.trim() || null,
-        facility, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
+        facility, businessId: BUSINESS_ID, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
         endDate: end.date, endSlot: end.slot,
         status: 'approved', bookingType: 'admin_direct', bookingSource: 'admin',
         bookingFee: fee, feeCurrency: 'BDT', showFeePublicly: !!showFee, calculatedPrice: price.finalPrice, recurringBookingId: null,
@@ -975,7 +1063,7 @@
       });
       intervals.forEach(({date, slot}) => {
         batch.set(doc(db, 'slots', slotDocId(facility, date, slot)), {
-          facility, date, slot, status: 'approved', bookingId: ref.id, customerName: nb.name.value.trim(),
+          facility, businessId: BUSINESS_ID, date, slot, status: 'approved', bookingId: ref.id, customerName: nb.name.value.trim(),
           startSlot: start, durationSlots: duration, bookingFee: fee, showFeePublicly: !!showFee,
         });
       });
@@ -1081,14 +1169,14 @@
       oldIntervals.forEach(({date, slot}) => batch.delete(doc(db, 'slots', slotDocId(editingBooking.facility, date, slot))));
       newIntervals.forEach(({date, slot}) => {
         batch.set(doc(db, 'slots', slotDocId(facility, date, slot)), {
-          facility, date, slot, status: editingBooking.status === 'pending' ? 'pending' : 'approved',
+          facility, businessId: BUSINESS_ID, date, slot, status: editingBooking.status === 'pending' ? 'pending' : 'approved',
           bookingId: editingBooking.id, customerName: eb.name.value.trim(),
           startSlot: start, durationSlots: duration, bookingFee: fee, showFeePublicly: !!showFee,
         });
       });
       batch.update(doc(db, 'bookings', editingBooking.id), {
         customerName: eb.name.value.trim(), phone: normalizePhone(eb.phone.value), email: eb.email.value.trim() || null,
-        facility, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
+        facility, businessId: BUSINESS_ID, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
         endDate: end.date, endSlot: end.slot, notes: eb.notes.value.trim() || null,
         bookingFee: fee, showFeePublicly: !!showFee, calculatedPrice: price.finalPrice, updatedAt: serverTimestamp(),
       });
@@ -1215,7 +1303,7 @@
     try {
       const seriesRef = doc(collection(db, 'recurringBookings'));
       await writeBatch(db).set(seriesRef, {
-        customerName: plan.name, phone: plan.phone, email: plan.email, facility: plan.facility,
+        customerName: plan.name, phone: plan.phone, email: plan.email, facility: plan.facility, businessId: BUSINESS_ID,
         pattern: 'weekly', daysOfWeek: [...selectedDays], startDate: cb.startDate.value, endDate: cb.endDate.value,
         startSlot: plan.start, durationSlots: plan.duration,
         feeType: plan.feeType, bookingFee: plan.fee, feeCurrency: 'BDT', showFeePublicly: plan.showFee,
@@ -1231,7 +1319,7 @@
         const perOccBatch = writeBatch(db);
         const bookingRef = doc(collection(db, 'bookings'));
         perOccBatch.set(bookingRef, {
-          customerName: plan.name, phone: plan.phone, email: plan.email, facility: plan.facility,
+          customerName: plan.name, phone: plan.phone, email: plan.email, facility: plan.facility, businessId: BUSINESS_ID,
           bookingDate: occ.date, startSlot: plan.start, durationSlots: plan.duration, durationMinutes: plan.duration * 30,
           endDate: end.date, endSlot: end.slot,
           status: 'approved', bookingType: 'corporate_recurring', bookingSource: 'admin',
@@ -1243,7 +1331,7 @@
         });
         occ.intervals.forEach(({date, slot}) => {
           perOccBatch.set(doc(db, 'slots', slotDocId(plan.facility, date, slot)), {
-            facility: plan.facility, date, slot, status: 'approved', bookingId: bookingRef.id, customerName: plan.name,
+            facility: plan.facility, businessId: BUSINESS_ID, date, slot, status: 'approved', bookingId: bookingRef.id, customerName: plan.name,
             startSlot: plan.start, durationSlots: plan.duration,
             bookingFee: plan.feeType === 'perOccurrence' ? plan.fee : null, showFeePublicly: plan.showFee,
           });
