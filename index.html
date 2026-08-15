@@ -284,6 +284,23 @@
     font-family:var(--body); font-size:0.94rem; padding:11px 12px; border-radius:4px;
     background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); color:#fff;
   }
+  /* Selects need an OPAQUE background (not the rgba above) — Windows Chrome/Edge ignore a
+     translucent <select> background when painting the native options popup and fall back to a
+     plain white list, which is unreadable against white option text. #152838 is the same visual
+     shade as rgba(255,255,255,0.06) over this panel's --navy background, just baked into an
+     opaque color so the popup inherits it too. */
+  .cal-form select{
+    background-color:#152838;
+    color-scheme:dark;
+  }
+  .cal-form select option{
+    background-color:#152838;
+    color:#fff;
+  }
+  .cal-form select option:checked{
+    background-color:var(--pool);
+    color:#061a2b;
+  }
   .cal-form .field textarea{resize:vertical; min-height:70px;}
   .cal-form .btn{width:100%; justify-content:center; margin-top:4px;}
   .cal-form .form-note, .book > .wrap > .form-note{font-size:0.8rem; color:#8ba0a9;}
