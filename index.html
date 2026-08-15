@@ -286,15 +286,15 @@
   }
   /* Selects need an OPAQUE background (not the rgba above) — Windows Chrome/Edge ignore a
      translucent <select> background when painting the native options popup and fall back to a
-     plain white list, which is unreadable against white option text. #152838 is the same visual
+     plain white list, which is unreadable against white option text. #1b3b52 is the same visual
      shade as rgba(255,255,255,0.06) over this panel's --navy background, just baked into an
      opaque color so the popup inherits it too. */
   .cal-form select{
-    background-color:#152838;
+    background-color:#1b3b52;
     color-scheme:dark;
   }
   .cal-form select option{
-    background-color:#152838;
+    background-color:#1b3b52;
     color:#fff;
   }
   .cal-form select option:checked{
