@@ -765,6 +765,7 @@
   // FACILITIES / FACILITY_LABELS now come from pricing.js — the one shared source of truth for the
   // facility list, used identically by index.html and admin.html.
   const MAX_DURATION_SLOTS = 24; // cap duration dropdown at 12 hours
+  const BUSINESS_ID = "frenzy_001"; // single-business system — every booking/slot record carries this
 
   function pad(n) { return String(n).padStart(2, "0"); }
 
@@ -1187,6 +1188,7 @@
         phone,
         email: email || null,
         facility: currentFacility,
+        businessId: BUSINESS_ID,
         bookingDate: currentDate,
         startSlot: start,
         durationSlots: duration,
@@ -1211,6 +1213,7 @@
         const slotRef = doc(db, 'slots', slotDocId(currentFacility, date, slot));
         batch.set(slotRef, {
           facility: currentFacility,
+          businessId: BUSINESS_ID,
           date, slot,
           status: 'pending',
           bookingId: bookingRef.id,
