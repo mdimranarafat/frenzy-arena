@@ -17,9 +17,8 @@
   *{box-sizing:border-box; margin:0; padding:0;}
   body{font-family:var(--body); background:var(--paper); color:var(--ink); line-height:1.5;}
   a{color:inherit;}
-  .wrap{max-width:1180px; margin:0 auto; padding:0 20px;}
+  .wrap{max-width:1280px; margin:0 auto; padding:0 20px;}
 
-  /* ---- login ---- */
   #loginScreen{
     min-height:100vh; display:flex; align-items:center; justify-content:center;
     background:var(--navy); color:#fff; padding:20px;
@@ -35,96 +34,80 @@
   .field label{font-size:0.8rem; font-weight:700; color:#b9c9d1;}
   .field input, .field select, .field textarea{
     font-family:var(--body); font-size:0.94rem; padding:11px 12px; border-radius:5px;
-    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); color:#fff;
+    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); color:#fff; width:100%;
   }
-  /* Selects need an OPAQUE background (not the rgba above) — Windows Chrome/Edge
-     ignore translucent <select> backgrounds when painting the native dropdown
-     popup and fall back to a plain white list, which is unreadable against white
-     option text. #1b3b52 is the same visual shade as rgba(255,255,255,0.06) over
-     --navy-mid, just baked into an opaque color so the popup inherits it too. */
-  .field select{
-    background-color:#1b3b52;
-    color-scheme:dark;
-  }
-  .field select option{
-    background-color:#1b3b52;
-    color:#fff;
-  }
-  .field select option:checked{
-    background-color:var(--pool);
-    color:#061a2b;
-  }
-  .field textarea{resize:vertical; min-height:64px;}
+  .field textarea{resize:vertical; min-height:60px;}
   .btn{
     display:inline-flex; align-items:center; justify-content:center; gap:8px;
     font-family:var(--body); font-weight:700; font-size:0.9rem;
     padding:12px 20px; border-radius:5px; text-decoration:none; cursor:pointer; border:none;
   }
-  .btn-flare{background:var(--flare); color:#fff;}
-  .btn-flare.full{width:100%; margin-top:6px;}
+  .btn-flare{background:var(--flare); color:#fff; width:100%; margin-top:6px;}
+  .btn-flare:disabled{opacity:0.5; cursor:not-allowed;}
+  .btn-outline{background:none; border:1px solid rgba(255,255,255,0.3); color:#fff;}
   .btn-turf{background:var(--turf); color:#fff;}
-  .btn-ghost-dark{background:none; border:1px solid rgba(255,255,255,0.25); color:#fff;}
-  .btn-outline{background:#fff; border:1px solid #d7dfde; color:var(--ink);}
-  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .btn-sm{padding:8px 14px; font-size:0.82rem; width:auto;}
   .login-error{color:#ffb3a3; font-size:0.85rem; margin-top:12px; display:none;}
   .login-error.show{display:block;}
 
-  /* ---- dashboard shell ---- */
   #dashboard{display:none; min-height:100vh;}
   #dashboard.show{display:block;}
   header.admin-nav{
     background:var(--navy); color:#fff; padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.1);
   }
-  .admin-nav-inner{display:flex; align-items:center; justify-content:space-between; max-width:1180px; margin:0 auto; padding:0 20px; flex-wrap:wrap; gap:12px;}
-  .admin-nav-right{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .admin-nav-inner{display:flex; align-items:center; justify-content:space-between; max-width:1280px; margin:0 auto; padding:0 20px; flex-wrap:wrap; gap:12px;}
+  .admin-nav-right{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
   .admin-badge{
     background:var(--flare); color:#fff; font-family:var(--mono); font-size:0.72rem;
     padding:4px 10px; border-radius:12px; font-weight:700; display:none;
   }
   .admin-badge.show{display:inline-block;}
   .logout-btn{background:none; border:1px solid rgba(255,255,255,0.25); color:#fff; padding:8px 14px; border-radius:5px; font-size:0.82rem; cursor:pointer;}
-  .nav-btn{
-    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff;
-    padding:8px 14px; border-radius:5px; font-size:0.82rem; font-weight:700; cursor:pointer; font-family:var(--body);
-  }
-  .nav-btn.primary{background:var(--flare); border-color:var(--flare);}
 
-  main{padding:32px 0 60px;}
-  h2{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.6rem; color:var(--navy); margin-bottom:20px;}
+  main{padding:28px 0 60px;}
+  h2{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.5rem; color:var(--navy);}
 
-  /* ---- view tabs ---- */
-  .view-tabs{display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;}
-  .view-tab{
-    padding:10px 18px; border-radius:20px; border:1px solid #d7dfde; background:#fff;
-    color:var(--muted); font-family:var(--body); font-weight:700; font-size:0.85rem; cursor:pointer;
+  .toolbar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;}
+  .action-buttons{display:flex; gap:10px; flex-wrap:wrap;}
+  .action-buttons .btn{width:auto;}
+
+  .subtabs{display:flex; gap:8px; margin-bottom:20px;}
+  .subtab{
+    padding:9px 16px; border-radius:6px; border:1px solid #d7dfde; background:#fff;
+    color:var(--muted); font-weight:700; font-size:0.86rem; cursor:pointer;
   }
-  .view-tab.active{background:var(--navy); border-color:var(--navy); color:#fff;}
-  .view-panel[hidden]{display:none;}
+  .subtab.active{background:var(--navy); border-color:var(--navy); color:#fff;}
 
   .filters{
-    display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; background:#fff;
+    display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; background:#fff;
     border:1px solid #e2e8e7; border-radius:8px; padding:16px;
   }
   .filters input, .filters select{
-    font-family:var(--body); font-size:0.88rem; padding:9px 12px; border-radius:5px;
+    font-family:var(--body); font-size:0.86rem; padding:9px 12px; border-radius:5px;
     border:1px solid #d7dfde; background:var(--paper); color:var(--ink);
   }
   .filters input[type="text"]{flex:1; min-width:180px;}
+  .series-filter-chip{
+    display:inline-flex; align-items:center; gap:8px; background:rgba(0,184,217,0.12);
+    color:#036078; padding:6px 12px; border-radius:16px; font-size:0.82rem; font-weight:700; margin-bottom:14px;
+  }
+  .series-filter-chip button{background:none; border:none; color:#036078; cursor:pointer; font-weight:800;}
 
   .table-wrap{background:#fff; border:1px solid #e2e8e7; border-radius:8px; overflow-x:auto;}
-  table{width:100%; border-collapse:collapse; font-size:0.86rem; min-width:980px;}
+  table{width:100%; border-collapse:collapse; font-size:0.85rem; min-width:1080px;}
   thead th{
     text-align:left; padding:12px 14px; background:var(--paper); color:var(--muted);
-    font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; font-family:var(--mono); font-weight:600;
+    font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; font-family:var(--mono); font-weight:600;
     border-bottom:1px solid #e2e8e7; white-space:nowrap;
   }
-  tbody td{padding:13px 14px; border-bottom:1px solid #edf1f0; vertical-align:top;}
+  tbody td{padding:12px 14px; border-bottom:1px solid #edf1f0; vertical-align:top;}
   tbody tr:last-child td{border-bottom:none;}
   tbody tr.new-row{background:rgba(242,183,5,0.06);}
   .cell-name{font-weight:700;}
-  .cell-sub{font-size:0.78rem; color:var(--muted); margin-top:2px;}
+  .cell-sub{font-size:0.76rem; color:var(--muted); margin-top:2px;}
+  .type-tag{font-family:var(--mono); font-size:0.68rem; color:var(--muted); text-transform:uppercase;}
   .status-pill{
-    display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700;
+    display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.7rem; font-weight:700;
     font-family:var(--mono); text-transform:capitalize;
   }
   .status-pill.pending{background:rgba(242,183,5,0.16); color:#8a6800;}
@@ -132,66 +115,64 @@
   .status-pill.rejected{background:rgba(255,90,54,0.14); color:#a83a1f;}
   .status-pill.cancelled{background:#e7e7e7; color:#5c5c5c;}
   .status-pill.completed{background:rgba(0,184,217,0.14); color:#036078;}
-  .type-pill{
-    display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.68rem; font-weight:700;
-    font-family:var(--mono); background:rgba(0,184,217,0.12); color:#036078; margin-top:3px;
-  }
 
   .row-actions{display:flex; flex-wrap:wrap; gap:6px;}
   .action-btn{
-    font-family:var(--body); font-size:0.76rem; font-weight:700; padding:6px 10px;
-    border-radius:4px; border:1px solid transparent; cursor:pointer;
+    font-family:var(--body); font-size:0.74rem; font-weight:700; padding:6px 9px;
+    border-radius:4px; border:1px solid transparent; cursor:pointer; background:#fff;
   }
   .action-btn.approve{background:var(--turf); color:#fff;}
   .action-btn.reject{background:#fff; color:var(--flare); border-color:var(--flare);}
   .action-btn.cancel{background:#fff; color:var(--muted); border-color:#d7dfde;}
   .action-btn.complete{background:var(--pool); color:var(--navy);}
   .action-btn.edit{background:#fff; color:var(--navy); border-color:var(--navy);}
-  .action-btn.delete{background:#fff; color:#a83a1f; border-color:#f0c9bf;}
   .action-btn:disabled{opacity:0.5; cursor:not-allowed;}
 
-  .notes-cell{max-width:160px; font-size:0.8rem; color:var(--muted);}
+  .notes-cell{max-width:160px; font-size:0.78rem; color:var(--muted);}
   .empty-state{padding:40px 20px; text-align:center; color:var(--muted);}
   .loading-state{padding:40px 20px; text-align:center; color:var(--muted);}
 
-  /* ---- modal overlay (admin panels) ---- */
-  .adm-overlay{
+  .modal-overlay{
     position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:200;
-    display:flex; align-items:flex-start; justify-content:center; padding:24px 16px; overflow-y:auto;
+    display:flex; align-items:center; justify-content:center; padding:16px;
   }
-  .adm-overlay[hidden]{display:none;}
-  .adm-panel{
-    background:var(--navy-mid); border-radius:10px; width:100%; max-width:520px;
-    border:1px solid rgba(255,255,255,0.14); color:#fff; margin:auto 0;
+  .modal-overlay[hidden]{display:none;}
+  .modal-panel{
+    background:#fff; border-radius:10px; width:100%; max-width:480px;
+    max-height:90vh; overflow-y:auto;
   }
-  .adm-panel.wide{max-width:680px;}
-  .adm-panel-head{display:flex; justify-content:space-between; align-items:flex-start; padding:20px 22px 14px;}
-  .adm-panel-title{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.15rem;}
-  .adm-panel-sub{font-size:0.78rem; color:#8ba0a9; margin-top:4px;}
-  .adm-close{background:none; border:none; color:#b9c9d1; font-size:1.4rem; cursor:pointer; line-height:1;}
-  .adm-body{padding:0 22px 22px; display:flex; flex-direction:column; gap:12px; max-height:75vh; overflow-y:auto;}
-  .adm-body .field-row-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  .adm-body .field-row-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
-  @media (max-width:520px){.adm-body .field-row-2, .adm-body .field-row-3{grid-template-columns:1fr;}}
-  .adm-checkbox-row{display:flex; align-items:center; gap:8px; font-size:0.85rem; color:#c7d6de;}
-  .adm-checkbox-row input{width:16px; height:16px;}
-  .day-pill-row{display:flex; flex-wrap:wrap; gap:6px;}
-  .day-pill{
-    padding:7px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.18);
-    background:rgba(255,255,255,0.05); color:#b9c9d1; font-size:0.76rem; cursor:pointer; font-family:var(--body);
+  .modal-panel.wide{max-width:720px;}
+  .modal-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:18px 22px; border-bottom:1px solid #edf1f0;
   }
-  .day-pill.active{background:var(--pool); border-color:var(--pool); color:var(--navy); font-weight:700;}
-  .adm-warning{
-    font-size:0.8rem; color:#ffcf8a; background:rgba(255,90,54,0.12);
-    border:1px solid rgba(255,90,54,0.3); border-radius:6px; padding:8px 12px;
+  .modal-head h3{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.1rem; color:var(--navy);}
+  .modal-close{background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--muted); line-height:1;}
+  .modal-body{padding:20px 22px;}
+  .field-row-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .checkbox-row{display:flex; align-items:center; gap:8px; margin:10px 0;}
+  .checkbox-row input{width:auto;}
+  .checkbox-row label{font-size:0.86rem; font-weight:600; color:var(--ink);}
+  .days-grid{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+  .day-chip{
+    padding:7px 12px; border-radius:16px; border:1px solid #d7dfde; background:#fff;
+    font-size:0.8rem; font-weight:700; cursor:pointer; color:var(--muted);
   }
-  .adm-warning[hidden]{display:none;}
-  .conflict-list{list-style:none; display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto;}
-  .conflict-list li{
-    background:rgba(255,90,54,0.1); border:1px solid rgba(255,90,54,0.28); border-radius:5px;
-    padding:8px 10px; font-size:0.8rem;
+  .day-chip.active{background:var(--navy); border-color:var(--navy); color:#fff;}
+  .modal-warning{
+    font-size:0.82rem; color:#a83a1f; background:rgba(255,90,54,0.1);
+    border:1px solid rgba(255,90,54,0.25); border-radius:6px; padding:10px 12px; margin-bottom:12px;
   }
-  .adm-form-note{font-size:0.78rem; color:#8ba0a9;}
+  .occurrence-list{max-height:220px; overflow-y:auto; border:1px solid #edf1f0; border-radius:6px; margin-bottom:14px;}
+  .occurrence-row{
+    display:flex; justify-content:space-between; padding:9px 12px; font-size:0.82rem;
+    border-bottom:1px solid #edf1f0;
+  }
+  .occurrence-row:last-child{border-bottom:none;}
+  .occurrence-row.conflict{background:rgba(255,90,54,0.06); color:#a83a1f;}
+  .occurrence-row.ok{color:#166b3f;}
+  .modal-actions{display:flex; gap:10px; margin-top:16px;}
+  .modal-actions .btn{width:auto; flex:1;}
 </style>
 </head>
 <body>
@@ -209,9 +190,8 @@
         <label for="loginPassword">Password</label>
         <input type="password" id="loginPassword" required autocomplete="current-password">
       </div>
-      <button type="submit" class="btn btn-flare full" id="loginBtn">Log In</button>
+      <button type="submit" class="btn btn-flare" id="loginBtn">Log In</button>
       <p class="login-error" id="loginError">Incorrect email or password.</p>
-      <p class="login-error" id="accessDeniedMsg"></p>
     </form>
   </div>
 </div>
@@ -221,26 +201,35 @@
     <div class="admin-nav-inner">
       <div class="brand" style="color:#fff;"><span class="spark"></span>FRENZY ADMIN</div>
       <div class="admin-nav-right">
-        <span class="admin-badge" id="roleBadge" style="background:rgba(255,255,255,0.12);"></span>
         <span class="admin-badge" id="newBadge">0 NEW</span>
-        <button class="nav-btn primary" id="openNewBookingBtn">+ New Booking</button>
-        <button class="nav-btn" id="openCorporateBtn">+ Corporate / Recurring</button>
         <button class="logout-btn" id="logoutBtn">Log Out</button>
       </div>
     </div>
   </header>
   <main>
     <div class="wrap">
-      <h2>Bookings</h2>
 
-      <div class="view-tabs">
-        <button class="view-tab active" data-view="pending">Pending Requests</button>
-        <button class="view-tab" data-view="all">All Bookings</button>
-        <button class="view-tab" data-view="recurring">Recurring Bookings</button>
+      <div class="toolbar">
+        <h2>Booking Management</h2>
+        <div class="action-buttons">
+          <button class="btn btn-turf btn-sm" id="openNewBookingBtn">+ New Booking</button>
+          <button class="btn btn-outline btn-sm" style="background:var(--navy); border-color:var(--navy); color:#fff;" id="openCorporateBtn">+ Corporate / Recurring Booking</button>
+          <button class="btn btn-outline btn-sm" style="background:#fff; border-color:#d7dfde; color:var(--ink);" id="openIntegrityBtn">Scan for Orphaned Slots</button>
+          <button class="btn btn-outline btn-sm" style="background:#fff; border-color:#d7dfde; color:var(--ink);" id="exportCsvBtn">Export CSV</button>
+        </div>
       </div>
 
-      <!-- ===== PENDING / ALL BOOKINGS (shared table) ===== -->
-      <div class="view-panel" id="viewBookings">
+      <div class="subtabs">
+        <button class="subtab active" data-tab="bookings">All Bookings</button>
+        <button class="subtab" data-tab="pending">Pending Requests</button>
+        <button class="subtab" data-tab="recurring">Recurring Bookings</button>
+      </div>
+
+      <div id="bookingsTab">
+        <div id="seriesFilterChip" class="series-filter-chip" hidden>
+          Showing occurrences for one recurring series
+          <button id="clearSeriesFilter" type="button">&times; Clear</button>
+        </div>
         <div class="filters">
           <input type="text" id="searchInput" placeholder="Search name or phone…">
           <select id="dateFilter">
@@ -251,8 +240,7 @@
           </select>
           <select id="facilityFilter">
             <option value="">All facilities</option>
-            <option value="sixASideTurf">6A Side Turf</option>
-            <option value="fourASideTurf">4A Side Turf</option>
+            <option value="futsalTurf">Futsal Turf</option>
             <option value="swimmingPool">Swimming Pool</option>
             <option value="carrom">Carrom</option>
           </select>
@@ -265,7 +253,7 @@
           <select id="statusFilter">
             <option value="">All statuses</option>
             <option value="pending">Pending</option>
-            <option value="approved">Approved / Booked</option>
+            <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
             <option value="cancelled">Cancelled</option>
             <option value="completed">Completed</option>
@@ -280,10 +268,8 @@
                 <th>Facility</th>
                 <th>Date &amp; Time</th>
                 <th>Type</th>
-                <th>Price</th>
                 <th>Fee</th>
                 <th>Notes</th>
-                <th>Requested</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -295,220 +281,167 @@
         </div>
       </div>
 
-      <!-- ===== RECURRING BOOKINGS ===== -->
-      <div class="view-panel" id="viewRecurring" hidden>
+      <div id="recurringTab" style="display:none;">
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>Customer</th>
                 <th>Facility</th>
-                <th>Pattern</th>
+                <th>Days</th>
                 <th>Date Range</th>
                 <th>Time</th>
                 <th>Fee</th>
-                <th>Occurrences</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="recurringBody"></tbody>
           </table>
-          <div class="loading-state" id="recurringLoadingState">Loading recurring bookings…</div>
-          <div class="empty-state" id="recurringEmptyState" style="display:none;">No recurring bookings yet.</div>
+          <div class="empty-state" id="recurringEmptyState" style="display:none;">No recurring series yet.</div>
         </div>
       </div>
+
     </div>
   </main>
 </div>
 
-<!-- ===== APPROVE MODAL ===== -->
-<div class="adm-overlay" id="approveOverlay" hidden>
-  <div class="adm-panel">
-    <div class="adm-panel-head">
-      <div>
-        <div class="adm-panel-title">Approve Request</div>
-        <div class="adm-panel-sub" id="approveSummary"></div>
-      </div>
-      <button class="adm-close" data-close="approveOverlay">&times;</button>
-    </div>
-    <div class="adm-body">
-      <p class="cell-sub" id="approveCalculatedPrice" style="margin-bottom:10px;"></p>
+<div class="modal-overlay" id="approveOverlay" hidden>
+  <div class="modal-panel">
+    <div class="modal-head"><h3>Approve Booking</h3><button class="modal-close" id="approveClose">&times;</button></div>
+    <div class="modal-body">
+      <p id="approveSummary" style="font-size:0.9rem; color:var(--muted); margin-bottom:16px;"></p>
       <div class="field">
-        <label for="approveFee">Booking Fee (optional)</label>
-        <input type="number" id="approveFee" min="0" step="1" placeholder="e.g. 1500">
+        <label for="approveFee">Booking Fee (optional, BDT)</label>
+        <input type="number" id="approveFee" min="0" placeholder="e.g. 1500">
       </div>
-      <label class="adm-checkbox-row"><input type="checkbox" id="approveShowFee"> Show fee on website</label>
-      <p class="adm-form-note">Leave the fee blank if none applies. Approval books the slot either way. The Booking Fee here is a separate, optional admin override — it doesn't replace the calculated price above.</p>
-      <button class="btn btn-turf full" id="approveConfirmBtn">Approve Booking</button>
+      <div class="checkbox-row">
+        <input type="checkbox" id="approveShowFee">
+        <label for="approveShowFee">Show fee on website</label>
+      </div>
+      <button class="btn btn-flare" id="approveConfirmBtn" style="background:var(--turf);">Approve Booking</button>
     </div>
   </div>
 </div>
 
-<!-- ===== NEW (ADMIN DIRECT) BOOKING MODAL ===== -->
-<div class="adm-overlay" id="newBookingOverlay" hidden>
-  <div class="adm-panel">
-    <div class="adm-panel-head">
-      <div><div class="adm-panel-title">New Booking</div><div class="adm-panel-sub">Creates a confirmed booking immediately — no customer approval needed.</div></div>
-      <button class="adm-close" data-close="newBookingOverlay">&times;</button>
-    </div>
-    <form class="adm-body" id="newBookingForm">
-      <div class="field"><label for="nbName">Customer Name *</label><input type="text" id="nbName" required></div>
-      <div class="field-row-2">
-        <div class="field"><label for="nbPhone">Phone Number *</label><input type="tel" id="nbPhone" placeholder="01XXXXXXXXX" required></div>
-        <div class="field"><label for="nbEmail">Email</label><input type="email" id="nbEmail"></div>
-      </div>
-      <div class="field-row-2">
-        <div class="field"><label for="nbFacility">Facility *</label>
-          <select id="nbFacility">
-            <option value="sixASideTurf">6A Side Turf</option>
-            <option value="fourASideTurf">4A Side Turf</option>
-            <option value="swimmingPool">Swimming Pool</option>
-            <option value="carrom">Carrom</option>
-          </select>
+<div class="modal-overlay" id="newBookingOverlay" hidden>
+  <div class="modal-panel">
+    <div class="modal-head"><h3 id="newBookingTitle">New Booking</h3><button class="modal-close" id="newBookingClose">&times;</button></div>
+    <div class="modal-body">
+      <form id="newBookingForm">
+        <div class="field-row-2">
+          <div class="field"><label for="nbName">Customer Name *</label><input type="text" id="nbName" required></div>
+          <div class="field"><label for="nbPhone">Phone Number *</label><input type="tel" id="nbPhone" placeholder="01XXXXXXXXX" required></div>
         </div>
-        <div class="field"><label for="nbDate">Date *</label><input type="date" id="nbDate" required></div>
-      </div>
-      <div class="field-row-2">
-        <div class="field"><label for="nbStart">Start Time *</label><select id="nbStart"></select></div>
-        <div class="field"><label for="nbDuration">Duration *</label><select id="nbDuration"></select></div>
-      </div>
-      <p id="nbEndPreview" class="cell-sub" style="margin:-6px 0 10px;"></p>
-      <p id="nbWarning" class="adm-warning" hidden></p>
-      <div class="field"><label for="nbNotes">Notes</label><textarea id="nbNotes"></textarea></div>
-      <div class="field-row-2">
-        <div class="field"><label for="nbFee">Booking Fee</label><input type="number" id="nbFee" min="0" step="1"></div>
-        <label class="adm-checkbox-row" style="align-self:end; padding-bottom:10px;"><input type="checkbox" id="nbShowFee"> Show fee publicly</label>
-      </div>
-      <button type="submit" class="btn btn-flare full" id="nbSubmitBtn">Create Booking</button>
-    </form>
-  </div>
-</div>
-
-<!-- ===== EDIT BOOKING MODAL ===== -->
-<div class="adm-overlay" id="editBookingOverlay" hidden>
-  <div class="adm-panel">
-    <div class="adm-panel-head">
-      <div><div class="adm-panel-title">Edit Booking</div></div>
-      <button class="adm-close" data-close="editBookingOverlay">&times;</button>
-    </div>
-    <form class="adm-body" id="editBookingForm">
-      <div class="field"><label for="ebName">Customer Name *</label><input type="text" id="ebName" required></div>
-      <div class="field-row-2">
-        <div class="field"><label for="ebPhone">Phone Number *</label><input type="tel" id="ebPhone" required></div>
-        <div class="field"><label for="ebEmail">Email</label><input type="email" id="ebEmail"></div>
-      </div>
-      <div class="field-row-2">
-        <div class="field"><label for="ebFacility">Facility *</label>
-          <select id="ebFacility">
-            <option value="sixASideTurf">6A Side Turf</option>
-            <option value="fourASideTurf">4A Side Turf</option>
-            <option value="swimmingPool">Swimming Pool</option>
-            <option value="carrom">Carrom</option>
-          </select>
+        <div class="field"><label for="nbEmail">Email (optional)</label><input type="email" id="nbEmail"></div>
+        <div class="field-row-2">
+          <div class="field">
+            <label for="nbFacility">Facility *</label>
+            <select id="nbFacility">
+              <option value="futsalTurf">Futsal Turf</option>
+              <option value="swimmingPool">Swimming Pool</option>
+              <option value="carrom">Carrom</option>
+            </select>
+          </div>
+          <div class="field"><label for="nbDate">Date *</label><input type="date" id="nbDate" required></div>
         </div>
-        <div class="field"><label for="ebDate">Date *</label><input type="date" id="ebDate" required></div>
-      </div>
-      <div class="field-row-2">
-        <div class="field"><label for="ebStart">Start Time *</label><select id="ebStart"></select></div>
-        <div class="field"><label for="ebDuration">Duration *</label><select id="ebDuration"></select></div>
-      </div>
-      <p id="ebEndPreview" class="cell-sub" style="margin:-6px 0 10px;"></p>
-      <p id="ebWarning" class="adm-warning" hidden></p>
-      <div class="field"><label for="ebNotes">Notes</label><textarea id="ebNotes"></textarea></div>
-      <div class="field-row-2">
-        <div class="field"><label for="ebFee">Booking Fee</label><input type="number" id="ebFee" min="0" step="1"></div>
-        <label class="adm-checkbox-row" style="align-self:end; padding-bottom:10px;"><input type="checkbox" id="ebShowFee"> Show fee publicly</label>
-      </div>
-      <button type="submit" class="btn btn-flare full" id="ebSubmitBtn">Save Changes</button>
-    </form>
+        <div class="field-row-2">
+          <div class="field"><label for="nbStart">Start Time *</label><select id="nbStart"></select></div>
+          <div class="field"><label for="nbDuration">Duration *</label><select id="nbDuration"></select></div>
+        </div>
+        <p id="nbWarning" class="modal-warning" hidden></p>
+        <div class="field"><label for="nbNotes">Notes (optional)</label><textarea id="nbNotes"></textarea></div>
+        <div class="field-row-2">
+          <div class="field"><label for="nbFee">Booking Fee (optional, BDT)</label><input type="number" id="nbFee" min="0"></div>
+          <div class="checkbox-row" style="margin-top:28px;">
+            <input type="checkbox" id="nbShowFee">
+            <label for="nbShowFee">Show fee on website</label>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-flare" id="nbSubmitBtn" style="background:var(--turf);" disabled>Create Booking</button>
+      </form>
+    </div>
   </div>
 </div>
 
-<!-- ===== CORPORATE / RECURRING BOOKING MODAL ===== -->
-<div class="adm-overlay" id="corpOverlay" hidden>
-  <div class="adm-panel wide">
-    <div class="adm-panel-head">
-      <div><div class="adm-panel-title">Corporate / Recurring Booking</div><div class="adm-panel-sub">Generates one booking per matching date in the range.</div></div>
-      <button class="adm-close" data-close="corpOverlay">&times;</button>
-    </div>
-
-    <form class="adm-body" id="corpForm">
-      <div class="field"><label for="cbName">Customer / Corporate Name *</label><input type="text" id="cbName" required></div>
-      <div class="field-row-2">
-        <div class="field"><label for="cbPhone">Phone Number *</label><input type="tel" id="cbPhone" required></div>
-        <div class="field"><label for="cbEmail">Email</label><input type="email" id="cbEmail"></div>
-      </div>
-      <div class="field-row-2">
-        <div class="field"><label for="cbFacility">Facility *</label>
+<div class="modal-overlay" id="corpOverlay" hidden>
+  <div class="modal-panel wide">
+    <div class="modal-head"><h3>Corporate / Recurring Booking</h3><button class="modal-close" id="corpClose">&times;</button></div>
+    <div class="modal-body">
+      <div id="corpStep1">
+        <div class="field-row-2">
+          <div class="field"><label for="cbName">Customer Name *</label><input type="text" id="cbName" required></div>
+          <div class="field"><label for="cbPhone">Phone Number *</label><input type="tel" id="cbPhone" placeholder="01XXXXXXXXX" required></div>
+        </div>
+        <div class="field"><label for="cbEmail">Email (optional)</label><input type="email" id="cbEmail"></div>
+        <div class="field">
+          <label for="cbFacility">Facility *</label>
           <select id="cbFacility">
-            <option value="sixASideTurf">6A Side Turf</option>
-            <option value="fourASideTurf">4A Side Turf</option>
+            <option value="futsalTurf">Futsal Turf</option>
             <option value="swimmingPool">Swimming Pool</option>
             <option value="carrom">Carrom</option>
           </select>
         </div>
-        <div class="field"><label for="cbPattern">Recurring Pattern *</label>
-          <select id="cbPattern"><option value="weekly">Weekly</option><option value="custom">Custom Days</option></select>
+        <div class="field"><label>Day(s) of Week *</label>
+          <div class="days-grid" id="cbDaysGrid">
+            <button type="button" class="day-chip" data-day="0">Sun</button>
+            <button type="button" class="day-chip" data-day="1">Mon</button>
+            <button type="button" class="day-chip" data-day="2">Tue</button>
+            <button type="button" class="day-chip" data-day="3">Wed</button>
+            <button type="button" class="day-chip" data-day="4">Thu</button>
+            <button type="button" class="day-chip" data-day="5">Fri</button>
+            <button type="button" class="day-chip" data-day="6">Sat</button>
+          </div>
         </div>
-      </div>
-      <div class="field">
-        <label>Day(s) of Week *</label>
-        <div class="day-pill-row" id="cbDayPills">
-          <button type="button" class="day-pill" data-day="0">Sun</button>
-          <button type="button" class="day-pill" data-day="1">Mon</button>
-          <button type="button" class="day-pill" data-day="2">Tue</button>
-          <button type="button" class="day-pill" data-day="3">Wed</button>
-          <button type="button" class="day-pill" data-day="4">Thu</button>
-          <button type="button" class="day-pill" data-day="5">Fri</button>
-          <button type="button" class="day-pill" data-day="6">Sat</button>
+        <div class="field-row-2">
+          <div class="field"><label for="cbStartDate">Start Date *</label><input type="date" id="cbStartDate" required></div>
+          <div class="field"><label for="cbEndDate">End Date *</label><input type="date" id="cbEndDate" required></div>
         </div>
-      </div>
-      <div class="field-row-2">
-        <div class="field"><label for="cbStartDate">Start Date *</label><input type="date" id="cbStartDate" required></div>
-        <div class="field"><label for="cbEndDate">End Date *</label><input type="date" id="cbEndDate" required></div>
-      </div>
-      <div class="field-row-2">
-        <div class="field"><label for="cbStart">Start Time *</label><select id="cbStart"></select></div>
-        <div class="field"><label for="cbDuration">Duration *</label><select id="cbDuration"></select></div>
-      </div>
-      <div class="field-row-3">
-        <div class="field"><label for="cbFeeType">Fee Type</label>
-          <select id="cbFeeType"><option value="perOccurrence">Per occurrence</option><option value="monthly">Total / monthly</option></select>
+        <div class="field-row-2">
+          <div class="field"><label for="cbStart">Start Time *</label><select id="cbStart"></select></div>
+          <div class="field"><label for="cbDuration">Duration *</label><select id="cbDuration"></select></div>
         </div>
-        <div class="field"><label for="cbFee">Booking Fee</label><input type="number" id="cbFee" min="0" step="1"></div>
-        <label class="adm-checkbox-row" style="align-self:end; padding-bottom:10px;"><input type="checkbox" id="cbShowFee"> Show fee publicly</label>
+        <div class="field"><label for="cbNotes">Notes (optional)</label><textarea id="cbNotes"></textarea></div>
+        <div class="field-row-2">
+          <div class="field">
+            <label for="cbFeeType">Fee Type</label>
+            <select id="cbFeeType">
+              <option value="per_occurrence">Fee per occurrence</option>
+              <option value="monthly">Total recurring fee</option>
+            </select>
+          </div>
+          <div class="field"><label for="cbFee">Booking Fee (optional, BDT)</label><input type="number" id="cbFee" min="0"></div>
+        </div>
+        <div class="checkbox-row"><input type="checkbox" id="cbShowFee"><label for="cbShowFee">Show fee on website</label></div>
+        <button type="button" class="btn btn-flare" id="cbCheckBtn" style="background:var(--navy);">Check Availability &amp; Review</button>
       </div>
-      <div class="field"><label for="cbNotes">Notes</label><textarea id="cbNotes"></textarea></div>
-      <button type="submit" class="btn btn-flare full" id="cbCheckBtn">Check Availability &amp; Generate</button>
-      <p class="adm-form-note">This checks every matching date for conflicts before creating anything.</p>
-    </form>
 
-    <!-- Conflict review sub-panel -->
-    <div class="adm-body" id="corpConflictPanel" hidden>
-      <p class="adm-warning" id="corpConflictSummary"></p>
-      <ul class="conflict-list" id="corpConflictList"></ul>
-      <div class="field-row-2">
-        <button type="button" class="btn btn-turf" id="corpSkipCreateBtn">Skip Conflicting Dates &amp; Create Rest</button>
-        <button type="button" class="btn btn-outline" id="corpCancelSeriesBtn">Cancel Entire Series</button>
+      <div id="corpStep2" hidden>
+        <p style="font-size:0.9rem; color:var(--muted); margin-bottom:10px;" id="corpSummaryText"></p>
+        <div class="occurrence-list" id="occurrenceList"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-flare" id="cbSkipCreateBtn" style="background:var(--turf);">Skip Conflicts &amp; Create Rest</button>
+          <button type="button" class="btn btn-outline" style="background:#fff; border-color:#d7dfde; color:var(--ink);" id="cbCancelSeriesBtn">Cancel, Go Back</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ===== RECURRING OCCURRENCES MODAL ===== -->
-<div class="adm-overlay" id="occOverlay" hidden>
-  <div class="adm-panel wide">
-    <div class="adm-panel-head">
-      <div><div class="adm-panel-title">Series Occurrences</div><div class="adm-panel-sub" id="occSummary"></div></div>
-      <button class="adm-close" data-close="occOverlay">&times;</button>
-    </div>
-    <div class="adm-body">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Date</th><th>Time</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody id="occBody"></tbody>
-        </table>
+<div class="modal-overlay" id="integrityOverlay" hidden>
+  <div class="modal-panel wide">
+    <div class="modal-head"><h3>Orphaned Slot Scan</h3><button class="modal-close" id="integrityClose">&times;</button></div>
+    <div class="modal-body">
+      <p style="font-size:0.86rem; color:var(--muted); margin-bottom:14px;">
+        Checks every locked slot (Pending or Booked) over the next 90 days against the booking record it should belong to.
+        A slot is <strong>orphaned</strong> if that booking record is missing, or its status no longer matches (e.g. the booking was rejected but the lock was never freed).
+        Orphans block real customers from that time slot for no reason — safe to delete.
+      </p>
+      <div id="integrityStatus" style="font-size:0.86rem; color:var(--muted); margin-bottom:12px;">Not yet scanned.</div>
+      <div class="occurrence-list" id="integrityList"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-flare" id="integrityScanBtn" style="background:var(--navy);">Run Scan</button>
+        <button type="button" class="btn btn-flare" id="integrityDeleteBtn" style="background:var(--flare);" disabled>Delete All Orphans Found</button>
       </div>
     </div>
   </div>
@@ -520,12 +453,10 @@
     getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
-    getFirestore, collection, doc, writeBatch, updateDoc, deleteDoc, getDoc, getDocs,
-    onSnapshot, query, orderBy, where, serverTimestamp
+    getFirestore, collection, doc, writeBatch, updateDoc, onSnapshot, query, orderBy,
+    where, getDocs, serverTimestamp, documentId
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import { FACILITY_LABELS, calculateBookingPrice } from "./pricing.js";
 
-  // Frenzy Arena's Firebase config — same project as index.html
   const firebaseConfig = {
     apiKey: "AIzaSyDCtXGoYt1znhi1wyUhgoOYLiNS-xekiYk",
     authDomain: "frenzy-arena.firebaseapp.com",
@@ -539,99 +470,57 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // ---------- TIME MODEL (matches index.html) ----------
-  const SLOTS_PER_DAY = 48;
-  const TZ = "Asia/Dhaka";
-  // FACILITIES / FACILITY_LABELS now come from pricing.js — the one shared source of truth for the
-  // facility list, used identically by index.html and admin.html.
-  const MAX_DURATION_SLOTS = 24;
-  const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  const BUSINESS_ID = "frenzy_001"; // single-business system — every booking/slot/recurring record carries this
+  const STEP = 30;
+  const DAY_MINUTES = 1440;
+  const MAX_DURATION_UNITS = 16;
+  const HALF_HOUR_MARKS = Array.from({ length: DAY_MINUTES / STEP }, (_, i) => i * STEP);
+  const FACILITY_LABELS = { futsalTurf: "Futsal Turf", swimmingPool: "Swimming Pool", carrom: "Carrom" };
+  const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  function formatBDT(amount) { return `৳${Number(amount).toLocaleString()}`; }
-
-  function pad(n) { return String(n).padStart(2, "0"); }
-  function dhakaNow() {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", hour12: false
-    }).formatToParts(new Date());
-    const map = {}; parts.forEach(p => { map[p.type] = p.value; });
-    const dateStr = `${map.year}-${map.month}-${map.day}`;
-    const hour = Number(map.hour) % 24, minute = Number(map.minute);
-    return { dateStr, slot: hour * 2 + (minute >= 30 ? 1 : 0) };
+  function pad2(n) { return String(n).padStart(2, "0"); }
+  function getDhakaNow() {
+    const now = new Date();
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Dhaka', hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+    }).formatToParts(now);
+    const map = {};
+    parts.forEach(p => { map[p.type] = p.value; });
+    return { dateStr: `${map.year}-${map.month}-${map.day}`, minutes: parseInt(map.hour, 10) * 60 + parseInt(map.minute, 10) };
   }
-  function addDays(dateStr, delta) {
-    const d = new Date(dateStr + "T00:00:00Z");
-    d.setUTCDate(d.getUTCDate() + delta);
-    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  function addDaysStr(dateStr, delta) {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + delta);
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
   }
-  function dayOfWeek(dateStr) {
-    const d = new Date(dateStr + "T00:00:00Z");
-    return d.getUTCDay();
+  function addMinutesToDate(baseDateStr, absMinutes) {
+    const dayOffset = Math.floor(absMinutes / DAY_MINUTES);
+    const minutesInDay = ((absMinutes % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES;
+    return { date: addDaysStr(baseDateStr, dayOffset), minutes: minutesInDay };
   }
-  function slotLabel(slot) {
-    const s = ((slot % SLOTS_PER_DAY) + SLOTS_PER_DAY) % SLOTS_PER_DAY;
-    const totalMin = s * 30;
-    const h24 = Math.floor(totalMin / 60), m = totalMin % 60;
-    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-    return `${h12}:${pad(m)} ${h24 < 12 ? "AM" : "PM"}`;
+  function minutesToHHMM(min) { return `${pad2(Math.floor(min / 60))}${pad2(min % 60)}`; }
+  function minutesToLabel(min) {
+    const h = Math.floor(min / 60) % 24, m = min % 60;
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return `${h12}:${pad2(m)} ${h < 12 ? "AM" : "PM"}`;
   }
-  function durationLabel(durationSlots) {
-    const totalMin = durationSlots * 30;
-    const h = Math.floor(totalMin / 60), m = totalMin % 60;
-    return m === 0 ? `${h} Hour${h === 1 ? "" : "s"}` : `${h} Hour${h === 1 ? "" : "s"} 30 Minutes`;
+  function durationLabel(totalMinutes) {
+    const h = Math.floor(totalMinutes / 60), m = totalMinutes % 60;
+    const parts = [];
+    if (h > 0) parts.push(`${h} Hour${h > 1 ? "s" : ""}`);
+    if (m > 0) parts.push(`${m} Minutes`);
+    return parts.join(" ") || "0 Minutes";
   }
-  function slotDocId(facility, dateStr, slot) { return `${facility}_${dateStr}_${slot}`; }
-  function coveredIntervals(date, startSlot, durationSlots) {
-    const out = []; let d = date, s = startSlot;
-    for (let i = 0; i < durationSlots; i++) {
-      if (s >= SLOTS_PER_DAY) { s -= SLOTS_PER_DAY; d = addDays(d, 1); }
-      out.push({ date: d, slot: s }); s++;
-    }
-    return out;
-  }
-  function endPoint(date, startSlot, durationSlots) {
-    let d = date, s = startSlot + durationSlots;
-    while (s >= SLOTS_PER_DAY) { s -= SLOTS_PER_DAY; d = addDays(d, 1); }
-    return { date: d, slot: s };
-  }
-  const BD_PHONE_RE = /^(?:\+?880|0)1[3-9]\d{8}$/;
-  function normalizePhone(raw) { return (raw || "").replace(/[\s-]/g, ""); }
-  function isValidBDPhone(raw) { return BD_PHONE_RE.test(normalizePhone(raw)); }
-  function isValidName(raw) { return (raw || "").trim().length > 0; }
-  function fmtTimestamp(ts) {
-    if (!ts) return "—";
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  function isValidBDPhone(phone) {
+    return /^(?:\+?880|0)1[3-9]\d{8}$/.test(phone.replace(/[\s-]/g, ""));
   }
   function escapeHtml(str) {
-    const d = document.createElement("div"); d.textContent = str ?? ""; return d.innerHTML;
+    const d = document.createElement('div');
+    d.textContent = str == null ? '' : String(str);
+    return d.innerHTML;
   }
-  function todayKey() { return dhakaNow().dateStr; }
+  function slotDocId(facility, date, hhmm) { return `${facility}_${date}_${hhmm}`; }
 
-  function populateSlotSelect(selectEl, { excludeSlots = new Set(), minSlot = 0 } = {}) {
-    selectEl.innerHTML = "";
-    for (let s = minSlot; s < SLOTS_PER_DAY; s++) {
-      if (excludeSlots.has(s)) continue;
-      const opt = document.createElement("option");
-      opt.value = s; opt.textContent = slotLabel(s);
-      selectEl.appendChild(opt);
-    }
-  }
-  function populateDurationSelect(selectEl, maxSlots) {
-    const preferred = selectEl.value;
-    selectEl.innerHTML = "";
-    const cap = Math.max(2, Math.min(maxSlots, MAX_DURATION_SLOTS));
-    for (let d = 2; d <= cap; d++) {
-      const opt = document.createElement("option");
-      opt.value = d; opt.textContent = durationLabel(d);
-      selectEl.appendChild(opt);
-    }
-    if (preferred && [...selectEl.options].some(o => o.value === preferred)) selectEl.value = preferred;
-  }
-
-  // ---------- AUTH ----------
   const loginScreen = document.getElementById('loginScreen');
   const dashboard = document.getElementById('dashboard');
   const loginForm = document.getElementById('loginForm');
@@ -641,134 +530,62 @@
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     loginError.classList.remove('show');
-    document.getElementById('accessDeniedMsg').classList.remove('show');
-    loginBtn.disabled = true; loginBtn.textContent = 'Logging in…';
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Logging in…';
     try {
-      await signInWithEmailAndPassword(auth,
-        document.getElementById('loginEmail').value.trim(),
-        document.getElementById('loginPassword').value);
+      await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value.trim(), document.getElementById('loginPassword').value);
     } catch (err) {
       console.error(err);
       loginError.classList.add('show');
     } finally {
-      loginBtn.disabled = false; loginBtn.textContent = 'Log In';
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Log In';
     }
   });
   document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
-  let allBookings = [];
+  let allRequests = [];
   let allRecurring = [];
-  let bookingsUnsub = null;
-  let recurringUnsub = null;
-  let currentRole = null; // "super_admin" | "manager" | null
-
-  function showAccessDenied(message) {
-    document.getElementById('loginError').classList.remove('show');
-    const el = document.getElementById('accessDeniedMsg');
-    el.textContent = message;
-    el.classList.add('show');
-  }
-  function clearAccessDenied() {
-    document.getElementById('accessDeniedMsg').classList.remove('show');
-  }
-
-  // Client-side gate — purely for a clean UX (immediate feedback, no flash of the dashboard for an
-  // unauthorized account). This is NOT the real security boundary: every read/write below is also
-  // independently enforced by the Firestore Security Rules' own isAdmin()/isActiveManager() checks,
-  // so even if this function were skipped entirely, an unauthorized or suspended account still
-  // can't actually read or write anything — the rules re-check role + subscription on every request,
-  // not just at login.
-  async function resolveRoleAndEnterDashboard(user) {
-    let userSnap;
-    try {
-      userSnap = await getDoc(doc(db, 'users', user.uid));
-    } catch (err) {
-      console.error(err);
-      showAccessDenied('Could not verify your account access. Please try again.');
-      await signOut(auth);
-      return;
-    }
-    if (!userSnap.exists()) {
-      showAccessDenied('This account has no Admin Panel access assigned. Contact the business owner.');
-      await signOut(auth);
-      return;
-    }
-    const userData = userSnap.data();
-    if (userData.role === 'super_admin') {
-      currentRole = 'super_admin';
-      document.getElementById('roleBadge').textContent = 'SUPER ADMIN';
-      enterDashboard();
-      return;
-    }
-    if (userData.role === 'manager') {
-      if (userData.businessId !== 'frenzy_001') {
-        showAccessDenied('This manager account is not assigned to Frenzy.');
-        await signOut(auth);
-        return;
-      }
-      let bizSnap;
-      try {
-        bizSnap = await getDoc(doc(db, 'businesses', 'frenzy_001'));
-      } catch (err) {
-        console.error(err);
-        showAccessDenied('Could not verify the Frenzy subscription. Contact the business owner.');
-        await signOut(auth);
-        return;
-      }
-      const biz = bizSnap.exists() ? bizSnap.data() : null;
-      const subEndMs = biz && biz.subscriptionEnd && typeof biz.subscriptionEnd.toDate === 'function'
-        ? biz.subscriptionEnd.toDate().getTime() : 0;
-      const isActive = !!biz && biz.subscriptionStatus === 'active' && subEndMs > Date.now();
-      if (!isActive) {
-        showAccessDenied(
-          biz && biz.subscriptionStatus === 'suspended'
-            ? 'Frenzy\u2019s subscription is currently suspended. Contact the business owner to restore access.'
-            : 'Frenzy\u2019s subscription has expired. Contact the business owner to renew.'
-        );
-        await signOut(auth);
-        return;
-      }
-      currentRole = 'manager';
-      const until = biz.subscriptionEnd.toDate().toLocaleDateString();
-      document.getElementById('roleBadge').textContent = `MANAGER \u00b7 active until ${until}`;
-      enterDashboard();
-      return;
-    }
-    // role is "customer" or anything unrecognized — never grants Admin Panel access.
-    showAccessDenied('This account does not have Admin Panel access.');
-    await signOut(auth);
-  }
-
-  function enterDashboard() {
-    clearAccessDenied();
-    loginScreen.style.display = 'none';
-    dashboard.classList.add('show');
-    subscribeBookings();
-    subscribeRecurring();
-  }
+  let requestsUnsub = null, recurringUnsub = null;
+  let seriesFilterId = null;
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      resolveRoleAndEnterDashboard(user);
+      loginScreen.style.display = 'none';
+      dashboard.classList.add('show');
+      subscribeRequests();
+      subscribeRecurring();
     } else {
-      currentRole = null;
       loginScreen.style.display = 'flex';
       dashboard.classList.remove('show');
-      if (bookingsUnsub) { bookingsUnsub(); bookingsUnsub = null; }
+      if (requestsUnsub) { requestsUnsub(); requestsUnsub = null; }
       if (recurringUnsub) { recurringUnsub(); recurringUnsub = null; }
     }
   });
 
-  // ---------- DATA SUBSCRIPTIONS ----------
-  function subscribeBookings() {
+  const bookingsTab = document.getElementById('bookingsTab');
+  const recurringTab = document.getElementById('recurringTab');
+  let activeSubtab = 'bookings';
+  document.querySelectorAll('.subtab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.subtab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeSubtab = btn.dataset.tab;
+      bookingsTab.style.display = activeSubtab === 'recurring' ? 'none' : 'block';
+      recurringTab.style.display = activeSubtab === 'recurring' ? 'block' : 'none';
+      if (activeSubtab === 'pending') statusFilter.value = 'pending'; else if (activeSubtab === 'bookings' && statusFilter.value === 'pending') statusFilter.value = '';
+      renderTable();
+    });
+  });
+
+  function subscribeRequests() {
     const q = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
-    bookingsUnsub = onSnapshot(q, (snap) => {
-      allBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderBookingsTable();
-      renderRecurringTable();
+    requestsUnsub = onSnapshot(q, (snap) => {
+      allRequests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderTable();
     }, (err) => {
       console.error(err);
-      document.getElementById('loadingState').textContent = 'Could not load bookings — check Firestore rules and that this account is the admin.';
+      document.getElementById('loadingState').textContent = 'Could not load requests — check Firestore rules and that this account is the admin.';
     });
   }
   function subscribeRecurring() {
@@ -776,34 +593,25 @@
     recurringUnsub = onSnapshot(q, (snap) => {
       allRecurring = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderRecurringTable();
-    }, (err) => {
-      console.error(err);
-      document.getElementById('recurringLoadingState').textContent = 'Could not load recurring bookings.';
-    });
+    }, (err) => console.error(err));
   }
 
-  // ---------- VIEW TABS ----------
-  let currentView = 'pending';
-  document.querySelectorAll('.view-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentView = tab.dataset.view;
-      document.getElementById('viewBookings').hidden = currentView === 'recurring';
-      document.getElementById('viewRecurring').hidden = currentView !== 'recurring';
-      renderBookingsTable();
-    });
-  });
-
-  // ---------- FILTERS ----------
   const searchInput = document.getElementById('searchInput');
   const dateFilter = document.getElementById('dateFilter');
   const facilityFilter = document.getElementById('facilityFilter');
   const typeFilter = document.getElementById('typeFilter');
   const statusFilter = document.getElementById('statusFilter');
-  [searchInput, dateFilter, facilityFilter, typeFilter, statusFilter].forEach(el => el.addEventListener('input', renderBookingsTable));
+  [searchInput, dateFilter, facilityFilter, typeFilter, statusFilter].forEach(el => el.addEventListener('input', renderTable));
 
-  function renderBookingsTable() {
+  document.getElementById('clearSeriesFilter').addEventListener('click', () => {
+    seriesFilterId = null;
+    document.getElementById('seriesFilterChip').hidden = true;
+    renderTable();
+  });
+
+  function todayKey() { return getDhakaNow().dateStr; }
+
+  function renderTable() {
     const tbody = document.getElementById('requestsBody');
     const loadingState = document.getElementById('loadingState');
     const emptyState = document.getElementById('emptyState');
@@ -812,8 +620,8 @@
     const searchTerm = searchInput.value.trim().toLowerCase();
     const today = todayKey();
 
-    let filtered = allBookings.filter(r => {
-      if (currentView === 'pending' && r.status !== 'pending') return false;
+    let filtered = allRequests.filter(r => {
+      if (seriesFilterId && r.recurringBookingId !== seriesFilterId) return false;
       if (searchTerm && !(`${r.customerName} ${r.phone}`.toLowerCase().includes(searchTerm))) return false;
       if (facilityFilter.value && r.facility !== facilityFilter.value) return false;
       if (typeFilter.value && r.bookingType !== typeFilter.value) return false;
@@ -824,7 +632,7 @@
       return true;
     });
 
-    const pendingCount = allBookings.filter(r => r.status === 'pending').length;
+    const pendingCount = allRequests.filter(r => r.status === 'pending').length;
     const badge = document.getElementById('newBadge');
     badge.textContent = `${pendingCount} NEW`;
     badge.classList.toggle('show', pendingCount > 0);
@@ -832,12 +640,14 @@
     tbody.innerHTML = '';
     emptyState.style.display = filtered.length ? 'none' : 'block';
 
-    const TYPE_LABEL = { customer_request: 'Customer Request', admin_direct: 'Admin Direct', corporate_recurring: 'Corporate' };
-
     filtered.forEach(r => {
       const tr = document.createElement('tr');
       if (r.status === 'pending') tr.classList.add('new-row');
-      const feeText = r.bookingFee ? `৳${Number(r.bookingFee).toLocaleString()}${r.showFeePublicly ? '' : ' (hidden)'}` : '—';
+      const { date: endDate, minutes: endMin } = addMinutesToDate(r.bookingDate, r.endMinutes);
+      const timeStr = endDate === r.bookingDate
+        ? `${minutesToLabel(r.startMinutes)} – ${minutesToLabel(endMin)}`
+        : `${minutesToLabel(r.startMinutes)} – ${minutesToLabel(endMin)} (+1d)`;
+      const feeStr = r.bookingFee != null ? `৳${r.bookingFee}${r.showFeePublicly ? '' : ' (hidden)'}` : '—';
       tr.innerHTML = `
         <td>
           <div class="cell-name">${escapeHtml(r.customerName || '—')}</div>
@@ -845,15 +655,16 @@
         </td>
         <td>${FACILITY_LABELS[r.facility] || r.facility}</td>
         <td>
-          <div>${r.bookingDate}${r.endDate && r.endDate !== r.bookingDate ? ' → ' + r.endDate : ''}</div>
-          <div class="cell-sub">${slotLabel(r.startSlot)} – ${slotLabel(r.endSlot)}${r.endDate && r.endDate !== r.bookingDate ? ' (+1 day)' : ''} (${durationLabel(r.durationSlots)})</div>
+          <div>${r.bookingDate}</div>
+          <div class="cell-sub">${timeStr} (${durationLabel(r.durationMinutes)})</div>
         </td>
-        <td><span class="type-pill">${TYPE_LABEL[r.bookingType] || r.bookingType}</span></td>
-        <td class="cell-sub">${r.calculatedPrice != null ? formatBDT(r.calculatedPrice) : '—'}</td>
-        <td class="cell-sub">${feeText}</td>
+        <td><span class="type-tag">${(r.bookingType || '').replace('_', ' ')}</span></td>
+        <td class="cell-sub">${feeStr}</td>
         <td class="notes-cell">${r.notes ? escapeHtml(r.notes) : '—'}</td>
-        <td class="cell-sub">${fmtTimestamp(r.createdAt)}</td>
-        <td><span class="status-pill ${r.status}">${r.status}</span></td>
+        <td>
+          <span class="status-pill ${r.status}">${r.status}</span>
+          ${r.sheetBackupStatus === 'failed' ? '<div class="cell-sub" style="color:#c0392b;" title="' + escapeHtml(r.sheetBackupError || '') + '">⚠ backup failed</div>' : ''}
+        </td>
         <td class="row-actions">${renderActions(r)}</td>
       `;
       tbody.appendChild(tr);
@@ -864,60 +675,59 @@
   }
 
   function renderActions(r) {
-    let html = '';
+    const parts = [];
     if (r.status === 'pending') {
-      html += `<button class="action-btn approve" data-action="approve">Approve</button>
-               <button class="action-btn reject" data-action="reject">Reject</button>`;
-    } else if (r.status === 'approved') {
-      html += `<button class="action-btn edit" data-action="edit">Edit</button>
-               <button class="action-btn cancel" data-action="cancel">Cancel</button>
-               <button class="action-btn complete" data-action="complete">Mark Completed</button>`;
-    } else if (r.status === 'rejected' || r.status === 'cancelled') {
-      html += `<button class="action-btn delete" data-action="delete">Delete</button>`;
-    } else {
-      html += `<span class="cell-sub">No actions</span>`;
+      parts.push(`<button class="action-btn approve" data-action="approve">Approve</button>`);
+      parts.push(`<button class="action-btn reject" data-action="reject">Reject</button>`);
     }
-    return html;
+    if (r.status === 'approved') {
+      parts.push(`<button class="action-btn edit" data-action="edit">Edit</button>`);
+      parts.push(`<button class="action-btn cancel" data-action="cancel">Cancel</button>`);
+      parts.push(`<button class="action-btn complete" data-action="complete">Complete</button>`);
+    }
+    if (!parts.length) parts.push(`<span class="cell-sub">No actions</span>`);
+    return parts.join('');
   }
 
-  // ---------- ACTIONS ----------
-  let pendingApproveBooking = null;
-  function openOverlay(id) { document.getElementById(id).hidden = false; }
-  function closeOverlay(id) { document.getElementById(id).hidden = true; }
-  document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeOverlay(btn.dataset.close)));
+  function slotIdsForBooking(facility, bookingDate, startMinutes, durationMinutes) {
+    const ids = [];
+    for (let offset = 0; offset < durationMinutes; offset += STEP) {
+      const { date, minutes } = addMinutesToDate(bookingDate, startMinutes + offset);
+      ids.push({ ref: doc(db, 'slots', slotDocId(facility, date, minutesToHHMM(minutes))), date, hhmm: minutesToHHMM(minutes) });
+    }
+    return ids;
+  }
+
+  let approveTarget = null;
+  const approveOverlay = document.getElementById('approveOverlay');
+  document.getElementById('approveClose').addEventListener('click', () => { approveOverlay.hidden = true; approveTarget = null; });
 
   async function handleAction(action, r) {
     const ref = doc(db, 'bookings', r.id);
+    if (action === 'approve') {
+      approveTarget = r;
+      document.getElementById('approveSummary').textContent =
+        `${r.customerName} — ${FACILITY_LABELS[r.facility]} — ${r.bookingDate} ${minutesToLabel(r.startMinutes)} (${durationLabel(r.durationMinutes)})`;
+      document.getElementById('approveFee').value = '';
+      document.getElementById('approveShowFee').checked = false;
+      approveOverlay.hidden = false;
+      return;
+    }
     try {
-      if (action === 'approve') {
-        pendingApproveBooking = r;
-        document.getElementById('approveSummary').textContent =
-          `${r.customerName} · ${FACILITY_LABELS[r.facility]} · ${r.bookingDate} ${slotLabel(r.startSlot)}–${slotLabel(r.endSlot)}`;
-        document.getElementById('approveCalculatedPrice').textContent =
-          r.calculatedPrice != null ? `Calculated Price: ${formatBDT(r.calculatedPrice)}` : 'Calculated Price: not available for this booking';
-        document.getElementById('approveFee').value = '';
-        document.getElementById('approveShowFee').checked = false;
-        openOverlay('approveOverlay');
-      } else if (action === 'reject') {
+      if (action === 'reject') {
         const batch = writeBatch(db);
-        coveredIntervals(r.bookingDate, r.startSlot, r.durationSlots).forEach(({date, slot}) => {
-          batch.delete(doc(db, 'slots', slotDocId(r.facility, date, slot)));
-        });
+        slotIdsForBooking(r.facility, r.bookingDate, r.startMinutes, r.durationMinutes).forEach(s => batch.delete(s.ref));
         batch.update(ref, { status: 'rejected', rejectedAt: serverTimestamp(), updatedAt: serverTimestamp() });
         await batch.commit();
       } else if (action === 'cancel') {
         const batch = writeBatch(db);
-        coveredIntervals(r.bookingDate, r.startSlot, r.durationSlots).forEach(({date, slot}) => {
-          batch.delete(doc(db, 'slots', slotDocId(r.facility, date, slot)));
-        });
+        slotIdsForBooking(r.facility, r.bookingDate, r.startMinutes, r.durationMinutes).forEach(s => batch.delete(s.ref));
         batch.update(ref, { status: 'cancelled', updatedAt: serverTimestamp() });
         await batch.commit();
       } else if (action === 'complete') {
         await updateDoc(ref, { status: 'completed', updatedAt: serverTimestamp() });
-      } else if (action === 'delete') {
-        await deleteDoc(ref);
       } else if (action === 'edit') {
-        openEditModal(r);
+        openEditBooking(r);
       }
     } catch (err) {
       console.error(err);
@@ -926,519 +736,591 @@
   }
 
   document.getElementById('approveConfirmBtn').addEventListener('click', async () => {
-    if (!pendingApproveBooking) return;
-    const r = pendingApproveBooking;
-    const feeRaw = document.getElementById('approveFee').value;
-    const fee = feeRaw ? Number(feeRaw) : null;
-    const showFee = document.getElementById('approveShowFee').checked;
+    if (!approveTarget) return;
+    const r = approveTarget;
+    const feeVal = document.getElementById('approveFee').value.trim();
+    const bookingFee = feeVal === '' ? null : Number(feeVal);
+    const showFeePublicly = document.getElementById('approveShowFee').checked;
     try {
       const batch = writeBatch(db);
-      const ref = doc(db, 'bookings', r.id);
-      batch.update(ref, {
+      slotIdsForBooking(r.facility, r.bookingDate, r.startMinutes, r.durationMinutes).forEach(s => {
+        batch.update(s.ref, {
+          status: 'approved',
+          customerName: r.customerName,
+          feePublic: (showFeePublicly && bookingFee != null) ? bookingFee : null,
+          feeCurrency: (showFeePublicly && bookingFee != null) ? 'BDT' : null,
+        });
+      });
+      batch.update(doc(db, 'bookings', r.id), {
         status: 'approved', approvedAt: serverTimestamp(), updatedAt: serverTimestamp(),
-        bookingFee: fee, showFeePublicly: !!showFee,
-      });
-      coveredIntervals(r.bookingDate, r.startSlot, r.durationSlots).forEach(({date, slot}) => {
-        batch.update(doc(db, 'slots', slotDocId(r.facility, date, slot)), {
-          status: 'approved', bookingFee: fee, showFeePublicly: !!showFee,
-        });
+        bookingFee, feeCurrency: bookingFee != null ? 'BDT' : null, showFeePublicly,
+        approvedBy: auth.currentUser ? auth.currentUser.email : null,
       });
       await batch.commit();
-      closeOverlay('approveOverlay');
-      pendingApproveBooking = null;
+      approveOverlay.hidden = true;
+      approveTarget = null;
     } catch (err) {
       console.error(err);
-      alert('Approval failed — check the browser console and your Firestore rules.');
+      alert('Could not approve — one of the requested slots may already be taken, or check Firestore rules.');
     }
   });
 
-  // ---------- NEW (ADMIN DIRECT) BOOKING ----------
-  const nb = {
-    name: document.getElementById('nbName'), phone: document.getElementById('nbPhone'),
-    email: document.getElementById('nbEmail'), facility: document.getElementById('nbFacility'),
-    date: document.getElementById('nbDate'), start: document.getElementById('nbStart'),
-    duration: document.getElementById('nbDuration'), notes: document.getElementById('nbNotes'),
-    fee: document.getElementById('nbFee'), showFee: document.getElementById('nbShowFee'),
-    warning: document.getElementById('nbWarning'), submitBtn: document.getElementById('nbSubmitBtn'),
-    endPreview: document.getElementById('nbEndPreview'),
-  };
-
-  document.getElementById('openNewBookingBtn').addEventListener('click', async () => {
-    document.getElementById('newBookingForm').reset();
-    nb.date.value = todayKey();
-    nb.date.min = todayKey();
-    nb.warning.hidden = true;
-    await refreshNbAvailability();
-    openOverlay('newBookingOverlay');
-  });
-
-  async function existingSlotsForDate(facility, dateStr) {
-    const q = query(collection(db, 'slots'), where('facility', '==', facility), where('date', '==', dateStr));
-    const snap = await getDocs(q);
-    const set = new Set();
-    snap.forEach(d => set.add(d.data().slot));
-    return set;
-  }
-
-  // `occupiedNext` is the same facility's occupied set for the following calendar date — needed so a
-  // late-night start time (e.g. 11:30 PM) can offer real durations that cross midnight instead of
-  // being cut off at the end of the day. Bounded by MAX_DURATION_SLOTS (24 = 12h), so start (max 47)
-  // + that bound never reaches past 71 — i.e. never more than one date ahead.
-  async function refreshNbAvailability() {
-    const [occupied, occupiedNext] = await Promise.all([
-      existingSlotsForDate(nb.facility.value, nb.date.value),
-      existingSlotsForDate(nb.facility.value, addDays(nb.date.value, 1)),
-    ]);
-    const isToday = nb.date.value === todayKey();
-    const nowSlot = isToday ? dhakaNow().slot : 0;
-    for (let s = 0; s < (isToday ? nowSlot : 0); s++) occupied.add(s);
-    populateSlotSelect(nb.start, { excludeSlots: occupied });
-    updateNbDuration(occupied, occupiedNext);
-  }
-  function updateNbDuration(occupied, occupiedNext) {
-    const start = Number(nb.start.value) || 0;
-    let count = 0;
-    for (let i = 0; i < MAX_DURATION_SLOTS; i++) {
-      const s = start + i;
-      const isOccupied = s < SLOTS_PER_DAY ? occupied.has(s) : occupiedNext.has(s - SLOTS_PER_DAY);
-      if (isOccupied) break;
-      count++;
-    }
-    populateDurationSelect(nb.duration, count);
-    updateNbEndPreview();
-  }
-  function updateNbEndPreview() {
-    const start = Number(nb.start.value) || 0;
-    const duration = Number(nb.duration.value) || 0;
-    if (!duration) { nb.endPreview.textContent = ''; return; }
-    const end = endPoint(nb.date.value, start, duration);
-    const crosses = end.date !== nb.date.value;
-    const price = calculateBookingPrice({ facility: nb.facility.value, bookingDate: nb.date.value, startSlot: start, durationSlots: duration });
-    nb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''} · Calculated Price: ${formatBDT(price.finalPrice)}`;
-  }
-  nb.facility.addEventListener('change', refreshNbAvailability);
-  nb.date.addEventListener('change', refreshNbAvailability);
-  nb.start.addEventListener('change', async () => {
-    const [occupied, occupiedNext] = await Promise.all([
-      existingSlotsForDate(nb.facility.value, nb.date.value),
-      existingSlotsForDate(nb.facility.value, addDays(nb.date.value, 1)),
-    ]);
-    updateNbDuration(occupied, occupiedNext);
-  });
-  nb.duration.addEventListener('change', updateNbEndPreview);
-
-  document.getElementById('newBookingForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    nb.warning.hidden = true;
-    if (!isValidName(nb.name.value) || !isValidBDPhone(nb.phone.value)) {
-      nb.warning.hidden = false; nb.warning.textContent = 'Enter a valid name and Bangladesh phone number.'; return;
-    }
-    const facility = nb.facility.value, date = nb.date.value;
-    const start = Number(nb.start.value), duration = Number(nb.duration.value);
-    if (!duration) { nb.warning.hidden = false; nb.warning.textContent = 'No open duration available at this start time.'; return; }
-    const intervals = coveredIntervals(date, start, duration);
-    const end = endPoint(date, start, duration);
-    const price = calculateBookingPrice({ facility, bookingDate: date, startSlot: start, durationSlots: duration });
-
-    nb.submitBtn.disabled = true; nb.submitBtn.textContent = 'Checking availability…';
-    try {
-      // Re-verify each interval is still free right before writing (backend-enforced by create-only rule too).
-      const checks = await Promise.all(intervals.map(({date, slot}) => getDoc(doc(db, 'slots', slotDocId(facility, date, slot)))));
-      if (checks.some(s => s.exists())) {
-        nb.warning.hidden = false; nb.warning.textContent = 'One or more of those slots were just taken — refresh and try again.';
-        return;
-      }
-      const feeRaw = nb.fee.value; const fee = feeRaw ? Number(feeRaw) : null;
-      const showFee = nb.showFee.checked;
-      const batch = writeBatch(db);
-      const ref = doc(collection(db, 'bookings'));
-      batch.set(ref, {
-        customerName: nb.name.value.trim(), phone: normalizePhone(nb.phone.value), email: nb.email.value.trim() || null,
-        facility, businessId: BUSINESS_ID, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
-        endDate: end.date, endSlot: end.slot,
-        status: 'approved', bookingType: 'admin_direct', bookingSource: 'admin',
-        bookingFee: fee, feeCurrency: 'BDT', showFeePublicly: !!showFee, calculatedPrice: price.finalPrice, recurringBookingId: null,
-        notes: nb.notes.value.trim() || null,
-        createdAt: serverTimestamp(), updatedAt: serverTimestamp(), approvedAt: serverTimestamp(), rejectedAt: null,
-      });
-      intervals.forEach(({date, slot}) => {
-        batch.set(doc(db, 'slots', slotDocId(facility, date, slot)), {
-          facility, businessId: BUSINESS_ID, date, slot, status: 'approved', bookingId: ref.id, customerName: nb.name.value.trim(),
-          startSlot: start, durationSlots: duration, bookingFee: fee, showFeePublicly: !!showFee,
-        });
-      });
-      await batch.commit();
-      closeOverlay('newBookingOverlay');
-    } catch (err) {
-      console.error(err);
-      nb.warning.hidden = false; nb.warning.textContent = 'Could not create the booking — check the console.';
-    } finally {
-      nb.submitBtn.disabled = false; nb.submitBtn.textContent = 'Create Booking';
-    }
-  });
-
-  // ---------- EDIT BOOKING ----------
-  const eb = {
-    name: document.getElementById('ebName'), phone: document.getElementById('ebPhone'),
-    email: document.getElementById('ebEmail'), facility: document.getElementById('ebFacility'),
-    date: document.getElementById('ebDate'), start: document.getElementById('ebStart'),
-    duration: document.getElementById('ebDuration'), notes: document.getElementById('ebNotes'),
-    fee: document.getElementById('ebFee'), showFee: document.getElementById('ebShowFee'),
-    warning: document.getElementById('ebWarning'), submitBtn: document.getElementById('ebSubmitBtn'),
-    endPreview: document.getElementById('ebEndPreview'),
-  };
+  const nbOverlay = document.getElementById('newBookingOverlay');
+  const nbForm = document.getElementById('newBookingForm');
+  const nbFacility = document.getElementById('nbFacility');
+  const nbDate = document.getElementById('nbDate');
+  const nbStart = document.getElementById('nbStart');
+  const nbDuration = document.getElementById('nbDuration');
+  const nbWarning = document.getElementById('nbWarning');
+  const nbSubmitBtn = document.getElementById('nbSubmitBtn');
+  let nbSlotsCache = { current: {}, next: {} };
   let editingBooking = null;
 
-  async function openEditModal(r) {
-    editingBooking = r;
-    eb.name.value = r.customerName || ''; eb.phone.value = r.phone || ''; eb.email.value = r.email || '';
-    eb.facility.value = r.facility; eb.date.value = r.bookingDate; eb.date.min = todayKey();
-    eb.notes.value = r.notes || ''; eb.fee.value = r.bookingFee || ''; eb.showFee.checked = !!r.showFeePublicly;
-    eb.warning.hidden = true;
-    await refreshEbAvailability(r.startSlot, r.durationSlots);
-    openOverlay('editBookingOverlay');
+  document.getElementById('openNewBookingBtn').addEventListener('click', () => openNewBooking(null));
+  document.getElementById('newBookingClose').addEventListener('click', () => { nbOverlay.hidden = true; });
+
+  function openNewBooking(prefill) {
+    editingBooking = prefill;
+    document.getElementById('newBookingTitle').textContent = prefill ? 'Edit Booking' : 'New Booking';
+    nbForm.reset();
+    nbWarning.hidden = true;
+    document.getElementById('nbDate').min = todayKey();
+    if (prefill) {
+      document.getElementById('nbName').value = prefill.customerName || '';
+      document.getElementById('nbPhone').value = prefill.phone || '';
+      document.getElementById('nbEmail').value = prefill.email || '';
+      nbFacility.value = prefill.facility;
+      nbDate.value = prefill.bookingDate;
+      document.getElementById('nbNotes').value = prefill.notes || '';
+      document.getElementById('nbFee').value = prefill.bookingFee != null ? prefill.bookingFee : '';
+      document.getElementById('nbShowFee').checked = !!prefill.showFeePublicly;
+    } else {
+      nbDate.value = todayKey();
+    }
+    loadNbSlots().then(() => {
+      populateNbStart(prefill ? prefill.startMinutes : null);
+      populateNbDuration();
+      if (prefill) nbDuration.value = Math.round(prefill.durationMinutes / STEP);
+      refreshNbValidity();
+    });
+    nbOverlay.hidden = false;
   }
 
-  async function refreshEbAvailability(preferredStart, preferredDuration) {
-    const [occupied, occupiedNext] = await Promise.all([
-      existingSlotsForDate(eb.facility.value, eb.date.value),
-      existingSlotsForDate(eb.facility.value, addDays(eb.date.value, 1)),
-    ]);
-    // Exclude this booking's own current slots from the conflict set so re-selecting the same time
-    // works — including the portion of its own old booking that had already rolled into the next date.
-    if (editingBooking && editingBooking.bookingDate === eb.date.value && editingBooking.facility === eb.facility.value) {
-      const nextDateStr = addDays(eb.date.value, 1);
-      coveredIntervals(editingBooking.bookingDate, editingBooking.startSlot, editingBooking.durationSlots).forEach(({date, slot}) => {
-        if (date === eb.date.value) occupied.delete(slot);
-        else if (date === nextDateStr) occupiedNext.delete(slot);
-      });
-    }
-    const isToday = eb.date.value === todayKey();
-    const nowSlot = isToday ? dhakaNow().slot : 0;
-    for (let s = 0; s < (isToday ? nowSlot : 0); s++) occupied.add(s);
-    populateSlotSelect(eb.start, { excludeSlots: occupied });
-    if (preferredStart !== undefined && [...eb.start.options].some(o => Number(o.value) === preferredStart)) eb.start.value = preferredStart;
-    let count = 0; const start = Number(eb.start.value) || 0;
-    for (let i = 0; i < MAX_DURATION_SLOTS; i++) {
-      const s = start + i;
-      const isOccupied = s < SLOTS_PER_DAY ? occupied.has(s) : occupiedNext.has(s - SLOTS_PER_DAY);
-      if (isOccupied) break;
+  function openEditBooking(r) { openNewBooking(r); }
+
+  async function fetchSlotsMap(facility, date) {
+    const snap = await getDocs(query(collection(db, 'slots'), where('facility', '==', facility), where('date', '==', date)));
+    const map = {};
+    snap.forEach(d => {
+      const data = d.data();
+      if (editingBooking && data.bookingId === editingBooking.id) return;
+      map[parseInt(data.hhmm.slice(0, 2), 10) * 60 + parseInt(data.hhmm.slice(2), 10)] = data;
+    });
+    return map;
+  }
+
+  async function loadNbSlots() {
+    const facility = nbFacility.value, date = nbDate.value;
+    nbSlotsCache.current = await fetchSlotsMap(facility, date);
+    nbSlotsCache.next = await fetchSlotsMap(facility, addDaysStr(date, 1));
+  }
+  function nbSlotStatusAt(baseDate, absMinutes) {
+    const { date, minutes } = addMinutesToDate(baseDate, absMinutes);
+    if (date === nbDate.value) return nbSlotsCache.current[minutes] || null;
+    if (date === addDaysStr(nbDate.value, 1)) return nbSlotsCache.next[minutes] || null;
+    return undefined;
+  }
+  function nbConsecutiveFrom(startMinutes) {
+    let count = 0;
+    for (let i = 0; i < MAX_DURATION_UNITS; i++) {
+      const s = nbSlotStatusAt(nbDate.value, startMinutes + i * STEP);
+      if (s === undefined || s) break;
       count++;
     }
-    populateDurationSelect(eb.duration, count);
-    if (preferredDuration && [...eb.duration.options].some(o => Number(o.value) === preferredDuration)) eb.duration.value = preferredDuration;
-    updateEbEndPreview();
+    return count;
   }
-  function updateEbEndPreview() {
-    const start = Number(eb.start.value) || 0;
-    const duration = Number(eb.duration.value) || 0;
-    if (!duration) { eb.endPreview.textContent = ''; return; }
-    const end = endPoint(eb.date.value, start, duration);
-    const crosses = end.date !== eb.date.value;
-    const price = calculateBookingPrice({ facility: eb.facility.value, bookingDate: eb.date.value, startSlot: start, durationSlots: duration });
-    eb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''} · Calculated Price: ${formatBDT(price.finalPrice)}`;
-  }
-  eb.facility.addEventListener('change', () => refreshEbAvailability());
-  eb.date.addEventListener('change', () => refreshEbAvailability());
-  eb.start.addEventListener('change', () => refreshEbAvailability(Number(eb.start.value)));
-  eb.duration.addEventListener('change', updateEbEndPreview);
-
-  document.getElementById('editBookingForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!editingBooking) return;
-    eb.warning.hidden = true;
-    if (!isValidName(eb.name.value) || !isValidBDPhone(eb.phone.value)) {
-      eb.warning.hidden = false; eb.warning.textContent = 'Enter a valid name and Bangladesh phone number.'; return;
+  function populateNbStart(preferred) {
+    const isToday = nbDate.value === todayKey();
+    const nowMin = getDhakaNow().minutes;
+    nbStart.innerHTML = '';
+    HALF_HOUR_MARKS.forEach(min => {
+      const isPast = isToday && min < nowMin;
+      const occupied = nbSlotsCache.current[min];
+      if (isPast || occupied) return;
+      const opt = document.createElement('option');
+      opt.value = min;
+      opt.textContent = minutesToLabel(min);
+      if (min === preferred) opt.selected = true;
+      nbStart.appendChild(opt);
+    });
+    if (preferred !== null && ![...nbStart.options].some(o => Number(o.value) === preferred)) {
+      const opt = document.createElement('option');
+      opt.value = preferred;
+      opt.textContent = minutesToLabel(preferred) + ' (current)';
+      opt.selected = true;
+      nbStart.prepend(opt);
     }
-    const facility = eb.facility.value, date = eb.date.value;
-    const start = Number(eb.start.value), duration = Number(eb.duration.value);
-    if (!duration) { eb.warning.hidden = false; eb.warning.textContent = 'No open duration available at this start time.'; return; }
+  }
+  function populateNbDuration() {
+    const start = Number(nbStart.value);
+    const maxUnits = Number.isNaN(start) ? 0 : nbConsecutiveFrom(start);
+    nbDuration.innerHTML = '';
+    for (let units = 2; units <= Math.max(maxUnits, editingBooking ? Math.round(editingBooking.durationMinutes / STEP) : 0); units++) {
+      const opt = document.createElement('option');
+      opt.value = units;
+      opt.textContent = durationLabel(units * STEP);
+      nbDuration.appendChild(opt);
+    }
+  }
+  function refreshNbValidity() {
+    const name = document.getElementById('nbName').value.trim();
+    const phone = document.getElementById('nbPhone').value.trim();
+    const start = Number(nbStart.value);
+    const units = Number(nbDuration.value);
+    const maxUnits = Number.isNaN(start) ? 0 : nbConsecutiveFrom(start);
+    const fits = units >= 2 && units <= Math.max(maxUnits, editingBooking && start === editingBooking.startMinutes ? Math.round(editingBooking.durationMinutes / STEP) : 0);
+    nbWarning.hidden = fits || Number.isNaN(units);
+    if (!fits) nbWarning.textContent = `Only ${durationLabel(maxUnits * STEP)} is available from this start time.`;
+    nbSubmitBtn.disabled = !(name && isValidBDPhone(phone) && start >= 0 && units >= 2 && fits);
+  }
+  nbFacility.addEventListener('change', () => loadNbSlots().then(() => { populateNbStart(null); populateNbDuration(); refreshNbValidity(); }));
+  nbDate.addEventListener('change', () => loadNbSlots().then(() => { populateNbStart(null); populateNbDuration(); refreshNbValidity(); }));
+  nbStart.addEventListener('change', () => { populateNbDuration(); refreshNbValidity(); });
+  nbDuration.addEventListener('change', refreshNbValidity);
+  document.getElementById('nbName').addEventListener('input', refreshNbValidity);
+  document.getElementById('nbPhone').addEventListener('input', refreshNbValidity);
 
-    eb.submitBtn.disabled = true; eb.submitBtn.textContent = 'Saving…';
+  nbForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('nbName').value.trim();
+    const phone = document.getElementById('nbPhone').value.trim();
+    const email = document.getElementById('nbEmail').value.trim();
+    const facility = nbFacility.value;
+    const date = nbDate.value;
+    const start = Number(nbStart.value);
+    const units = Number(nbDuration.value);
+    const durationMinutes = units * STEP;
+    const notes = document.getElementById('nbNotes').value.trim();
+    const feeVal = document.getElementById('nbFee').value.trim();
+    const bookingFee = feeVal === '' ? null : Number(feeVal);
+    const showFeePublicly = document.getElementById('nbShowFee').checked;
+
+    nbSubmitBtn.disabled = true;
+    nbSubmitBtn.textContent = 'Saving…';
     try {
-      const oldIntervals = coveredIntervals(editingBooking.bookingDate, editingBooking.startSlot, editingBooking.durationSlots);
-      const newIntervals = coveredIntervals(date, start, duration);
-      const end = endPoint(date, start, duration);
-      const fee = eb.fee.value ? Number(eb.fee.value) : null;
-      const showFee = eb.showFee.checked;
-      // Recomputed because the admin edited this specific booking's own parameters (facility/date/
-      // start/duration) — not a retroactive repricing of history if the pricing table itself changes.
-      const price = calculateBookingPrice({ facility, bookingDate: date, startSlot: start, durationSlots: duration });
+      if (editingBooking) {
+        const freeBatch = writeBatch(db);
+        slotIdsForBooking(editingBooking.facility, editingBooking.bookingDate, editingBooking.startMinutes, editingBooking.durationMinutes)
+          .forEach(s => freeBatch.delete(s.ref));
+        await freeBatch.commit();
 
-      const batch = writeBatch(db);
-      oldIntervals.forEach(({date, slot}) => batch.delete(doc(db, 'slots', slotDocId(editingBooking.facility, date, slot))));
-      newIntervals.forEach(({date, slot}) => {
-        batch.set(doc(db, 'slots', slotDocId(facility, date, slot)), {
-          facility, businessId: BUSINESS_ID, date, slot, status: editingBooking.status === 'pending' ? 'pending' : 'approved',
-          bookingId: editingBooking.id, customerName: eb.name.value.trim(),
-          startSlot: start, durationSlots: duration, bookingFee: fee, showFeePublicly: !!showFee,
+        const claimBatch = writeBatch(db);
+        slotIdsForBooking(facility, date, start, durationMinutes).forEach(s => {
+          claimBatch.set(s.ref, {
+            facility, date: s.date, hhmm: s.hhmm, status: 'approved',
+            bookingId: editingBooking.id, customerName: name,
+            feePublic: (showFeePublicly && bookingFee != null) ? bookingFee : null,
+            feeCurrency: (showFeePublicly && bookingFee != null) ? 'BDT' : null,
+            createdAt: serverTimestamp(),
+          });
         });
-      });
-      batch.update(doc(db, 'bookings', editingBooking.id), {
-        customerName: eb.name.value.trim(), phone: normalizePhone(eb.phone.value), email: eb.email.value.trim() || null,
-        facility, businessId: BUSINESS_ID, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
-        endDate: end.date, endSlot: end.slot, notes: eb.notes.value.trim() || null,
-        bookingFee: fee, showFeePublicly: !!showFee, calculatedPrice: price.finalPrice, updatedAt: serverTimestamp(),
-      });
-      await batch.commit();
-      closeOverlay('editBookingOverlay');
-      editingBooking = null;
+        claimBatch.update(doc(db, 'bookings', editingBooking.id), {
+          customerName: name, phone, email: email || null, facility, bookingDate: date,
+          startMinutes: start, durationMinutes, endMinutes: start + durationMinutes,
+          notes: notes || null, bookingFee, feeCurrency: bookingFee != null ? 'BDT' : null,
+          showFeePublicly, updatedAt: serverTimestamp(),
+        });
+        await claimBatch.commit();
+      } else {
+        const batch = writeBatch(db);
+        const ref = doc(collection(db, 'bookings'));
+        batch.set(ref, {
+          customerName: name, phone, email: email || null, facility, bookingDate: date,
+          startMinutes: start, durationMinutes, endMinutes: start + durationMinutes,
+          notes: notes || null, status: 'approved', bookingType: 'admin_direct', bookingSource: 'admin',
+          bookingFee, feeCurrency: bookingFee != null ? 'BDT' : null, showFeePublicly,
+          recurringBookingId: null, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+          approvedAt: serverTimestamp(), rejectedAt: null,
+        });
+        slotIdsForBooking(facility, date, start, durationMinutes).forEach(s => {
+          batch.set(s.ref, {
+            facility, date: s.date, hhmm: s.hhmm, status: 'approved', bookingId: ref.id, customerName: name,
+            feePublic: (showFeePublicly && bookingFee != null) ? bookingFee : null,
+            feeCurrency: (showFeePublicly && bookingFee != null) ? 'BDT' : null,
+            createdAt: serverTimestamp(),
+          });
+        });
+        await batch.commit();
+      }
+      nbOverlay.hidden = true;
     } catch (err) {
       console.error(err);
-      eb.warning.hidden = false; eb.warning.textContent = 'Could not save changes — the new time may have just been taken.';
+      alert('Could not save this booking — one of the requested slots may already be taken, or check Firestore rules.');
     } finally {
-      eb.submitBtn.disabled = false; eb.submitBtn.textContent = 'Save Changes';
+      nbSubmitBtn.disabled = false;
+      nbSubmitBtn.textContent = editingBooking ? 'Save Changes' : 'Create Booking';
     }
   });
 
-  // ---------- CORPORATE / RECURRING BOOKING ----------
-  const cb = {
-    name: document.getElementById('cbName'), phone: document.getElementById('cbPhone'), email: document.getElementById('cbEmail'),
-    facility: document.getElementById('cbFacility'), pattern: document.getElementById('cbPattern'),
-    startDate: document.getElementById('cbStartDate'), endDate: document.getElementById('cbEndDate'),
-    start: document.getElementById('cbStart'), duration: document.getElementById('cbDuration'),
-    feeType: document.getElementById('cbFeeType'), fee: document.getElementById('cbFee'), showFee: document.getElementById('cbShowFee'),
-    notes: document.getElementById('cbNotes'), checkBtn: document.getElementById('cbCheckBtn'),
-  };
+  const corpOverlay = document.getElementById('corpOverlay');
+  const corpStep1 = document.getElementById('corpStep1');
+  const corpStep2 = document.getElementById('corpStep2');
+  const cbFacility = document.getElementById('cbFacility');
+  const cbStart = document.getElementById('cbStart');
+  const cbDuration = document.getElementById('cbDuration');
   let selectedDays = new Set();
-  document.querySelectorAll('#cbDayPills .day-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      const d = Number(pill.dataset.day);
-      if (selectedDays.has(d)) { selectedDays.delete(d); pill.classList.remove('active'); }
-      else { selectedDays.add(d); pill.classList.add('active'); }
+  let pendingOccurrences = [];
+
+  document.getElementById('openCorporateBtn').addEventListener('click', () => {
+    corpStep1.hidden = false;
+    corpStep2.hidden = true;
+    document.querySelectorAll('#corpOverlay input, #corpOverlay textarea').forEach(el => el.value = '');
+    selectedDays.clear();
+    document.querySelectorAll('.day-chip').forEach(c => c.classList.remove('active'));
+    populateSimpleStartAndDuration();
+    document.getElementById('cbStartDate').min = todayKey();
+    document.getElementById('cbEndDate').min = todayKey();
+    corpOverlay.hidden = false;
+  });
+  document.getElementById('corpClose').addEventListener('click', () => { corpOverlay.hidden = true; });
+
+  document.querySelectorAll('.day-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const day = Number(chip.dataset.day);
+      if (selectedDays.has(day)) { selectedDays.delete(day); chip.classList.remove('active'); }
+      else { selectedDays.add(day); chip.classList.add('active'); }
     });
   });
 
-  document.getElementById('openCorporateBtn').addEventListener('click', () => {
-    document.getElementById('corpForm').reset();
-    document.getElementById('corpForm').hidden = false;
-    document.getElementById('corpConflictPanel').hidden = true;
-    selectedDays = new Set();
-    document.querySelectorAll('#cbDayPills .day-pill').forEach(p => p.classList.remove('active'));
-    populateSlotSelect(cb.start, {});
-    populateDurationSelect(cb.duration, SLOTS_PER_DAY);
-    cb.startDate.min = todayKey();
-    openOverlay('corpOverlay');
-  });
-
-  function occurrenceDates(startDate, endDate, days) {
-    const out = [];
-    let d = startDate;
-    let guard = 0;
-    while (d <= endDate && guard < 1000) {
-      if (days.has(dayOfWeek(d))) out.push(d);
-      d = addDays(d, 1);
-      guard++;
+  function populateSimpleStartAndDuration() {
+    cbStart.innerHTML = '';
+    HALF_HOUR_MARKS.forEach(min => {
+      const opt = document.createElement('option');
+      opt.value = min; opt.textContent = minutesToLabel(min);
+      cbStart.appendChild(opt);
+    });
+    cbDuration.innerHTML = '';
+    for (let units = 2; units <= 8; units++) {
+      const opt = document.createElement('option');
+      opt.value = units; opt.textContent = durationLabel(units * STEP);
+      cbDuration.appendChild(opt);
     }
-    return out;
   }
 
-  let pendingCorpPlan = null; // { occurrences: [{date, conflict:bool}], formSnapshot }
+  document.getElementById('cbCheckBtn').addEventListener('click', async () => {
+    const name = document.getElementById('cbName').value.trim();
+    const phone = document.getElementById('cbPhone').value.trim();
+    const facility = cbFacility.value;
+    const startDate = document.getElementById('cbStartDate').value;
+    const endDate = document.getElementById('cbEndDate').value;
+    const start = Number(cbStart.value);
+    const units = Number(cbDuration.value);
+    const durationMinutes = units * STEP;
 
-  document.getElementById('corpForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!isValidName(cb.name.value) || !isValidBDPhone(cb.phone.value)) {
-      alert('Enter a valid name and Bangladesh phone number.'); return;
+    if (!name || !isValidBDPhone(phone) || !startDate || !endDate || selectedDays.size === 0 || endDate < startDate) {
+      alert('Please fill in name, a valid phone number, at least one day of the week, and a valid date range.');
+      return;
     }
-    if (!selectedDays.size) { alert('Pick at least one day of the week.'); return; }
-    if (!cb.startDate.value || !cb.endDate.value || cb.endDate.value < cb.startDate.value) {
-      alert('Pick a valid start and end date.'); return;
-    }
-    const facility = cb.facility.value;
-    const start = Number(cb.start.value), duration = Number(cb.duration.value);
-    const dates = occurrenceDates(cb.startDate.value, cb.endDate.value, selectedDays);
-    if (!dates.length) { alert('No matching dates in that range.'); return; }
 
-    cb.checkBtn.disabled = true; cb.checkBtn.textContent = 'Checking…';
-    try {
-      const occurrences = [];
-      for (const date of dates) {
-        const intervals = coveredIntervals(date, start, duration);
-        const checks = await Promise.all(intervals.map(iv => getDoc(doc(db, 'slots', slotDocId(facility, iv.date, iv.slot)))));
-        occurrences.push({ date, intervals, conflict: checks.some(s => s.exists()) });
-      }
-      pendingCorpPlan = {
-        occurrences, facility, start, duration,
-        name: cb.name.value.trim(), phone: normalizePhone(cb.phone.value), email: cb.email.value.trim() || null,
-        feeType: cb.feeType.value, fee: cb.fee.value ? Number(cb.fee.value) : null, showFee: cb.showFee.checked,
-        notes: cb.notes.value.trim() || null,
-      };
-      const conflicts = occurrences.filter(o => o.conflict);
-      document.getElementById('corpForm').hidden = true;
-      const panel = document.getElementById('corpConflictPanel');
-      panel.hidden = false;
-      document.getElementById('corpConflictSummary').textContent = conflicts.length
-        ? `Conflict Found — ${conflicts.length} of ${occurrences.length} date(s) already have a booking in this time range.`
-        : `${occurrences.length} date(s) ready to book — review the calculated price for each before confirming.`;
-      document.getElementById('corpConflictList').innerHTML = occurrences.map(o => {
-        const end = endPoint(o.date, start, duration);
-        const crosses = end.date !== o.date;
-        const timeRange = `${slotLabel(start)}–${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''}`;
-        if (o.conflict) return `<li>${o.date} — ${timeRange} conflicts with an existing booking.</li>`;
-        const price = calculateBookingPrice({ facility, bookingDate: o.date, startSlot: start, durationSlots: duration });
-        return `<li>${o.date} — ${timeRange} — Open — ${formatBDT(price.finalPrice)}</li>`;
-      }).join('');
-      document.getElementById('corpSkipCreateBtn').textContent = conflicts.length
-        ? 'Skip Conflicting Dates & Create Rest' : 'Create Series';
-    } catch (err) {
-      console.error(err);
-      alert('Could not check availability — see console.');
-    } finally {
-      cb.checkBtn.disabled = false; cb.checkBtn.textContent = 'Check Availability & Generate';
+    const occurrences = [];
+    let cursor = startDate;
+    while (cursor <= endDate) {
+      const weekday = new Date(cursor + "T00:00:00").getDay();
+      if (selectedDays.has(weekday)) occurrences.push(cursor);
+      cursor = addDaysStr(cursor, 1);
     }
+
+    const snap = await getDocs(query(
+      collection(db, 'slots'), where('facility', '==', facility),
+      where('date', '>=', startDate), where('date', '<=', addDaysStr(endDate, 1))
+    ));
+    const existingKeys = new Set();
+    snap.forEach(d => existingKeys.add(d.id));
+
+    pendingOccurrences = occurrences.map(occDate => {
+      const ids = slotIdsForBooking(facility, occDate, start, durationMinutes).map(s => slotDocId(facility, s.date, s.hhmm));
+      const conflict = ids.some(id => existingKeys.has(id));
+      return { date: occDate, conflict, ids };
+    });
+
+    const list = document.getElementById('occurrenceList');
+    list.innerHTML = pendingOccurrences.map(o => `
+      <div class="occurrence-row ${o.conflict ? 'conflict' : 'ok'}">
+        <span>${o.date} — ${minutesToLabel(start)} (${durationLabel(durationMinutes)})</span>
+        <span>${o.conflict ? 'Conflict' : 'OK'}</span>
+      </div>
+    `).join('');
+    const conflictCount = pendingOccurrences.filter(o => o.conflict).length;
+    document.getElementById('corpSummaryText').textContent =
+      `${pendingOccurrences.length} occurrence(s) found — ${conflictCount} conflict(s). Skipping conflicts will create the remaining ${pendingOccurrences.length - conflictCount}.`;
+
+    corpStep1.hidden = true;
+    corpStep2.hidden = false;
   });
 
-  document.getElementById('corpSkipCreateBtn').addEventListener('click', async () => {
-    if (!pendingCorpPlan) return;
-    const usable = pendingCorpPlan.occurrences.filter(o => !o.conflict);
-    await createRecurringSeries(pendingCorpPlan, usable, pendingCorpPlan.occurrences.filter(o => o.conflict).map(o => o.date));
-  });
-  document.getElementById('corpCancelSeriesBtn').addEventListener('click', () => {
-    pendingCorpPlan = null;
-    closeOverlay('corpOverlay');
-  });
+  document.getElementById('cbCancelSeriesBtn').addEventListener('click', () => { corpStep1.hidden = false; corpStep2.hidden = true; });
 
-  async function createRecurringSeries(plan, occurrences, skippedDates = []) {
-    if (!occurrences.length) { alert('No open dates left to book — series cancelled.'); closeOverlay('corpOverlay'); return; }
+  document.getElementById('cbSkipCreateBtn').addEventListener('click', async () => {
+    const name = document.getElementById('cbName').value.trim();
+    const phone = document.getElementById('cbPhone').value.trim();
+    const email = document.getElementById('cbEmail').value.trim();
+    const facility = cbFacility.value;
+    const startDate = document.getElementById('cbStartDate').value;
+    const endDate = document.getElementById('cbEndDate').value;
+    const start = Number(cbStart.value);
+    const units = Number(cbDuration.value);
+    const durationMinutes = units * STEP;
+    const notes = document.getElementById('cbNotes').value.trim();
+    const feeType = document.getElementById('cbFeeType').value;
+    const feeVal = document.getElementById('cbFee').value.trim();
+    const bookingFee = feeVal === '' ? null : Number(feeVal);
+    const showFeePublicly = document.getElementById('cbShowFee').checked;
+    const daysArr = [...selectedDays].sort();
+
+    const btn = document.getElementById('cbSkipCreateBtn');
+    btn.disabled = true;
+    btn.textContent = 'Creating…';
     try {
       const seriesRef = doc(collection(db, 'recurringBookings'));
-      await writeBatch(db).set(seriesRef, {
-        customerName: plan.name, phone: plan.phone, email: plan.email, facility: plan.facility, businessId: BUSINESS_ID,
-        pattern: 'weekly', daysOfWeek: [...selectedDays], startDate: cb.startDate.value, endDate: cb.endDate.value,
-        startSlot: plan.start, durationSlots: plan.duration,
-        feeType: plan.feeType, bookingFee: plan.fee, feeCurrency: 'BDT', showFeePublicly: plan.showFee,
-        notes: plan.notes, status: 'active', occurrenceCount: occurrences.length, skippedDates,
-        createdAt: serverTimestamp(),
-      }).commit();
+      const seriesBatch = writeBatch(db);
+      seriesBatch.set(seriesRef, {
+        customerName: name, phone, email: email || null, facility,
+        daysOfWeek: daysArr, startDate, endDate, startMinutes: start, durationMinutes,
+        feeType, bookingFee, feeCurrency: bookingFee != null ? 'BDT' : null, showFeePublicly,
+        notes: notes || null, status: 'active', createdAt: serverTimestamp(),
+      });
+      await seriesBatch.commit();
 
-      for (const occ of occurrences) {
-        const end = endPoint(occ.date, plan.start, plan.duration);
-        // Priced per-occurrence, not once for the whole series — a pattern spanning more than one
-        // day of the week (e.g. Sunday AND Thursday) can have different prices on different dates.
-        const price = calculateBookingPrice({ facility: plan.facility, bookingDate: occ.date, startSlot: plan.start, durationSlots: plan.duration });
-        const perOccBatch = writeBatch(db);
+      const perOccurrenceFee = feeType === 'per_occurrence' ? bookingFee : null;
+
+      for (const occ of pendingOccurrences) {
+        if (occ.conflict) continue;
+        const batch = writeBatch(db);
         const bookingRef = doc(collection(db, 'bookings'));
-        perOccBatch.set(bookingRef, {
-          customerName: plan.name, phone: plan.phone, email: plan.email, facility: plan.facility, businessId: BUSINESS_ID,
-          bookingDate: occ.date, startSlot: plan.start, durationSlots: plan.duration, durationMinutes: plan.duration * 30,
-          endDate: end.date, endSlot: end.slot,
-          status: 'approved', bookingType: 'corporate_recurring', bookingSource: 'admin',
-          bookingFee: plan.feeType === 'perOccurrence' ? plan.fee : null,
-          feeCurrency: 'BDT', showFeePublicly: plan.showFee, recurringBookingId: seriesRef.id,
-          calculatedPrice: price.finalPrice,
-          notes: plan.notes, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+        batch.set(bookingRef, {
+          customerName: name, phone, email: email || null, facility, bookingDate: occ.date,
+          startMinutes: start, durationMinutes, endMinutes: start + durationMinutes,
+          notes: notes || null, status: 'approved', bookingType: 'corporate_recurring', bookingSource: 'admin',
+          bookingFee: perOccurrenceFee, feeCurrency: perOccurrenceFee != null ? 'BDT' : null, showFeePublicly,
+          recurringBookingId: seriesRef.id, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
           approvedAt: serverTimestamp(), rejectedAt: null,
         });
-        occ.intervals.forEach(({date, slot}) => {
-          perOccBatch.set(doc(db, 'slots', slotDocId(plan.facility, date, slot)), {
-            facility: plan.facility, businessId: BUSINESS_ID, date, slot, status: 'approved', bookingId: bookingRef.id, customerName: plan.name,
-            startSlot: plan.start, durationSlots: plan.duration,
-            bookingFee: plan.feeType === 'perOccurrence' ? plan.fee : null, showFeePublicly: plan.showFee,
+        slotIdsForBooking(facility, occ.date, start, durationMinutes).forEach(s => {
+          batch.set(s.ref, {
+            facility, date: s.date, hhmm: s.hhmm, status: 'approved', bookingId: bookingRef.id, customerName: name,
+            feePublic: (showFeePublicly && perOccurrenceFee != null) ? perOccurrenceFee : null,
+            feeCurrency: (showFeePublicly && perOccurrenceFee != null) ? 'BDT' : null,
+            createdAt: serverTimestamp(),
           });
         });
-        await perOccBatch.commit();
+        await batch.commit();
       }
-      pendingCorpPlan = null;
-      closeOverlay('corpOverlay');
+      corpOverlay.hidden = true;
     } catch (err) {
       console.error(err);
-      alert('Could not create the recurring series — see console. Some occurrences may already be booked.');
+      alert('Some occurrences may not have been created — check the console and your Firestore rules, then review the Bookings tab.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Skip Conflicts & Create Rest';
     }
-  }
+  });
 
-  // ---------- RECURRING TABLE + OCCURRENCES ----------
   function renderRecurringTable() {
     const tbody = document.getElementById('recurringBody');
-    const loadingState = document.getElementById('recurringLoadingState');
-    const emptyState = document.getElementById('recurringEmptyState');
-    loadingState.style.display = 'none';
+    const empty = document.getElementById('recurringEmptyState');
     tbody.innerHTML = '';
-    emptyState.style.display = allRecurring.length ? 'none' : 'block';
-
-    allRecurring.forEach(series => {
-      const occs = allBookings.filter(b => b.recurringBookingId === series.id);
-      const activeOccs = occs.filter(b => b.status !== 'cancelled' && b.status !== 'rejected');
-      const feeText = series.bookingFee ? `৳${Number(series.bookingFee).toLocaleString()} (${series.feeType === 'monthly' ? 'total' : 'per visit'})${series.showFeePublicly ? '' : ' · hidden'}` : '—';
+    empty.style.display = allRecurring.length ? 'none' : 'block';
+    allRecurring.forEach(rb => {
       const tr = document.createElement('tr');
+      const daysStr = (rb.daysOfWeek || []).map(d => DAY_NAMES[d]).join(', ');
+      const feeStr = rb.bookingFee != null ? `৳${rb.bookingFee} (${rb.feeType === 'monthly' ? 'total' : 'per occ.'})` : '—';
       tr.innerHTML = `
-        <td>
-          <div class="cell-name">${escapeHtml(series.customerName || '—')}</div>
-          <div class="cell-sub">${escapeHtml(series.phone || '')}</div>
-        </td>
-        <td>${FACILITY_LABELS[series.facility] || series.facility}</td>
-        <td class="cell-sub">Weekly · ${(series.daysOfWeek || []).map(d => DAY_NAMES[d]).join(', ')}</td>
-        <td class="cell-sub">${series.startDate} → ${series.endDate}</td>
-        <td class="cell-sub">${slotLabel(series.startSlot)} (${durationLabel(series.durationSlots)})</td>
-        <td class="cell-sub">${feeText}</td>
-        <td class="cell-sub">${activeOccs.length} active${series.skippedDates && series.skippedDates.length ? `, ${series.skippedDates.length} skipped` : ''}</td>
-        <td><span class="status-pill ${series.status === 'active' ? 'approved' : 'cancelled'}">${series.status}</span></td>
+        <td><div class="cell-name">${escapeHtml(rb.customerName)}</div><div class="cell-sub">${escapeHtml(rb.phone)}</div></td>
+        <td>${FACILITY_LABELS[rb.facility] || rb.facility}</td>
+        <td>${daysStr}</td>
+        <td>${rb.startDate} – ${rb.endDate}</td>
+        <td>${minutesToLabel(rb.startMinutes)} (${durationLabel(rb.durationMinutes)})</td>
+        <td class="cell-sub">${feeStr}</td>
+        <td><span class="status-pill ${rb.status === 'active' ? 'approved' : 'cancelled'}">${rb.status}</span></td>
         <td class="row-actions">
-          <button class="action-btn edit" data-occ="${series.id}">View Occurrences</button>
-          ${series.status === 'active' ? `<button class="action-btn cancel" data-cancel-series="${series.id}">Cancel Series</button>` : ''}
+          <button class="action-btn edit" data-action="view">View Occurrences</button>
+          ${rb.status === 'active' ? '<button class="action-btn cancel" data-action="cancelSeries">Cancel Series</button>' : ''}
         </td>
       `;
       tbody.appendChild(tr);
-    });
-
-    tbody.querySelectorAll('[data-occ]').forEach(btn => btn.addEventListener('click', () => openOccurrencesModal(btn.dataset.occ)));
-    tbody.querySelectorAll('[data-cancel-series]').forEach(btn => btn.addEventListener('click', () => cancelSeries(btn.dataset.cancelSeries)));
-  }
-
-  function openOccurrencesModal(seriesId) {
-    const series = allRecurring.find(s => s.id === seriesId);
-    if (!series) return;
-    document.getElementById('occSummary').textContent = `${series.customerName} · ${FACILITY_LABELS[series.facility]}`;
-    const occs = allBookings.filter(b => b.recurringBookingId === seriesId).sort((a,b) => a.bookingDate.localeCompare(b.bookingDate));
-    const tbody = document.getElementById('occBody');
-    tbody.innerHTML = occs.map(o => `
-      <tr>
-        <td>${o.bookingDate}</td>
-        <td class="cell-sub">${slotLabel(o.startSlot)} – ${slotLabel(o.endSlot)}</td>
-        <td class="cell-sub">${o.calculatedPrice != null ? formatBDT(o.calculatedPrice) : '—'}</td>
-        <td><span class="status-pill ${o.status}">${o.status}</span></td>
-        <td class="row-actions">${o.status === 'approved' ? `<button class="action-btn cancel" data-occ-id="${o.id}">Cancel Occurrence</button>` : '<span class="cell-sub">—</span>'}</td>
-      </tr>
-    `).join('') || '<tr><td colspan="5" class="cell-sub">No occurrences.</td></tr>';
-    tbody.querySelectorAll('[data-occ-id]').forEach(btn => btn.addEventListener('click', () => cancelOccurrence(btn.dataset.occId, seriesId)));
-    openOverlay('occOverlay');
-  }
-
-  async function cancelOccurrence(bookingId, seriesId) {
-    const r = allBookings.find(b => b.id === bookingId);
-    if (!r) return;
-    try {
-      const batch = writeBatch(db);
-      coveredIntervals(r.bookingDate, r.startSlot, r.durationSlots).forEach(({date, slot}) => {
-        batch.delete(doc(db, 'slots', slotDocId(r.facility, date, slot)));
+      tr.querySelector('[data-action="view"]').addEventListener('click', () => {
+        seriesFilterId = rb.id;
+        document.getElementById('seriesFilterChip').hidden = false;
+        document.querySelectorAll('.subtab').forEach(b => b.classList.remove('active'));
+        document.querySelector('.subtab[data-tab="bookings"]').classList.add('active');
+        activeSubtab = 'bookings';
+        bookingsTab.style.display = 'block';
+        recurringTab.style.display = 'none';
+        renderTable();
       });
-      batch.update(doc(db, 'bookings', r.id), { status: 'cancelled', updatedAt: serverTimestamp() });
-      await batch.commit();
-      openOccurrencesModal(seriesId);
-    } catch (err) {
-      console.error(err);
-      alert('Could not cancel that occurrence — see console.');
-    }
+      const cancelBtn = tr.querySelector('[data-action="cancelSeries"]');
+      if (cancelBtn) cancelBtn.addEventListener('click', () => cancelSeries(rb));
+    });
   }
 
-  async function cancelSeries(seriesId) {
-    if (!confirm('Cancel this entire recurring series? Past occurrences are kept as history; future ones are freed up.')) return;
-    const today = todayKey();
+  async function cancelSeries(rb) {
+    if (!confirm(`Cancel the entire recurring series for ${rb.customerName}? This frees all future occurrences.`)) return;
     try {
-      const occs = allBookings.filter(b => b.recurringBookingId === seriesId && b.status === 'approved' && b.bookingDate >= today);
-      for (const r of occs) {
+      const today = todayKey();
+      const occSnap = await getDocs(query(
+        collection(db, 'bookings'),
+        where('recurringBookingId', '==', rb.id),
+        where('status', '==', 'approved')
+      ));
+      for (const occDoc of occSnap.docs) {
+        const occ = occDoc.data();
+        if (occ.bookingDate < today) continue;
         const batch = writeBatch(db);
-        coveredIntervals(r.bookingDate, r.startSlot, r.durationSlots).forEach(({date, slot}) => {
-          batch.delete(doc(db, 'slots', slotDocId(r.facility, date, slot)));
-        });
-        batch.update(doc(db, 'bookings', r.id), { status: 'cancelled', updatedAt: serverTimestamp() });
+        slotIdsForBooking(occ.facility, occ.bookingDate, occ.startMinutes, occ.durationMinutes).forEach(s => batch.delete(s.ref));
+        batch.update(doc(db, 'bookings', occDoc.id), { status: 'cancelled', updatedAt: serverTimestamp() });
         await batch.commit();
       }
-      await updateDoc(doc(db, 'recurringBookings', seriesId), { status: 'cancelled' });
+      await updateDoc(doc(db, 'recurringBookings', rb.id), { status: 'cancelled' });
     } catch (err) {
       console.error(err);
-      alert('Could not cancel the series — see console.');
+      alert('Could not fully cancel the series — check the console and your Firestore rules.');
     }
   }
+
+  // ---------- CSV EXPORT (client-side, admin-only, uses already-loaded data) ----------
+  // This is a manual convenience export — NOT the primary backup. The
+  // Google Sheets sync (Cloud Functions) is the automatic backup system;
+  // see BACKUP_SETUP.md.
+  function csvEscape(val) {
+    const s = val == null ? '' : String(val);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
+  document.getElementById('exportCsvBtn').addEventListener('click', () => {
+    const headers = [
+      'Booking ID', 'Customer Name', 'Phone', 'Email', 'Facility', 'Booking Date',
+      'Start Minutes', 'Duration Minutes', 'Status', 'Booking Type', 'Booking Fee',
+      'Fee Currency', 'Show Fee Publicly', 'Notes', 'Recurring Booking ID',
+      'Created At', 'Updated At', 'Approved At', 'Approved By', 'Rejected At',
+      'Sheet Backup Status', 'Last Sheet Backup At',
+    ];
+    const rows = allRequests.map(r => [
+      r.id, r.customerName, r.phone, r.email, FACILITY_LABELS[r.facility] || r.facility,
+      r.bookingDate, r.startMinutes, r.durationMinutes, r.status, r.bookingType,
+      r.bookingFee, r.feeCurrency, r.showFeePublicly, r.notes, r.recurringBookingId,
+      r.createdAt && r.createdAt.toDate ? r.createdAt.toDate().toISOString() : '',
+      r.updatedAt && r.updatedAt.toDate ? r.updatedAt.toDate().toISOString() : '',
+      r.approvedAt && r.approvedAt.toDate ? r.approvedAt.toDate().toISOString() : '',
+      r.approvedBy, r.rejectedAt && r.rejectedAt.toDate ? r.rejectedAt.toDate().toISOString() : '',
+      r.sheetBackupStatus, r.lastSheetBackupAt && r.lastSheetBackupAt.toDate ? r.lastSheetBackupAt.toDate().toISOString() : '',
+    ]);
+    const csv = [headers, ...rows].map(row => row.map(csvEscape).join(',')).join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `frenzy-bookings-export-${todayKey()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // ---------- ORPHANED SLOT SCAN & CLEANUP ----------
+  const integrityOverlay = document.getElementById('integrityOverlay');
+  const integrityStatus = document.getElementById('integrityStatus');
+  const integrityList = document.getElementById('integrityList');
+  const integrityScanBtn = document.getElementById('integrityScanBtn');
+  const integrityDeleteBtn = document.getElementById('integrityDeleteBtn');
+  let foundOrphans = [];
+
+  document.getElementById('openIntegrityBtn').addEventListener('click', () => {
+    foundOrphans = [];
+    integrityList.innerHTML = '';
+    integrityStatus.textContent = 'Not yet scanned.';
+    integrityDeleteBtn.disabled = true;
+    integrityOverlay.hidden = false;
+  });
+  document.getElementById('integrityClose').addEventListener('click', () => { integrityOverlay.hidden = true; });
+
+  integrityScanBtn.addEventListener('click', async () => {
+    integrityScanBtn.disabled = true;
+    integrityScanBtn.textContent = 'Scanning…';
+    integrityStatus.textContent = 'Scanning slots across all facilities…';
+    try {
+      const today = todayKey();
+      const horizon = addDaysStr(today, 90);
+      const facilities = ['futsalTurf', 'swimmingPool', 'carrom'];
+
+      let allSlots = [];
+      for (const facility of facilities) {
+        const snap = await getDocs(query(
+          collection(db, 'slots'), where('facility', '==', facility),
+          where('date', '>=', today), where('date', '<=', horizon)
+        ));
+        snap.forEach(d => allSlots.push({ id: d.id, ref: d.ref, ...d.data() }));
+      }
+
+      // Fetch the referenced bookings in chunks of 10 (Firestore 'in' query limit)
+      const bookingIds = [...new Set(allSlots.map(s => s.bookingId).filter(Boolean))];
+      const bookingMap = {};
+      for (let i = 0; i < bookingIds.length; i += 10) {
+        const chunk = bookingIds.slice(i, i + 10);
+        if (!chunk.length) continue;
+        const snap = await getDocs(query(collection(db, 'bookings'), where(documentId(), 'in', chunk)));
+        snap.forEach(d => { bookingMap[d.id] = d.data(); });
+      }
+
+      foundOrphans = allSlots.filter(s => {
+        const b = s.bookingId ? bookingMap[s.bookingId] : null;
+        if (!b) return true; // no matching booking record at all
+        if (s.status === 'pending' && b.status !== 'pending') return true;
+        if (s.status === 'approved' && b.status !== 'approved') return true;
+        return false;
+      });
+
+      integrityStatus.textContent = `Scanned ${allSlots.length} locked slot(s) over the next 90 days — found ${foundOrphans.length} orphan(s).`;
+      integrityList.innerHTML = foundOrphans.length
+        ? foundOrphans.map(o => `
+            <div class="occurrence-row conflict">
+              <span>${FACILITY_LABELS[o.facility] || o.facility} — ${o.date} ${minutesToLabel(parseInt(o.hhmm.slice(0,2),10)*60 + parseInt(o.hhmm.slice(2),10))} (${o.status})</span>
+              <span>${o.bookingId && bookingMap[o.bookingId] ? 'Status mismatch' : 'No booking record'}</span>
+            </div>
+          `).join('')
+        : '<div class="occurrence-row ok"><span>No orphans found — everything is consistent.</span></div>';
+      integrityDeleteBtn.disabled = foundOrphans.length === 0;
+    } catch (err) {
+      console.error(err);
+      integrityStatus.textContent = 'Scan failed — check the browser console (this may need a Firestore index; click any link shown there).';
+    } finally {
+      integrityScanBtn.disabled = false;
+      integrityScanBtn.textContent = 'Run Scan';
+    }
+  });
+
+  integrityDeleteBtn.addEventListener('click', async () => {
+    if (!foundOrphans.length) return;
+    if (!confirm(`Delete ${foundOrphans.length} orphaned slot lock(s)? This frees them back to Open immediately.`)) return;
+    integrityDeleteBtn.disabled = true;
+    integrityDeleteBtn.textContent = 'Deleting…';
+    try {
+      // writeBatch has a 500-operation limit — chunk defensively
+      for (let i = 0; i < foundOrphans.length; i += 400) {
+        const batch = writeBatch(db);
+        foundOrphans.slice(i, i + 400).forEach(o => batch.delete(o.ref));
+        await batch.commit();
+      }
+      integrityStatus.textContent = `Deleted ${foundOrphans.length} orphan(s).`;
+      integrityList.innerHTML = '<div class="occurrence-row ok"><span>Cleaned up.</span></div>';
+      foundOrphans = [];
+    } catch (err) {
+      console.error(err);
+      alert('Could not delete all orphans — check the console and your Firestore rules.');
+    } finally {
+      integrityDeleteBtn.disabled = true;
+      integrityDeleteBtn.textContent = 'Delete All Orphans Found';
+    }
+  });
 </script>
 
 </body>
