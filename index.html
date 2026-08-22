@@ -239,31 +239,31 @@
   .cal-date-input{
     position:absolute; inset:0; opacity:0; cursor:pointer; border:0; width:100%; height:100%;
   }
-  .cal-tabs{display:flex; gap:8px;}
+  .cal-tabs{display:flex; gap:8px; flex-wrap:wrap;}
   .cal-tab{
-    flex:1; padding:10px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.14);
+    flex:1; min-width:110px; padding:10px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.14);
     background:transparent; color:#b9c9d1; font-family:var(--body); font-weight:700; font-size:0.85rem; cursor:pointer;
   }
   .cal-tab.active{background:var(--pool); border-color:var(--pool); color:var(--navy);}
 
   .cal-loading{color:#b9c9d1; font-size:0.92rem; padding:24px 0;}
-  .cal-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:10px;}
+  .cal-grid{display:grid; grid-template-columns:repeat(8, 1fr); gap:8px;}
   .cal-grid[hidden]{display:none;}
+  @media (max-width:960px){.cal-grid{grid-template-columns:repeat(6, 1fr);}}
+  @media (max-width:760px){.cal-grid{grid-template-columns:repeat(4, 1fr);}}
+  @media (max-width:520px){.cal-grid{grid-template-columns:repeat(2, 1fr);}}
   .cal-slot{
-    display:flex; flex-direction:column; align-items:flex-start; gap:4px;
-    padding:12px 14px; border-radius:8px; border:1px solid transparent;
-    cursor:pointer; text-align:left; font-family:var(--body); background:none;
+    display:flex; flex-direction:column; align-items:flex-start; gap:3px;
+    padding:10px 10px; border-radius:8px; border:1px solid transparent;
+    cursor:pointer; text-align:left; font-family:var(--body); background:none; min-width:0;
   }
   .cal-slot.open{background:rgba(31,162,92,0.14); border-color:rgba(31,162,92,0.4);}
   .cal-slot.pending{background:rgba(242,183,5,0.14); border-color:rgba(242,183,5,0.4);}
   .cal-slot.booked{background:rgba(255,90,54,0.12); border-color:rgba(255,90,54,0.35);}
   .cal-slot.past{opacity:0.35; cursor:not-allowed;}
-  /* Informational-only card: shows a previous booking's end boundary at the same
-     time label as the next slot's actionable Open card. Not clickable. */
-  .cal-slot.end-boundary{opacity:0.55; cursor:default;}
-  .cal-slot-time{font-size:0.85rem; font-weight:800; color:#fff;}
-  .cal-slot-status{font-size:0.72rem; color:#b9c9d1; font-family:var(--mono);}
-  .cal-slot-endtag{color:#8ba0a9; font-weight:600;}
+  .cal-slot-time{font-size:0.78rem; font-weight:800; color:#fff; white-space:nowrap;}
+  .cal-slot-status{font-size:0.66rem; color:#b9c9d1; font-family:var(--mono);}
+  .cal-slot-name{font-size:0.68rem; color:#ffcbb8; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%;}
 
   .cal-overlay{
     position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:100;
@@ -284,26 +284,12 @@
     font-family:var(--body); font-size:0.94rem; padding:11px 12px; border-radius:4px;
     background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); color:#fff;
   }
-  /* Selects need an OPAQUE background (not the rgba above) — Windows Chrome/Edge ignore a
-     translucent <select> background when painting the native options popup and fall back to a
-     plain white list, which is unreadable against white option text. #1b3b52 is the same visual
-     shade as rgba(255,255,255,0.06) over this panel's --navy background, just baked into an
-     opaque color so the popup inherits it too. */
-  .cal-form select{
-    background-color:#1b3b52;
-    color-scheme:dark;
-  }
-  .cal-form select option{
-    background-color:#1b3b52;
-    color:#fff;
-  }
-  .cal-form select option:checked{
-    background-color:var(--pool);
-    color:#061a2b;
-  }
   .cal-form .field textarea{resize:vertical; min-height:70px;}
   .cal-form .btn{width:100%; justify-content:center; margin-top:4px;}
+  .cal-form .btn:disabled{opacity:0.5; cursor:not-allowed;}
   .cal-form .form-note, .book > .wrap > .form-note{font-size:0.8rem; color:#8ba0a9;}
+  .cal-field-hint{font-size:0.76rem; color:#ff9c85; display:none;}
+  .cal-field-hint.show{display:block;}
 
   .cal-legend{display:flex; flex-wrap:wrap; gap:16px; margin-bottom:16px; font-size:0.78rem; color:#b9c9d1;}
   .cal-legend span{display:flex; align-items:center; gap:6px;}
@@ -340,6 +326,14 @@
   }
   .cal-toast.err{background:var(--flare);}
 
+  .cal-detail-body{padding:0 20px 22px; display:flex; flex-direction:column; gap:10px;}
+  .cal-detail-row{display:flex; justify-content:space-between; align-items:center; gap:12px;}
+  .status-chip{
+    font-family:var(--mono); font-size:0.72rem; font-weight:700; padding:3px 10px;
+    border-radius:10px; text-transform:uppercase;
+  }
+  .status-chip.booked{background:rgba(255,90,54,0.16); color:#ff9c85;}
+
   /* ---------- FAQ ---------- */
   .faq{background:var(--paper);}
   .faq-list{max-width:760px;}
@@ -371,17 +365,6 @@
   footer .brand{font-size:0.95rem;}
 
   a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--pool-bright); outline-offset:3px;}
-
-  /* ---------- EXTENDED BOOKING SYSTEM (3 facilities / 30-min slots) ---------- */
-  .cal-grid{grid-template-columns:repeat(2, 1fr);}
-  @media (min-width:600px){.cal-grid{grid-template-columns:repeat(4, 1fr);}}
-  @media (min-width:900px){.cal-grid{grid-template-columns:repeat(7, 1fr);}}
-  .cal-slot-name{font-size:0.68rem; color:#ffcf8a; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
-  .cal-slot.pending{cursor:not-allowed;}
-  .cal-form select#bfDuration{cursor:pointer;}
-  .cal-field-error{font-size:0.76rem; color:#ffb3a3; margin-top:-4px;}
-  .cal-field-error[hidden]{display:none;}
-  .cal-hint{font-size:0.76rem; color:#8ba0a9; margin-top:-4px;}
 </style>
 </head>
 <body>
@@ -462,14 +445,14 @@
           <p>An on-site pool for laps or a cool-down after your match.</p>
         </div>
         <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4"/><circle cx="8" cy="9" r="1"/><circle cx="16" cy="9" r="1"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg></span>
-          <h4>Carrom</h4>
-          <p>Indoor carrom boards for a quick game between matches.</p>
-        </div>
-        <div class="facility-card">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
           <h4>Always Open</h4>
           <p>No fixed hours — call ahead to lock in your slot any time.</p>
+        </div>
+        <div class="facility-card">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="2"/><circle cx="7" cy="8" r="1.4"/><circle cx="17" cy="8" r="1.4"/><circle cx="7" cy="16" r="1.4"/><circle cx="17" cy="16" r="1.4"/></svg></span>
+          <h4>Carrom</h4>
+          <p>Indoor carrom boards for a quicker session between matches.</p>
         </div>
         <div class="facility-card">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
@@ -495,7 +478,7 @@
       <div class="section-head">
         <p class="eyebrow" style="color:var(--pool-bright);">Live availability</p>
         <h2>Request a Slot</h2>
-        <p>Pick a date and facility, tap an open hour, and choose how long you need. Your request goes to Frenzy's admin for review &mdash; it isn't confirmed until they approve it.</p>
+        <p>Pick a date and facility, tap an open time, and choose how long you need. Your request goes to Frenzy's admin for review &mdash; it isn't confirmed until they approve it.</p>
       </div>
 
       <div class="cal-controls">
@@ -509,8 +492,7 @@
           <input type="date" id="calDateInput" class="cal-date-input" aria-label="Jump to date">
         </div>
         <div class="cal-tabs">
-          <button class="cal-tab active" data-facility="sixASideTurf">6A Side Turf</button>
-          <button class="cal-tab" data-facility="fourASideTurf">4A Side Turf</button>
+          <button class="cal-tab active" data-facility="futsalTurf">Futsal Turf</button>
           <button class="cal-tab" data-facility="swimmingPool">Swimming Pool</button>
           <button class="cal-tab" data-facility="carrom">Carrom</button>
         </div>
@@ -557,9 +539,6 @@
         <div class="cal-readonly-row">
           <div><span class="cal-ro-label">End Time</span><span id="bfEndDisplay" class="cal-ro-value"></span></div>
         </div>
-        <div class="cal-readonly-row">
-          <div><span class="cal-ro-label">Estimated Price</span><span id="bfPriceDisplay" class="cal-ro-value"></span></div>
-        </div>
         <p id="bfRangeWarning" class="cal-warning" hidden></p>
         <div class="field">
           <label for="bfName">Name</label>
@@ -568,8 +547,7 @@
         <div class="field">
           <label for="bfPhone">Phone Number</label>
           <input type="tel" id="bfPhone" placeholder="01XXXXXXXXX" required>
-          <p class="cal-hint">Bangladesh mobile number, e.g. 01812345678 or +8801812345678</p>
-          <p id="bfPhoneError" class="cal-field-error" hidden>Enter a valid Bangladesh mobile number.</p>
+          <span class="cal-field-hint" id="bfPhoneHint"></span>
         </div>
         <div class="field">
           <label for="bfEmail">Email (optional)</label>
@@ -579,7 +557,7 @@
           <label for="bfNotes">Message (optional)</label>
           <textarea id="bfNotes"></textarea>
         </div>
-        <button type="submit" class="btn btn-flare" id="bookSubmitBtn">Send Request</button>
+        <button type="submit" class="btn btn-flare" id="bookSubmitBtn" disabled>Request Booking</button>
         <p class="form-note">This sends a request &mdash; it isn't booked until Frenzy's admin approves it.</p>
         <div id="bookSuccessMsg" class="cal-success-msg" hidden>
           <strong>Request Submitted Successfully</strong>
@@ -589,17 +567,24 @@
     </div>
   </div>
 
-  <!-- Booked-slot detail overlay (public-safe info only) -->
+  <!-- Booked slot detail overlay (public-safe info only) -->
   <div class="cal-overlay" id="detailOverlay" hidden>
     <div class="cal-panel">
       <div class="cal-panel-head">
         <div>
-          <p class="eyebrow" style="color:var(--pool-bright);">Booking Details</p>
-          <div class="cal-panel-title">Booked Slot</div>
+          <p class="eyebrow" style="color:var(--flare);">Booked</p>
+          <div class="cal-panel-title" id="detailFacility"></div>
         </div>
         <button class="cal-close" id="detailClose" aria-label="Close">&times;</button>
       </div>
-      <div class="cal-form" id="detailBody"></div>
+      <div class="cal-detail-body">
+        <div class="cal-detail-row"><span class="cal-ro-label">Customer</span><span id="detailName" class="cal-ro-value"></span></div>
+        <div class="cal-detail-row"><span class="cal-ro-label">Date</span><span id="detailDate" class="cal-ro-value"></span></div>
+        <div class="cal-detail-row"><span class="cal-ro-label">Time</span><span id="detailTime" class="cal-ro-value"></span></div>
+        <div class="cal-detail-row"><span class="cal-ro-label">Duration</span><span id="detailDuration" class="cal-ro-value"></span></div>
+        <div class="cal-detail-row" id="detailFeeRow" hidden><span class="cal-ro-label">Booking Fee</span><span id="detailFee" class="cal-ro-value"></span></div>
+        <div class="cal-detail-row"><span class="cal-ro-label">Status</span><span class="status-chip booked">Booked</span></div>
+      </div>
     </div>
   </div>
 
@@ -744,7 +729,6 @@
   import {
     getFirestore, collection, doc, writeBatch, serverTimestamp, onSnapshot, query, where
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import { FACILITY_LABELS, calculateBookingPrice } from "./pricing.js";
 
   // Frenzy Arena's Firebase config
   const firebaseConfig = {
@@ -759,103 +743,77 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // ---------- TIME MODEL: 48 x 30-minute start times/day, Asia/Dhaka ----------
-  const SLOTS_PER_DAY = 48;
-  const TZ = "Asia/Dhaka";
-  // FACILITIES / FACILITY_LABELS now come from pricing.js — the one shared source of truth for the
-  // facility list, used identically by index.html and admin.html.
-  const MAX_DURATION_SLOTS = 24; // cap duration dropdown at 12 hours
-  const BUSINESS_ID = "frenzy_001"; // single-business system — every booking/slot record carries this
+  // ---------- constants ----------
+  const STEP = 30; // minutes
+  const DAY_MINUTES = 1440;
+  const MAX_DURATION_UNITS = 16; // 16 * 30min = 8 hours, a practical cap (spec gave no explicit max)
+  const HALF_HOUR_MARKS = Array.from({ length: DAY_MINUTES / STEP }, (_, i) => i * STEP); // 0,30,...,1410
+  const FACILITY_LABELS = { futsalTurf: "Futsal Turf", swimmingPool: "Swimming Pool", carrom: "Carrom" };
 
-  function pad(n) { return String(n).padStart(2, "0"); }
+  // ---------- time / date helpers (Asia/Dhaka) ----------
+  function pad2(n) { return String(n).padStart(2, "0"); }
 
-  // "Right now" in Asia/Dhaka — independent of the visitor's own device timezone.
-  function dhakaNow() {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", hour12: false
-    }).formatToParts(new Date());
+  function getDhakaNow() {
+    const now = new Date();
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Dhaka', hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+    }).formatToParts(now);
     const map = {};
     parts.forEach(p => { map[p.type] = p.value; });
-    const dateStr = `${map.year}-${map.month}-${map.day}`;
-    const hour = Number(map.hour) % 24;
-    const minute = Number(map.minute);
-    const slot = hour * 2 + (minute >= 30 ? 1 : 0);
-    return { dateStr, slot };
+    return {
+      dateStr: `${map.year}-${map.month}-${map.day}`,
+      minutes: parseInt(map.hour, 10) * 60 + parseInt(map.minute, 10),
+    };
   }
-
-  function addDays(dateStr, delta) {
-    const d = new Date(dateStr + "T00:00:00Z");
-    d.setUTCDate(d.getUTCDate() + delta);
-    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  function addDaysStr(dateStr, delta) {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + delta);
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
   }
-
-  function slotLabel(slot) {
-    const s = ((slot % SLOTS_PER_DAY) + SLOTS_PER_DAY) % SLOTS_PER_DAY;
-    const totalMin = s * 30;
-    const h24 = Math.floor(totalMin / 60);
-    const m = totalMin % 60;
-    const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
-    return `${h12}:${pad(m)} ${h24 < 12 ? "AM" : "PM"}`;
+  // Given a base date and an absolute minute offset (may be negative or >= 1440),
+  // returns the actual {date, minutes} it lands on.
+  function addMinutesToDate(baseDateStr, absMinutes) {
+    const dayOffset = Math.floor(absMinutes / DAY_MINUTES);
+    const minutesInDay = ((absMinutes % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES;
+    return { date: addDaysStr(baseDateStr, dayOffset), minutes: minutesInDay };
   }
-
-  function durationLabel(durationSlots) {
-    const totalMin = durationSlots * 30;
-    const h = Math.floor(totalMin / 60);
-    const m = totalMin % 60;
-    return m === 0 ? `${h} Hour${h === 1 ? "" : "s"}` : `${h} Hour${h === 1 ? "" : "s"} 30 Minutes`;
+  function minutesToHHMM(min) { return `${pad2(Math.floor(min / 60))}${pad2(min % 60)}`; }
+  function minutesToLabel(min) {
+    const h = Math.floor(min / 60) % 24, m = min % 60;
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return `${h12}:${pad2(m)} ${h < 12 ? "AM" : "PM"}`;
   }
-
   function prettyDate(dateStr) {
     const d = new Date(dateStr + "T00:00:00");
     return d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
   }
-
-  function formatBDT(amount) { return `৳${Number(amount).toLocaleString()}`; }
-
-  function slotDocId(facility, dateStr, slot) { return `${facility}_${dateStr}_${slot}`; }
-
-  // Every 30-minute interval a booking of `durationSlots` from (date, startSlot) occupies —
-  // rolls correctly into the next calendar date past midnight.
-  function coveredIntervals(date, startSlot, durationSlots) {
-    const out = [];
-    let d = date, s = startSlot;
-    for (let i = 0; i < durationSlots; i++) {
-      if (s >= SLOTS_PER_DAY) { s -= SLOTS_PER_DAY; d = addDays(d, 1); }
-      out.push({ date: d, slot: s });
-      s++;
-    }
-    return out;
+  function shortDate(dateStr) {
+    const d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+  function durationLabel(totalMinutes) {
+    const h = Math.floor(totalMinutes / 60), m = totalMinutes % 60;
+    const parts = [];
+    if (h > 0) parts.push(`${h} Hour${h > 1 ? "s" : ""}`);
+    if (m > 0) parts.push(`${m} Minutes`);
+    return parts.join(" ") || "0 Minutes";
+  }
+  function isValidBDPhone(phone) {
+    return /^(?:\+?880|0)1[3-9]\d{8}$/.test(phone.replace(/[\s-]/g, ""));
   }
 
-  // The (date, slot) marking the moment the booking ends.
-  function endPoint(date, startSlot, durationSlots) {
-    let d = date, s = startSlot + durationSlots;
-    while (s >= SLOTS_PER_DAY) { s -= SLOTS_PER_DAY; d = addDays(d, 1); }
-    return { date: d, slot: s };
-  }
-
-  // Bangladesh mobile numbers: 01XXXXXXXXX or +8801XXXXXXXXX
-  const BD_PHONE_RE = /^(?:\+?880|0)1[3-9]\d{8}$/;
-  function normalizePhone(raw) { return raw.replace(/[\s-]/g, ""); }
-  function isValidBDPhone(raw) { return BD_PHONE_RE.test(normalizePhone(raw)); }
-  function isValidName(raw) { return raw.trim().length > 0; }
-  function escapeHtml(str) {
-    const d = document.createElement('div');
-    d.textContent = str;
-    return d.innerHTML;
-  }
-
-  const TODAY = dhakaNow().dateStr;
+  // ---------- state ----------
+  const DHAKA = getDhakaNow();
+  const TODAY = DHAKA.dateStr;
   let currentDate = TODAY;
-  let currentFacility = "sixASideTurf";
-  let unsubscribe = null;
-  let unsubscribeNextDay = null;
-  let latestSlots = {}; // { [slot]: slotDocData } — currentDate
-  let latestSlotsNextDay = {}; // { [slot]: slotDocData } — currentDate + 1, read-only lookahead so a
-  // late-night start time (e.g. 11:30 PM) can see real availability past midnight instead of being
-  // artificially cut off at the end of the calendar day.
+  let currentFacility = "futsalTurf";
+  let latestSlots = {};   // { [minutes]: {status, bookingId, customerName?, feePublic?, feeCurrency?} } for currentDate
+  let nextDaySlots = {};  // same shape, for currentDate + 1 (needed for midnight-crossing duration checks)
+  let unsubCurrent = null, unsubNext = null;
+  let activeStartMinutes = null;
 
+  // ---------- DOM ----------
   const els = {
     dateLabel: document.getElementById('calDateLabel'),
     todayTag: document.getElementById('calTodayTag'),
@@ -876,18 +834,21 @@
     bfStart: document.getElementById('bfStart'),
     bfDuration: document.getElementById('bfDuration'),
     bfEndDisplay: document.getElementById('bfEndDisplay'),
-    bfPriceDisplay: document.getElementById('bfPriceDisplay'),
     bfRangeWarning: document.getElementById('bfRangeWarning'),
     bfName: document.getElementById('bfName'),
     bfPhone: document.getElementById('bfPhone'),
-    bfPhoneError: document.getElementById('bfPhoneError'),
-    bfEmail: document.getElementById('bfEmail'),
-    bfNotes: document.getElementById('bfNotes'),
+    bfPhoneHint: document.getElementById('bfPhoneHint'),
     bookSuccessMsg: document.getElementById('bookSuccessMsg'),
 
     detailOverlay: document.getElementById('detailOverlay'),
+    detailFacility: document.getElementById('detailFacility'),
     detailClose: document.getElementById('detailClose'),
-    detailBody: document.getElementById('detailBody'),
+    detailName: document.getElementById('detailName'),
+    detailDate: document.getElementById('detailDate'),
+    detailTime: document.getElementById('detailTime'),
+    detailDuration: document.getElementById('detailDuration'),
+    detailFeeRow: document.getElementById('detailFeeRow'),
+    detailFee: document.getElementById('detailFee'),
   };
 
   function showToast(msg, isErr) {
@@ -898,6 +859,59 @@
     showToast._t = setTimeout(() => { els.toast.hidden = true; }, 3800);
   }
 
+  // ---------- data subscriptions ----------
+  function slotsFromSnapshot(snap) {
+    const map = {};
+    snap.forEach(d => {
+      const data = d.data();
+      map[parseInt(data.hhmm.slice(0, 2), 10) * 60 + parseInt(data.hhmm.slice(2), 10)] = data;
+    });
+    return map;
+  }
+
+  function subscribe() {
+    if (unsubCurrent) unsubCurrent();
+    if (unsubNext) unsubNext();
+    els.status.hidden = false;
+    els.grid.hidden = true;
+    els.status.textContent = 'Loading slots…';
+
+    const nextDateStr = addDaysStr(currentDate, 1);
+    let gotCurrent = false, gotNext = false;
+    const tryRender = () => { if (gotCurrent && gotNext) renderGrid(); };
+
+    unsubCurrent = onSnapshot(
+      query(collection(db, 'slots'), where('facility', '==', currentFacility), where('date', '==', currentDate)),
+      (snap) => { latestSlots = slotsFromSnapshot(snap); gotCurrent = true; tryRender(); },
+      (err) => { console.error(err); els.status.textContent = 'Could not load slots — check your Firebase setup.'; }
+    );
+    unsubNext = onSnapshot(
+      query(collection(db, 'slots'), where('facility', '==', currentFacility), where('date', '==', nextDateStr)),
+      (snap) => { nextDaySlots = slotsFromSnapshot(snap); gotNext = true; tryRender(); },
+      (err) => { console.error(err); }
+    );
+  }
+
+  function slotStatusAt(absMinutesFromCurrentDate) {
+    const { date, minutes } = addMinutesToDate(currentDate, absMinutesFromCurrentDate);
+    if (date === currentDate) return latestSlots[minutes] || null;
+    if (date === addDaysStr(currentDate, 1)) return nextDaySlots[minutes] || null;
+    return undefined; // outside our fetched 2-day window
+  }
+
+  // Counts consecutive OPEN half-hour units starting at absMinutes, capped at MAX_DURATION_UNITS
+  function consecutiveOpenUnitsFrom(absMinutes) {
+    let count = 0;
+    for (let i = 0; i < MAX_DURATION_UNITS; i++) {
+      const m = absMinutes + i * STEP;
+      const s = slotStatusAt(m);
+      if (s === undefined || s) break; // unknown or occupied
+      count++;
+    }
+    return count;
+  }
+
+  // ---------- rendering ----------
   function renderDateHeader() {
     els.dateLabel.textContent = prettyDate(currentDate);
     els.todayTag.textContent = currentDate === TODAY ? 'Today' : '';
@@ -906,138 +920,53 @@
     els.prevDay.disabled = currentDate <= TODAY;
   }
 
-  // How many consecutive open 30-minute slots exist starting at `slot` on `dateStr`, continuing past
-  // midnight into the next calendar date's own occupancy when the count runs off the end of the day.
-  // Bounded by MAX_DURATION_SLOTS (24 = 12h), so a start slot of at most 47 (11:30 PM) plus that bound
-  // never reaches past 71 — i.e. never more than one day ahead — so only `latestSlotsNextDay` (not a
-  // second day further out) is ever needed here.
-  function consecutiveOpenFrom(slot, dateStr) {
-    const isToday = dateStr === TODAY;
-    const { slot: nowSlot } = dhakaNow();
-    let count = 0;
-    for (let i = 0; i < MAX_DURATION_SLOTS; i++) {
-      const s = slot + i;
-      let occupied;
-      if (s < SLOTS_PER_DAY) {
-        if (isToday && s < nowSlot) break; // past — only meaningful on today's own date
-        occupied = !!latestSlots[s];
-      } else {
-        // Rolled into dateStr + 1 — a future calendar date is never "past"; only occupancy matters.
-        occupied = !!latestSlotsNextDay[s - SLOTS_PER_DAY];
-      }
-      if (occupied) break;
-      count++;
-    }
-    return count;
-  }
-
-  // Purely a display card — shows that the immediately preceding booking ends
-  // exactly at this time label. Not a real slot, not clickable, writes nothing
-  // and reserves nothing; the actual availability is still decided by
-  // `latestSlots[slot]` alone, same as always.
-  function renderEndBoundaryCard(slot, prevSlotData) {
-    const card = document.createElement('div');
-    card.className = 'cal-slot booked end-boundary';
-    const nameLine = prevSlotData.customerName
-      ? `<span class="cal-slot-name">${escapeHtml(prevSlotData.customerName)}</span>` : '';
-    card.innerHTML = `
-      <span class="cal-slot-time">${slotLabel(slot)}</span>
-      <span class="cal-slot-status">Booked <span class="cal-slot-endtag">· ends here</span></span>
-      ${nameLine}
-    `;
-    return card;
-  }
-
   function renderGrid() {
     const isToday = currentDate === TODAY;
-    const { slot: nowSlot } = dhakaNow();
+    const nowMinutes = getDhakaNow().minutes;
+    const isPastDate = currentDate < TODAY;
 
     els.grid.innerHTML = '';
-    for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
-      const s = latestSlots[slot];
-      const isPast = isToday && slot < nowSlot;
-
-      // If this slot is itself free, but the slot right before it was the tail
-      // end of an approved booking whose duration ends exactly here, show that
-      // booking's end boundary as its own informational card first — then the
-      // real, actionable Open card for this same time label right after it.
-      if (!s && !isPast) {
-        const prev = latestSlots[slot - 1];
-        if (prev && prev.status === 'approved' && prev.startSlot + prev.durationSlots === slot) {
-          els.grid.appendChild(renderEndBoundaryCard(slot, prev));
-        }
-      }
-
-      let stateClass = 'open', label = 'Open';
+    HALF_HOUR_MARKS.forEach(min => {
+      const slot = latestSlots[min];
+      const isPast = isPastDate || (isToday && min < nowMinutes);
+      let stateClass = 'open', label = 'Open', nameLine = '';
       if (isPast) { stateClass = 'past'; label = 'Past'; }
-      else if (s && s.status === 'approved') { stateClass = 'booked'; label = 'Booked'; }
-      else if (s && s.status === 'pending') { stateClass = 'pending'; label = 'Pending'; }
+      else if (slot && slot.status === 'approved') { stateClass = 'booked'; label = 'Booked'; nameLine = slot.customerName || ''; }
+      else if (slot && slot.status === 'pending') { stateClass = 'pending'; label = 'Pending'; }
 
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = `cal-slot ${stateClass}`;
       btn.disabled = stateClass === 'past' || stateClass === 'pending';
-      const nameLine = (stateClass === 'booked' && s.customerName)
-        ? `<span class="cal-slot-name">${escapeHtml(s.customerName)}</span>` : '';
       btn.innerHTML = `
-        <span class="cal-slot-time">${slotLabel(slot)}</span>
+        <span class="cal-slot-time">${minutesToLabel(min)}</span>
         <span class="cal-slot-status">${label}</span>
-        ${nameLine}
+        ${nameLine ? `<span class="cal-slot-name">${escapeHtml(nameLine)}</span>` : ''}
       `;
-      if (stateClass === 'open') btn.addEventListener('click', () => openRequestPanel(slot));
-      if (stateClass === 'booked') btn.addEventListener('click', () => openDetailPanel(s));
+      if (stateClass === 'open') btn.addEventListener('click', () => openRequestPanel(min));
+      if (stateClass === 'booked') btn.addEventListener('click', () => openDetailPanel(min, slot));
       els.grid.appendChild(btn);
-    }
+    });
 
     els.status.hidden = true;
     els.grid.hidden = false;
   }
 
-  function subscribeToDate(dateStr) {
-    if (unsubscribe) unsubscribe();
-    if (unsubscribeNextDay) unsubscribeNextDay();
-    els.status.hidden = false;
-    els.grid.hidden = true;
-    els.status.textContent = 'Loading slots…';
-
-    const q = query(collection(db, 'slots'), where('facility', '==', currentFacility), where('date', '==', dateStr));
-    unsubscribe = onSnapshot(q, (snap) => {
-      const map = {};
-      snap.forEach(d => { map[d.data().slot] = d.data(); });
-      latestSlots = map;
-      renderGrid();
-    }, (err) => {
-      console.error(err);
-      els.status.textContent = 'Could not load slots — check your connection and Firebase setup.';
-      els.status.hidden = false;
-      els.grid.hidden = true;
-    });
-
-    // Read-only lookahead into tomorrow's occupancy — same public `slots` collection, same security
-    // rules (allow read: if true), just one calendar date ahead. Used only by consecutiveOpenFrom so
-    // duration options for a late-night start time correctly reflect real availability past midnight;
-    // it never drives the visible grid, which still only ever shows `dateStr` itself.
-    const nextDateStr = addDays(dateStr, 1);
-    const qNext = query(collection(db, 'slots'), where('facility', '==', currentFacility), where('date', '==', nextDateStr));
-    unsubscribeNextDay = onSnapshot(qNext, (snap) => {
-      const map = {};
-      snap.forEach(d => { map[d.data().slot] = d.data(); });
-      latestSlotsNextDay = map;
-      // If the booking panel is open on a late-night start time, tomorrow's availability may have
-      // just changed (e.g. someone else just booked into it) — recompute duration options live.
-      if (!els.bookOverlay.hidden) { populateDurationOptions(); refreshEndTimeAndValidity(); }
-    }, (err) => console.error(err));
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
   }
 
   function goToDate(dateStr) {
     if (dateStr < TODAY) return;
     currentDate = dateStr;
     renderDateHeader();
-    subscribeToDate(currentDate);
+    subscribe();
   }
 
-  els.prevDay.addEventListener('click', () => goToDate(addDays(currentDate, -1)));
-  els.nextDay.addEventListener('click', () => goToDate(addDays(currentDate, 1)));
+  els.prevDay.addEventListener('click', () => goToDate(addDaysStr(currentDate, -1)));
+  els.nextDay.addEventListener('click', () => goToDate(addDaysStr(currentDate, 1)));
   els.dateInput.addEventListener('change', (e) => { if (e.target.value) goToDate(e.target.value); });
 
   els.tabs.forEach(tab => {
@@ -1045,202 +974,207 @@
       els.tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentFacility = tab.dataset.facility;
-      subscribeToDate(currentDate);
+      subscribe();
     });
   });
 
-  function populateStartOptions(preferredSlot) {
+  // ---------- request panel ----------
+  function populateStartOptions(preferredMinutes) {
     const isToday = currentDate === TODAY;
-    const { slot: nowSlot } = dhakaNow();
+    const nowMinutes = getDhakaNow().minutes;
     els.bfStart.innerHTML = '';
-    for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
-      const isPast = isToday && slot < nowSlot;
-      if (isPast || latestSlots[slot]) continue;
+    HALF_HOUR_MARKS.forEach(min => {
+      const isPast = isToday && min < nowMinutes;
+      const slot = latestSlots[min];
+      if (isPast || slot) return; // only truly open marks are selectable starts
       const opt = document.createElement('option');
-      opt.value = slot;
-      opt.textContent = slotLabel(slot);
-      if (slot === preferredSlot) opt.selected = true;
+      opt.value = min;
+      opt.textContent = minutesToLabel(min);
+      if (min === preferredMinutes) opt.selected = true;
       els.bfStart.appendChild(opt);
-    }
+    });
   }
 
-  // Duration options: 1-hour minimum, 30-minute increments, capped by consecutive open slots.
   function populateDurationOptions() {
     const start = Number(els.bfStart.value);
-    const available = consecutiveOpenFrom(start, currentDate);
-    const maxSlots = Math.min(available, MAX_DURATION_SLOTS);
-    const preferred = els.bfDuration.value;
+    const maxUnits = consecutiveOpenUnitsFrom(start);
     els.bfDuration.innerHTML = '';
-    for (let d = 2; d <= maxSlots; d++) { // 2 slots = 1 hour, the minimum booking duration
+    for (let units = 2; units <= maxUnits; units++) { // min 1 hour = 2 half-hour units
       const opt = document.createElement('option');
-      opt.value = d;
-      opt.textContent = durationLabel(d);
+      opt.value = units;
+      opt.textContent = durationLabel(units * STEP);
       els.bfDuration.appendChild(opt);
     }
-    if (!els.bfDuration.options.length) {
-      const opt = document.createElement('option');
-      opt.value = '';
-      opt.textContent = 'No duration available';
-      els.bfDuration.appendChild(opt);
-    } else if (preferred && [...els.bfDuration.options].some(o => o.value === preferred)) {
-      els.bfDuration.value = preferred;
-    }
+    return maxUnits;
   }
 
   function refreshEndTimeAndValidity() {
     const start = Number(els.bfStart.value);
-    const duration = Number(els.bfDuration.value) || 0;
-    const available = consecutiveOpenFrom(start, currentDate);
+    const maxUnits = consecutiveOpenUnitsFrom(start);
+    const hasDurationOptions = els.bfDuration.options.length > 0;
+    const units = hasDurationOptions ? Number(els.bfDuration.value) : 0;
 
-    if (duration > 0) {
-      const end = endPoint(currentDate, start, duration);
-      const crossesMidnight = end.date !== currentDate;
-      els.bfEndDisplay.textContent = slotLabel(end.slot) + (crossesMidnight ? ' (+1 day)' : '');
-      const price = calculateBookingPrice({ facility: currentFacility, bookingDate: currentDate, startSlot: start, durationSlots: duration });
-      els.bfPriceDisplay.textContent = formatBDT(price.finalPrice);
-    } else {
+    if (!hasDurationOptions || units < 2) {
       els.bfEndDisplay.textContent = '—';
-      els.bfPriceDisplay.textContent = '—';
+      els.bfRangeWarning.hidden = false;
+      els.bfRangeWarning.textContent = 'No bookable duration is available from this start time — please pick a different start time.';
+      updateSubmitState(false);
+      return false;
     }
 
-    const fits = duration > 0 && duration <= available;
+    const durationMinutes = units * STEP;
+    const endAbs = start + durationMinutes;
+    const { date: endDate, minutes: endMin } = addMinutesToDate(currentDate, endAbs);
+    els.bfEndDisplay.textContent = endDate === currentDate
+      ? minutesToLabel(endMin)
+      : `${minutesToLabel(endMin)} (${shortDate(endDate)})`;
+
+    const fits = units <= maxUnits;
     els.bfRangeWarning.hidden = fits;
     if (!fits) {
-      els.bfRangeWarning.textContent = available > 0
-        ? `Only ${durationLabel(available)} open consecutively from this start time.`
-        : `This start time no longer has open slots available.`;
+      els.bfRangeWarning.textContent = `Only ${durationLabel(maxUnits * STEP)} is available from this start time.`;
     }
-    updateSubmitState();
+    updateSubmitState(fits);
     return fits;
   }
 
-  function updateSubmitState() {
-    const nameOk = isValidName(els.bfName.value);
-    const phoneOk = isValidBDPhone(els.bfPhone.value);
-    els.bfPhoneError.hidden = els.bfPhone.value.trim() === '' || phoneOk;
-    const durationOk = Number(els.bfDuration.value) > 0 && els.bfRangeWarning.hidden;
-    els.bookSubmitBtn.disabled = !(nameOk && phoneOk && durationOk);
+  function validatePhone() {
+    const val = els.bfPhone.value.trim();
+    const valid = val.length > 0 && isValidBDPhone(val);
+    els.bfPhoneHint.classList.toggle('show', val.length > 0 && !valid);
+    if (val.length > 0 && !valid) els.bfPhoneHint.textContent = 'Enter a valid Bangladesh number, e.g. 01712345678 or +8801712345678';
+    return valid;
   }
 
-  function openRequestPanel(slot) {
+  function updateSubmitState(durationFits) {
+    const nameValid = els.bfName.value.trim().length > 0;
+    const phoneValid = validatePhone();
+    els.bookSubmitBtn.disabled = !(nameValid && phoneValid && durationFits);
+  }
+
+  function openRequestPanel(startMinutes) {
+    activeStartMinutes = startMinutes;
     els.bookPanelFacility.textContent = FACILITY_LABELS[currentFacility];
     els.bfDateDisplay.textContent = prettyDate(currentDate);
     els.bookForm.reset();
+    els.bfPhoneHint.classList.remove('show');
     els.bookSuccessMsg.hidden = true;
     els.bookForm.hidden = false;
-    populateStartOptions(slot);
+    populateStartOptions(startMinutes);
     populateDurationOptions();
     refreshEndTimeAndValidity();
     els.bookOverlay.hidden = false;
   }
-  function closeBookPanel() { els.bookOverlay.hidden = true; }
+  function closeBookPanel() { els.bookOverlay.hidden = true; activeStartMinutes = null; }
   els.bookClose.addEventListener('click', closeBookPanel);
   els.bookOverlay.addEventListener('click', (e) => { if (e.target === els.bookOverlay) closeBookPanel(); });
+
   els.bfStart.addEventListener('change', () => { populateDurationOptions(); refreshEndTimeAndValidity(); });
   els.bfDuration.addEventListener('change', refreshEndTimeAndValidity);
-  els.bfName.addEventListener('input', updateSubmitState);
-  els.bfPhone.addEventListener('input', updateSubmitState);
-
-  function openDetailPanel(slotData) {
-    const date = slotData.date || currentDate;
-    const end = endPoint(date, slotData.startSlot, slotData.durationSlots);
-    const feeLine = (slotData.showFeePublicly && slotData.bookingFee)
-      ? `<div class="cal-readonly-row"><div><span class="cal-ro-label">Booking Fee</span><span class="cal-ro-value">৳${Number(slotData.bookingFee).toLocaleString()}</span></div></div>`
-      : '';
-    els.detailBody.innerHTML = `
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Customer</span><span class="cal-ro-value">${escapeHtml(slotData.customerName || '—')}</span></div></div>
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Facility</span><span class="cal-ro-value">${FACILITY_LABELS[currentFacility]}</span></div></div>
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Date</span><span class="cal-ro-value">${prettyDate(date)}</span></div></div>
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Time</span><span class="cal-ro-value">${slotLabel(slotData.startSlot)} – ${slotLabel(end.slot)}${end.date !== date ? ' (+1 day)' : ''}</span></div></div>
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Duration</span><span class="cal-ro-value">${durationLabel(slotData.durationSlots)}</span></div></div>
-      <div class="cal-readonly-row"><div><span class="cal-ro-label">Status</span><span class="cal-ro-value">Booked</span></div></div>
-      ${feeLine}
-    `;
-    els.detailOverlay.hidden = false;
-  }
-  els.detailClose.addEventListener('click', () => { els.detailOverlay.hidden = true; });
-  els.detailOverlay.addEventListener('click', (e) => { if (e.target === els.detailOverlay) els.detailOverlay.hidden = true; });
+  els.bfName.addEventListener('input', () => refreshEndTimeAndValidity());
+  els.bfPhone.addEventListener('input', () => refreshEndTimeAndValidity());
 
   els.bookForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!refreshEndTimeAndValidity()) return;
-
     const name = els.bfName.value.trim();
-    const phoneRaw = els.bfPhone.value.trim();
-    const email = els.bfEmail.value.trim();
-    const notes = els.bfNotes.value.trim();
-    if (!isValidName(name) || !isValidBDPhone(phoneRaw)) { updateSubmitState(); return; }
-    const phone = normalizePhone(phoneRaw);
+    const phone = els.bfPhone.value.trim();
+    if (!name || !validatePhone()) return;
+    const email = document.getElementById('bfEmail').value.trim();
+    const notes = document.getElementById('bfNotes').value.trim();
 
     const start = Number(els.bfStart.value);
-    const duration = Number(els.bfDuration.value);
-    const intervals = coveredIntervals(currentDate, start, duration);
-    const end = endPoint(currentDate, start, duration);
-    const price = calculateBookingPrice({ facility: currentFacility, bookingDate: currentDate, startSlot: start, durationSlots: duration });
+    const units = Number(els.bfDuration.value);
+    const durationMinutes = units * STEP;
+    const endAbs = start + durationMinutes;
 
     els.bookSubmitBtn.disabled = true;
     els.bookSubmitBtn.textContent = 'Sending…';
     try {
       const batch = writeBatch(db);
-      const bookingRef = doc(collection(db, 'bookings'));
-      batch.set(bookingRef, {
+      const reqRef = doc(collection(db, 'bookings'));
+      batch.set(reqRef, {
         customerName: name,
         phone,
         email: email || null,
         facility: currentFacility,
-        businessId: BUSINESS_ID,
         bookingDate: currentDate,
-        startSlot: start,
-        durationSlots: duration,
-        durationMinutes: duration * 30,
-        endDate: end.date,
-        endSlot: end.slot,
+        startMinutes: start,
+        durationMinutes,
+        endMinutes: endAbs,
+        notes: notes || null,
         status: 'pending',
         bookingType: 'customer_request',
         bookingSource: 'website',
         bookingFee: null,
-        feeCurrency: 'BDT',
+        feeCurrency: null,
         showFeePublicly: false,
-        calculatedPrice: price.finalPrice,
         recurringBookingId: null,
-        notes: notes || null,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         approvedAt: null,
         rejectedAt: null,
       });
-      intervals.forEach(({ date, slot }) => {
-        const slotRef = doc(db, 'slots', slotDocId(currentFacility, date, slot));
-        batch.set(slotRef, {
-          facility: currentFacility,
-          businessId: BUSINESS_ID,
-          date, slot,
-          status: 'pending',
-          bookingId: bookingRef.id,
-          customerName: name,
-          startSlot: start,
-          durationSlots: duration,
-          bookingFee: null,
-          showFeePublicly: false,
-        });
-      });
+      for (let offset = 0; offset < durationMinutes; offset += STEP) {
+        const { date: slotDate, minutes: slotMin } = addMinutesToDate(currentDate, start + offset);
+        const hhmm = minutesToHHMM(slotMin);
+        const slotRef = doc(db, 'slots', `${currentFacility}_${slotDate}_${hhmm}`);
+        batch.set(slotRef, { facility: currentFacility, date: slotDate, hhmm, status: 'pending', bookingId: reqRef.id, createdAt: serverTimestamp() });
+      }
       await batch.commit();
 
       els.bookForm.hidden = true;
       els.bookSuccessMsg.hidden = false;
-      setTimeout(closeBookPanel, 3500);
+      setTimeout(closeBookPanel, 3800);
     } catch (err) {
       console.error(err);
-      showToast('One of those slots was just taken — please pick a different time.', true);
+      showToast('One of those time slots was just taken — please pick a different time.', true);
       closeBookPanel();
     } finally {
       els.bookSubmitBtn.disabled = false;
-      els.bookSubmitBtn.textContent = 'Send Request';
+      els.bookSubmitBtn.textContent = 'Request Booking';
     }
   });
 
+  // ---------- booked-slot detail panel (public-safe info only) ----------
+  function openDetailPanel(startMinutesClicked, clickedSlot) {
+    // Expand to the full contiguous run of this same bookingId so we show the true start–end range
+    const bookingId = clickedSlot.bookingId;
+    let runStart = startMinutesClicked, runEnd = startMinutesClicked + STEP;
+    while (true) {
+      const s = slotStatusAt(runStart - STEP);
+      if (s && s.bookingId === bookingId) runStart -= STEP; else break;
+    }
+    while (true) {
+      const s = slotStatusAt(runEnd);
+      if (s && s.bookingId === bookingId) runEnd += STEP; else break;
+    }
+    const durationMinutes = runEnd - runStart;
+    const { date: endDate, minutes: endMin } = addMinutesToDate(currentDate, runEnd);
+
+    els.detailFacility.textContent = FACILITY_LABELS[currentFacility];
+    els.detailName.textContent = clickedSlot.customerName || '—';
+    els.detailDate.textContent = prettyDate(currentDate);
+    els.detailTime.textContent = endDate === currentDate
+      ? `${minutesToLabel(runStart)} – ${minutesToLabel(endMin)}`
+      : `${minutesToLabel(runStart)} – ${minutesToLabel(endMin)} (${shortDate(endDate)})`;
+    els.detailDuration.textContent = durationLabel(durationMinutes);
+
+    if (clickedSlot.feePublic != null) {
+      els.detailFeeRow.hidden = false;
+      els.detailFee.textContent = `${clickedSlot.feeCurrency === 'BDT' ? '৳' : ''}${clickedSlot.feePublic}`;
+    } else {
+      els.detailFeeRow.hidden = true;
+    }
+    els.detailOverlay.hidden = false;
+  }
+  els.detailClose.addEventListener('click', () => { els.detailOverlay.hidden = true; });
+  els.detailOverlay.addEventListener('click', (e) => { if (e.target === els.detailOverlay) els.detailOverlay.hidden = true; });
+
+  // ---------- init ----------
   renderDateHeader();
-  subscribeToDate(currentDate);
+  subscribe();
+  setInterval(() => { renderDateHeader(); renderGrid(); }, 60000); // keep Past/Open boundary fresh
 </script>
 
 </body>
