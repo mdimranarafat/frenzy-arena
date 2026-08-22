@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null &&
+             request.auth.token.email == "mdimran3067333@gmail.com";
+    }
+
+    function isValidBDPhone(phone) {
+      return phone is string && phone.matches('^(\\+?880|0)1[3-9][0-9]{8}$');
+    }
+
+    function isReasonableString(s, maxLen) {
+      return s is string && s.size() > 0 && s.size() <= maxLen;
+    }
+
+    function isValidFacility(f) {
+      return f in ["futsalTurf", "swimmingPool", "carrom"];
+    }
+
+    match /slots/{slotId} {
+      allow read: if true;
+
+      // Public can place a half-hour "hold" (pending) only if it doesn't already exist.
+      // Admin can also create a slot directly as "approved" (direct/corporate bookings) —
+      // the !exists() check still guarantees no double-booking either way.
+      allow create: if !exists(/databases/$(database)/documents/slots/$(slotId)) && (
+        (request.resource.data.status == "pending"
+          && request.resource.data.keys().hasOnly(["facility","date","hhmm","status","bookingId","createdAt"])
+          && isValidFacility(request.resource.data.facility)
+          && request.resource.data.bookingId is string
+          && request.resource.data.createdAt == request.time)
+        ||
+        (isAdmin() && request.resource.data.status == "approved"
+          && request.resource.data.keys().hasOnly(["facility","date","hhmm","status","bookingId","customerName","feePublic","feeCurrency","createdAt"])
+          && isValidFacility(request.resource.data.facility)
+          && request.resource.data.createdAt == request.time)
+      );
+
+      // Only the admin can approve (update) or free up (delete) a slot
+      allow update, delete: if isAdmin();
+    }
+
+    match /bookings/{bookingId} {
+      // Public can submit a pending customer request with exactly these fields —
+      // validated server-side (type, format, and range), and cannot set a fee,
+      // cannot self-approve, cannot attach to a recurring series.
+      allow create: if
+        (request.resource.data.status == "pending"
+          && request.resource.data.bookingType == "customer_request"
+          && request.resource.data.bookingFee == null
+          && request.resource.data.showFeePublicly == false
+          && request.resource.data.recurringBookingId == null
+          && isValidFacility(request.resource.data.facility)
+          && isReasonableString(request.resource.data.customerName, 100)
+          && isValidBDPhone(request.resource.data.phone)
+          && request.resource.data.startMinutes is int
+          && request.resource.data.startMinutes >= 0
+          && request.resource.data.startMinutes < 1440
+          && request.resource.data.durationMinutes is int
+          && request.resource.data.durationMinutes >= 60
+          && request.resource.data.durationMinutes % 30 == 0
+          && request.resource.data.endMinutes == request.resource.data.startMinutes + request.resource.data.durationMinutes
+          && (request.resource.data.notes == null || isReasonableString(request.resource.data.notes, 500))
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.keys().hasOnly([
+               "customerName","phone","email","facility","bookingDate",
+               "startMinutes","durationMinutes","endMinutes","notes","status",
+               "bookingType","bookingSource","bookingFee","feeCurrency","showFeePublicly",
+               "recurringBookingId","createdAt","updatedAt","approvedAt","rejectedAt"
+             ]))
+        ||
+        (isAdmin()
+          && request.resource.data.bookingType in ["admin_direct","corporate_recurring"]
+          && request.resource.data.keys().hasOnly([
+               "customerName","phone","email","facility","bookingDate",
+               "startMinutes","durationMinutes","endMinutes","notes","status",
+               "bookingType","bookingSource","bookingFee","feeCurrency","showFeePublicly",
+               "recurringBookingId","createdAt","updatedAt","approvedAt","rejectedAt"
+             ]));
+
+      // Only the admin can read the customer list or change a booking's status/details.
+      // NOTE: this update rule is intentionally NOT restricted to a fixed key set —
+      // it already allowed the admin to write arbitrary additional fields (fee,
+      // approvedAt, etc). The backup system's `approvedBy`, `sheetBackupStatus`,
+      // `lastSheetBackupAt`, and `sheetBackupError` fields rely on this and required
+      // NO rule change. `sheetBackup*` fields are written only by Cloud Functions
+      // using the Admin SDK, which bypasses these rules entirely.
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /recurringBookings/{seriesId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
