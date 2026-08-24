@@ -659,6 +659,28 @@
   const loginError = document.getElementById('loginError');
   const loginBtn = document.getElementById('loginBtn');
 
+  // Friendly, actionable messages per Firebase error code. The old UI showed "Incorrect email or
+  // password." for EVERY failure (including unauthorized-domain/network problems), which hid the
+  // real cause of failed logins. Full technical detail still goes to console.error only — never
+  // raw stack traces in the UI.
+  const AUTH_ERROR_MESSAGES = {
+    'auth/invalid-email': 'That email address is not formatted correctly.',
+    'auth/missing-password': 'Enter your password.',
+    'auth/invalid-credential': 'Invalid email or password.',
+    'auth/wrong-password': 'Invalid email or password.',
+    'auth/user-not-found': 'Invalid email or password.',
+    'auth/user-disabled': 'This account has been disabled. Contact the business owner.',
+    'auth/too-many-requests': 'Too many failed attempts. Please wait a minute and try again.',
+    'auth/unauthorized-domain': "Login from this domain isn't enabled yet. In Firebase Console → Authentication → Settings → Authorized domains, add this page's domain, then reload.",
+    'auth/operation-not-allowed': 'Email/password sign-in is not enabled for this project yet. Enable it in Firebase Console → Authentication → Sign-in method.',
+    'auth/network-request-failed': "Can't reach the authentication service. Check your internet connection.",
+    'auth/invalid-api-key': 'Admin authentication is not configured correctly.',
+  };
+  function showLoginError(message) {
+    loginError.textContent = message;
+    loginError.classList.add('show');
+  }
+
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     loginError.classList.remove('show');
@@ -668,9 +690,10 @@
       await signInWithEmailAndPassword(auth,
         document.getElementById('loginEmail').value.trim(),
         document.getElementById('loginPassword').value);
+      // Success path continues in onAuthStateChanged → resolveRoleAndEnterDashboard().
     } catch (err) {
-      console.error(err);
-      loginError.classList.add('show');
+      console.error('Login failed:', err && err.code, err);
+      showLoginError(AUTH_ERROR_MESSAGES[err && err.code] || 'Unable to sign in right now. Please try again.');
     } finally {
       loginBtn.disabled = false; loginBtn.textContent = 'Log In';
     }
@@ -1472,10 +1495,11 @@
   // configurable only; never hardcode private secrets here — the Apps Script web app runs as its
   // owner's account and needs no client-side key.
   const EXPORT_CONFIG = {
-    // Paste your deployed Apps Script Web App /exec URL here (or define window.APP_CONFIG before
-    // this script). Empty = export downloads the CSV without touching Google Sheets.
-    GOOGLE_APPS_SCRIPT_URL: window.APP_CONFIG && window.APP_CONFIG.GOOGLE_APPS_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbxgK3sdS_PIWnPXYR__URuFIazirg7ogFzCLd9LhJeIqXLI-taHse6dyx10o6gikfK4/exec
-",
+    // Frenzy's deployed Apps Script Web App (health-checked: doGet replies {"ok":true,
+    // "spreadsheetReady":true} bound to the Bookings spreadsheet). Mirrors every export's rows
+    // into the sheet's "Bookings" tab. Override via window.APP_CONFIG if redeployed.
+    GOOGLE_APPS_SCRIPT_URL: window.APP_CONFIG && window.APP_CONFIG.GOOGLE_APPS_SCRIPT_URL
+      || "https://script.google.com/macros/s/AKfycbxgK3sdS_PIWnPXYR__URuFIazirg7ogFzCLd9LhJeIqXLI-taHse6dyx10o6gikfK4/exec",
   };
   const CSV_EXPORT_TIMEOUT_MS = 20000;
 
