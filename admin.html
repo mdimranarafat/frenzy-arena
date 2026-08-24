@@ -111,6 +111,21 @@
   }
   .filters input[type="text"]{flex:1; min-width:180px;}
 
+  /* ---- CSV export ---- */
+  .export-btn{
+    font-family:var(--body); font-size:0.82rem; font-weight:700;
+    padding:9px 14px; border-radius:5px; border:1px solid var(--navy);
+    background:#fff; color:var(--navy); cursor:pointer;
+    display:inline-flex; align-items:center; gap:7px; margin-left:auto;
+  }
+  .export-btn:hover:not(:disabled), .export-btn:focus-visible:not(:disabled){background:var(--navy); color:#fff;}
+  .export-btn:disabled{opacity:0.5; cursor:not-allowed;}
+  @media (max-width:700px){.export-btn{margin-left:0;}}
+  .csv-status{font-size:0.8rem; margin:-12px 0 16px;}
+  .csv-status.ok{color:#166b3f;}
+  .csv-status.err{color:#a83a1f;}
+  .csv-status[hidden]{display:none;}
+
   .table-wrap{background:#fff; border:1px solid #e2e8e7; border-radius:8px; overflow-x:auto;}
   table{width:100%; border-collapse:collapse; font-size:0.86rem; min-width:980px;}
   thead th{
@@ -270,7 +285,12 @@
             <option value="cancelled">Cancelled</option>
             <option value="completed">Completed</option>
           </select>
+          <button type="button" class="export-btn" id="exportCsvBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Export CSV
+          </button>
         </div>
+        <p class="csv-status" id="csvStatus" role="status" aria-live="polite" hidden></p>
 
         <div class="table-wrap">
           <table>
@@ -547,6 +567,7 @@
   const MAX_DURATION_SLOTS = 24;
   const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   const BUSINESS_ID = "frenzy_001"; // single-business system — every booking/slot/recurring record carries this
+  const TYPE_LABEL = { customer_request: 'Customer Request', admin_direct: 'Admin Direct', corporate_recurring: 'Corporate' };
 
   function formatBDT(amount) { return `৳${Number(amount).toLocaleString()}`; }
 
@@ -831,8 +852,6 @@
 
     tbody.innerHTML = '';
     emptyState.style.display = filtered.length ? 'none' : 'block';
-
-    const TYPE_LABEL = { customer_request: 'Customer Request', admin_direct: 'Admin Direct', corporate_recurring: 'Corporate' };
 
     filtered.forEach(r => {
       const tr = document.createElement('tr');
@@ -1439,6 +1458,193 @@
       alert('Could not cancel the series — see console.');
     }
   }
+
+  // ---------- CSV EXPORT ----------
+  // Exports REAL booking records from the admin-only `bookings` collection — the same live data the
+  // table above renders, freshly re-fetched at export time. Access is enforced by the Firestore
+  // Security Rules' isAdmin()/isActiveManager() checks on this read server-side; hiding the button
+  // from non-admins is only the UI layer, never the security boundary.
+  //
+  // Optional Google Apps Script sync (see google-apps-script.gs in this folder): when a Web App
+  // /exec URL is configured, every export ALSO mirrors the freshly fetched rows into the "Bookings"
+  // tab of Frenzy's Google Sheet. Firestore stays the source of truth — the sheet is always a
+  // full replace with the latest data, and the CSV download happens either way. The endpoint is
+  // configurable only; never hardcode private secrets here — the Apps Script web app runs as its
+  // owner's account and needs no client-side key.
+  const EXPORT_CONFIG = {
+    // Paste your deployed Apps Script Web App /exec URL here (or define window.APP_CONFIG before
+    // this script). Empty = export downloads the CSV without touching Google Sheets.
+    GOOGLE_APPS_SCRIPT_URL: window.APP_CONFIG && window.APP_CONFIG.GOOGLE_APPS_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbxgK3sdS_PIWnPXYR__URuFIazirg7ogFzCLd9LhJeIqXLI-taHse6dyx10o6gikfK4/exec
+",
+  };
+  const CSV_EXPORT_TIMEOUT_MS = 20000;
+
+  const exportBtn = document.getElementById('exportCsvBtn');
+  const csvStatusEl = document.getElementById('csvStatus');
+
+  function setCsvStatus(message, kind) {
+    if (!message) { csvStatusEl.hidden = true; csvStatusEl.textContent = ''; return; }
+    csvStatusEl.textContent = message;
+    csvStatusEl.classList.toggle('ok', kind === 'ok');
+    csvStatusEl.classList.toggle('err', kind === 'err');
+    csvStatusEl.hidden = false;
+  }
+
+  // RFC 4180 field escaping: quotes doubled, fields containing commas/quotes/newlines wrapped.
+  function csvEscapeField(value) {
+    if (value === null || value === undefined) return "";
+    const s = String(value);
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+  function buildCsvText(columns, rows) {
+    const head = columns.map(c => csvEscapeField(c.label)).join(",");
+    const body = rows.map(r => columns.map(c => csvEscapeField(r[c.key])).join(","));
+    return [head, ...body].join("\r\n");
+  }
+
+  // UTF-8 BOM first so Excel renders Bengali/customer names correctly on double-click.
+  function triggerCsvDownload(filename, csvText) {
+    const blob = new Blob(["\uFEFF" + csvText], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function csvTimestamp(ts) {
+    if (!ts) return "";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    if (isNaN(d.getTime())) return "";
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hour12: false
+    }).formatToParts(d);
+    const m = {}; parts.forEach(p => { m[p.type] = p.value; });
+    return `${m.year}-${m.month}-${m.day} ${String(Number(m.hour) % 24).padStart(2, "0")}:${m.minute}`;
+  }
+
+  function withTimeout(promise, ms) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error("csv-export-timeout")), ms)),
+    ]);
+  }
+
+  // Fresh read of every booking, newest first — same admin-only collection the table subscribes to.
+  async function fetchBookingExportRows() {
+    const snap = await getDocs(query(collection(db, 'bookings'), orderBy('createdAt', 'desc')));
+    return snap.docs.map(d => {
+      const b = d.data();
+      const crosses = !!b.endDate && b.endDate !== b.bookingDate;
+      return {
+        id: d.id,
+        customerName: b.customerName || "",
+        phone: b.phone || "",
+        email: b.email || "",
+        facility: FACILITY_LABELS[b.facility] || b.facility || "",
+        bookingDate: b.bookingDate || "",
+        time: `${slotLabel(b.startSlot)} - ${slotLabel(b.endSlot)}${crosses ? " (+1 day)" : ""}`,
+        duration: durationLabel(b.durationSlots),
+        type: TYPE_LABEL[b.bookingType] || b.bookingType || "",
+        status: b.status || "",
+        price: b.calculatedPrice != null ? String(b.calculatedPrice) : "",
+        fee: b.bookingFee != null ? String(b.bookingFee) : "",
+        notes: b.notes || "",
+        createdAt: csvTimestamp(b.createdAt),
+      };
+    });
+  }
+
+  // Registry of exportable datasets — add future exports here (e.g. recurringBookings) without
+  // touching the button/handler code below.
+  const CSV_DATASETS = {
+    bookings: {
+      filenamePrefix: "bookings-export",
+      emptyMessage: "No bookings to export yet.",
+      columns: [
+        { key: "id",           label: "ID" },
+        { key: "customerName", label: "Name" },
+        { key: "phone",        label: "Phone" },
+        { key: "email",        label: "Email" },
+        { key: "facility",     label: "Facility" },
+        { key: "bookingDate",  label: "Date" },
+        { key: "time",         label: "Time" },
+        { key: "duration",     label: "Duration" },
+        { key: "type",         label: "Type" },
+        { key: "status",       label: "Status" },
+        { key: "price",        label: "Price (BDT)" },
+        { key: "fee",          label: "Fee (BDT)" },
+        { key: "notes",        label: "Notes" },
+        { key: "createdAt",    label: "Created At" },
+      ],
+      fetchRows: fetchBookingExportRows,
+    },
+  };
+
+  // Optional GAS path: POST the fetched rows as a CORS-simple text/plain request (Apps Script
+  // endpoints don't handle preflights); the script replaces its "Bookings" tab and replies JSON.
+  async function syncRowsToAppsScript(datasetKey, dataset, rows) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), CSV_EXPORT_TIMEOUT_MS);
+    try {
+      const res = await fetch(EXPORT_CONFIG.GOOGLE_APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ dataset: datasetKey, columns: dataset.columns, rows }),
+        signal: controller.signal,
+      });
+      if (!res.ok) throw new Error(`GAS responded ${res.status}`);
+      const out = await res.json();
+      if (!out || out.ok !== true) throw new Error((out && out.error) || "Sheet sync rejected the payload");
+      return out;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function runCsvExport(datasetKey) {
+    const dataset = CSV_DATASETS[datasetKey];
+    if (!dataset) { setCsvStatus("Export is not configured correctly.", "err"); return; }
+
+    const originalHtml = exportBtn.innerHTML;
+    exportBtn.disabled = true;
+    exportBtn.textContent = "Exporting…";
+    setCsvStatus(null);
+
+    try {
+      const rows = await withTimeout(dataset.fetchRows(), CSV_EXPORT_TIMEOUT_MS);
+      if (!rows.length) { setCsvStatus(dataset.emptyMessage, "err"); return; }
+      const csvText = buildCsvText(dataset.columns, rows);
+
+      triggerCsvDownload(`${dataset.filenamePrefix}-${todayKey()}.csv`, csvText);
+      let message = `CSV downloaded — ${rows.length} record${rows.length === 1 ? "" : "s"}.`;
+
+      // Sheet mirror is best-effort: the CSV download already succeeded above.
+      if (EXPORT_CONFIG.GOOGLE_APPS_SCRIPT_URL) {
+        try {
+          const sync = await withTimeout(syncRowsToAppsScript(datasetKey, dataset, rows), CSV_EXPORT_TIMEOUT_MS + 1000);
+          message += ` Google Sheet updated (${sync.written != null ? sync.written : rows.length} row${rows.length === 1 ? "" : "s"}).`;
+        } catch (syncErr) {
+          console.error("Google Sheet sync failed:", syncErr);
+          setCsvStatus(`${message} Couldn't update the Google Sheet — check the Apps Script deployment.`, "err");
+          return;
+        }
+      }
+      setCsvStatus(message, "ok");
+    } catch (err) {
+      console.error("CSV export failed:", err);
+      setCsvStatus("Unable to export data right now. Please try again.", "err");
+    } finally {
+      exportBtn.disabled = false;
+      exportBtn.innerHTML = originalHtml;
+    }
+  }
+
+  exportBtn.addEventListener('click', () => runCsvExport('bookings'));
 </script>
 
 </body>
