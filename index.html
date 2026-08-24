@@ -23,6 +23,13 @@
     --display:'Archivo Black', sans-serif;
     --body:'Manrope', sans-serif;
     --mono:'JetBrains Mono', monospace;
+    /* Booking slot state tokens — the single source of truth for BOTH the slot boxes and the
+       legend dots. Each state defines its surface, border/accent, and status-text color so slot
+       rendering and the legend can never drift apart. */
+    --slot-open-bg:#063c3d; --slot-open-border:#087a72; --slot-open-status:#a9e8e0; --slot-open-hover:#0a4f51; --slot-open-hover-border:#0da393;
+    --slot-pending-bg:#3a3215; --slot-pending-border:#b88a00; --slot-pending-status:#ffd166;
+    --slot-booked-bg:#29232f; --slot-booked-border:#a83b3b; --slot-booked-status:#cfd6df; --slot-booked-name:#ffcf8a; --slot-booked-hover:#332b3a; --slot-booked-hover-border:#bf4a4a;
+    --slot-past-bg:#142330; --slot-past-border:#263747; --slot-past-time:#7e8fa0; --slot-past-status:#5a6c7d;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth;}
@@ -254,10 +261,22 @@
     padding:12px 14px; border-radius:8px; border:1px solid transparent;
     cursor:pointer; text-align:left; font-family:var(--body); background:none;
   }
-  .cal-slot.open{background:rgba(31,162,92,0.14); border-color:rgba(31,162,92,0.4);}
-  .cal-slot.pending{background:rgba(242,183,5,0.14); border-color:rgba(242,183,5,0.4);}
-  .cal-slot.booked{background:rgba(255,90,54,0.12); border-color:rgba(255,90,54,0.35);}
-  .cal-slot.past{opacity:0.35; cursor:not-allowed;}
+  /* Slot surfaces/borders come from the shared slot-state tokens — clearly visible against the
+     dark navy page background, each state instantly recognizable. */
+  .cal-slot.open{background:var(--slot-open-bg); border-color:var(--slot-open-border);}
+  .cal-slot.pending{background:var(--slot-pending-bg); border-color:var(--slot-pending-border);}
+  .cal-slot.booked{background:var(--slot-booked-bg); border-color:var(--slot-booked-border);}
+  .cal-slot.past{background:var(--slot-past-bg); border-color:var(--slot-past-border);}
+  /* Subtle hover brightening for the clickable states only (open/booked); disabled states don't hover. */
+  .cal-slot.open:not(:disabled):hover{background:var(--slot-open-hover); border-color:var(--slot-open-hover-border);}
+  .cal-slot.booked:not(:disabled):hover{background:var(--slot-booked-hover); border-color:var(--slot-booked-hover-border);}
+  /* Per-state text colors — time always leads in bright white; past keeps the lowest emphasis via
+     its own muted palette instead of a blanket opacity, so it stays readable. */
+  .cal-slot.open .cal-slot-status{color:var(--slot-open-status);}
+  .cal-slot.pending .cal-slot-status{color:var(--slot-pending-status);}
+  .cal-slot.booked .cal-slot-status{color:var(--slot-booked-status);}
+  .cal-slot.past .cal-slot-time{color:var(--slot-past-time);}
+  .cal-slot.past .cal-slot-status{color:var(--slot-past-status);}
   /* Informational-only card: shows a previous booking's end boundary at the same
      time label as the next slot's actionable Open card. Not clickable. */
   .cal-slot.end-boundary{opacity:0.55; cursor:default;}
@@ -307,11 +326,12 @@
 
   .cal-legend{display:flex; flex-wrap:wrap; gap:16px; margin-bottom:16px; font-size:0.78rem; color:#b9c9d1;}
   .cal-legend span{display:flex; align-items:center; gap:6px;}
+  /* Legend dots use the SAME tokens as the slot boxes — the legend always matches what's on screen. */
   .cal-legend .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
-  .cal-legend .dot.open{background:var(--turf);}
-  .cal-legend .dot.pending{background:var(--pending);}
-  .cal-legend .dot.booked{background:var(--flare);}
-  .cal-legend .dot.past{background:#4a5a63;}
+  .cal-legend .dot.open{background:var(--slot-open-border);}
+  .cal-legend .dot.pending{background:var(--slot-pending-border);}
+  .cal-legend .dot.booked{background:var(--slot-booked-border);}
+  .cal-legend .dot.past{background:var(--slot-past-status);}
 
   .field-row-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
   .cal-readonly-row{
@@ -376,7 +396,7 @@
   .cal-grid{grid-template-columns:repeat(2, 1fr);}
   @media (min-width:600px){.cal-grid{grid-template-columns:repeat(4, 1fr);}}
   @media (min-width:900px){.cal-grid{grid-template-columns:repeat(7, 1fr);}}
-  .cal-slot-name{font-size:0.68rem; color:#ffcf8a; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
+  .cal-slot-name{font-size:0.68rem; color:var(--slot-booked-name); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
   .cal-slot.pending{cursor:not-allowed;}
   .cal-form select#bfDuration{cursor:pointer;}
   .cal-field-error{font-size:0.76rem; color:#ffb3a3; margin-top:-4px;}
@@ -450,41 +470,40 @@
         <h2>Facilities</h2>
         <p>The essentials for a proper match or a swim session.</p>
       </div>
+      <!-- Exactly six facilities → clean 3×2 grid on desktop, 2 columns on tablet, 1 on mobile.
+           Icons share one consistent stroke style (24×24 viewBox, stroke-width 2, round caps/joins)
+           inside the shared light-blue rounded .ico container; they're decorative, so the visible
+           <h4> titles carry the accessible labels. -->
       <div class="facility-grid">
         <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M6 6l12 12M18 6 6 18"/></svg></span>
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="m12 7.5 4 2.9-1.5 4.7h-5L8 10.4Z"/><path d="M12 3v4.5M20.6 9.2l-4.6 1.2M17.4 19.6l-2.9-4.5M6.6 19.6l2.9-4.5M3.4 9.2l4.6 1.2"/></svg></span>
           <h4>Artificial Futsal Turf</h4>
           <p>A dedicated turf pitch for five-a-side and practice matches.</p>
         </div>
         <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 15c1.5 1.5 3 1.5 4.5 0s3-1.5 4.5 0 3 1.5 4.5 0 3-1.5 4.5 0M2 19c1.5 1.5 3 1.5 4.5 0s3-1.5 4.5 0 3 1.5 4.5 0 3-1.5 4.5 0M6 11V6a2 2 0 0 1 2-2h1"/></svg></span>
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 13V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v7"/><path d="M9 7.5h6M9 11h6"/><path d="M2 16.5c1.5 1.5 3 1.5 4.5 0s3-1.5 4.5 0 3 1.5 4.5 0 3-1.5 4.5 0"/><path d="M2 20c1.5 1.5 3 1.5 4.5 0s3-1.5 4.5 0 3-1.5 4.5 0 3-1.5 4.5 0"/></svg></span>
           <h4>Swimming Pool</h4>
           <p>An on-site pool for laps or a cool-down after your match.</p>
         </div>
         <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4"/><circle cx="8" cy="9" r="1"/><circle cx="16" cy="9" r="1"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/></svg></span>
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7.5" y="7.5" width="9" height="9" rx="1"/><circle cx="12" cy="12" r="1.75"/></svg></span>
           <h4>Carrom</h4>
           <p>Indoor carrom boards for a quick game between matches.</p>
         </div>
         <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
           <h4>Always Open</h4>
           <p>No fixed hours — call ahead to lock in your slot any time.</p>
         </div>
         <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
           <h4>Book by Phone</h4>
           <p>Call or message on Facebook to check availability and confirm your slot.</p>
         </div>
         <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
           <h4>Easy to Find</h4>
           <p>Beside Joy Nagar Jame Masjid, opposite the north Greenview gate on Port Connecting Road.</p>
-        </div>
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-          <h4>Group-Friendly</h4>
-          <p>Bring your team for a match or a group swim session.</p>
         </div>
       </div>
     </div>
