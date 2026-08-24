@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Frenzy Sports Arena</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#061a2b; --navy-mid:#0c2e47; --pool:#00b8d9; --pool-bright:#3fe0ff;
+    --turf:#1fa25c; --flare:#ff5a36; --pending:#f2b705; --paper:#f2f6f5; --ink:#071018; --muted:#5c6b73;
+    --display:'Archivo Black', sans-serif; --body:'Manrope', sans-serif; --mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:var(--body); background:var(--paper); color:var(--ink); line-height:1.5;}
+  a{color:inherit;}
+  .wrap{max-width:1280px; margin:0 auto; padding:0 20px;}
+
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:var(--navy); color:#fff; padding:20px;
+  }
+  .login-card{
+    background:var(--navy-mid); border:1px solid rgba(255,255,255,0.14); border-radius:10px;
+    padding:36px 32px; width:100%; max-width:360px;
+  }
+  .brand{display:flex; align-items:center; gap:8px; font-family:var(--display); font-size:1rem; margin-bottom:8px;}
+  .spark{width:9px; height:9px; background:var(--flare); transform:rotate(45deg); display:inline-block;}
+  .login-card h1{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.4rem; margin:6px 0 22px;}
+  .field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+  .field label{font-size:0.8rem; font-weight:700; color:#b9c9d1;}
+  .field input, .field select, .field textarea{
+    font-family:var(--body); font-size:0.94rem; padding:11px 12px; border-radius:5px;
+    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); color:#fff; width:100%;
+  }
+  .field textarea{resize:vertical; min-height:60px;}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    font-family:var(--body); font-weight:700; font-size:0.9rem;
+    padding:12px 20px; border-radius:5px; text-decoration:none; cursor:pointer; border:none;
+  }
+  .btn-flare{background:var(--flare); color:#fff; width:100%; margin-top:6px;}
+  .btn-flare:disabled{opacity:0.5; cursor:not-allowed;}
+  .btn-outline{background:none; border:1px solid rgba(255,255,255,0.3); color:#fff;}
+  .btn-turf{background:var(--turf); color:#fff;}
+  .btn-sm{padding:8px 14px; font-size:0.82rem; width:auto;}
+  .login-error{color:#ffb3a3; font-size:0.85rem; margin-top:12px; display:none;}
+  .login-error.show{display:block;}
+
+  #dashboard{display:none; min-height:100vh;}
+  #dashboard.show{display:block;}
+  header.admin-nav{
+    background:var(--navy); color:#fff; padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.1);
+  }
+  .admin-nav-inner{display:flex; align-items:center; justify-content:space-between; max-width:1280px; margin:0 auto; padding:0 20px; flex-wrap:wrap; gap:12px;}
+  .admin-nav-right{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+  .admin-badge{
+    background:var(--flare); color:#fff; font-family:var(--mono); font-size:0.72rem;
+    padding:4px 10px; border-radius:12px; font-weight:700; display:none;
+  }
+  .admin-badge.show{display:inline-block;}
+  .logout-btn{background:none; border:1px solid rgba(255,255,255,0.25); color:#fff; padding:8px 14px; border-radius:5px; font-size:0.82rem; cursor:pointer;}
+
+  main{padding:28px 0 60px;}
+  h2{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.5rem; color:var(--navy);}
+
+  .toolbar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;}
+
+  .stats-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-bottom:24px;}
+  @media (max-width:900px){.stats-grid{grid-template-columns:1fr;}}
+  .stats-card{background:#fff; border:1px solid #e2e8e7; border-radius:8px; padding:16px 18px;}
+  .stats-label{
+    font-family:var(--mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;
+    color:var(--pool); font-weight:700; margin-bottom:10px;
+  }
+  .stats-row{display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; padding:4px 0; color:var(--muted);}
+  .stats-row b{color:var(--navy); font-size:0.92rem;}
+  .action-buttons{display:flex; gap:10px; flex-wrap:wrap;}
+  .action-buttons .btn{width:auto;}
+
+  .subtabs{display:flex; gap:8px; margin-bottom:20px;}
+  .subtab{
+    padding:9px 16px; border-radius:6px; border:1px solid #d7dfde; background:#fff;
+    color:var(--muted); font-weight:700; font-size:0.86rem; cursor:pointer;
+  }
+  .subtab.active{background:var(--navy); border-color:var(--navy); color:#fff;}
+
+  .filters{
+    display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px; background:#fff;
+    border:1px solid #e2e8e7; border-radius:8px; padding:16px;
+  }
+  .filters input, .filters select{
+    font-family:var(--body); font-size:0.86rem; padding:9px 12px; border-radius:5px;
+    border:1px solid #d7dfde; background:var(--paper); color:var(--ink);
+  }
+  .filters input[type="text"]{flex:1; min-width:180px;}
+  .series-filter-chip{
+    display:inline-flex; align-items:center; gap:8px; background:rgba(0,184,217,0.12);
+    color:#036078; padding:6px 12px; border-radius:16px; font-size:0.82rem; font-weight:700; margin-bottom:14px;
+  }
+  .series-filter-chip button{background:none; border:none; color:#036078; cursor:pointer; font-weight:800;}
+
+  .table-wrap{background:#fff; border:1px solid #e2e8e7; border-radius:8px; overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-size:0.85rem; min-width:1080px;}
+  thead th{
+    text-align:left; padding:12px 14px; background:var(--paper); color:var(--muted);
+    font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; font-family:var(--mono); font-weight:600;
+    border-bottom:1px solid #e2e8e7; white-space:nowrap;
+  }
+  tbody td{padding:12px 14px; border-bottom:1px solid #edf1f0; vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr.new-row{background:rgba(242,183,5,0.06);}
+  .cell-name{font-weight:700;}
+  .cell-sub{font-size:0.76rem; color:var(--muted); margin-top:2px;}
+  .type-tag{font-family:var(--mono); font-size:0.68rem; color:var(--muted); text-transform:uppercase;}
+  .status-pill{
+    display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.7rem; font-weight:700;
+    font-family:var(--mono); text-transform:capitalize;
+  }
+  .status-pill.pending{background:rgba(242,183,5,0.16); color:#8a6800;}
+  .status-pill.approved{background:rgba(31,162,92,0.14); color:#166b3f;}
+  .status-pill.rejected{background:rgba(255,90,54,0.14); color:#a83a1f;}
+  .status-pill.cancelled{background:#e7e7e7; color:#5c5c5c;}
+  .status-pill.completed{background:rgba(0,184,217,0.14); color:#036078;}
+
+  .row-actions{display:flex; flex-wrap:wrap; gap:6px;}
+  .action-btn{
+    font-family:var(--body); font-size:0.74rem; font-weight:700; padding:6px 9px;
+    border-radius:4px; border:1px solid transparent; cursor:pointer; background:#fff;
+  }
+  .action-btn.approve{background:var(--turf); color:#fff;}
+  .action-btn.reject{background:#fff; color:var(--flare); border-color:var(--flare);}
+  .action-btn.cancel{background:#fff; color:var(--muted); border-color:#d7dfde;}
+  .action-btn.complete{background:var(--pool); color:var(--navy);}
+  .action-btn.edit{background:#fff; color:var(--navy); border-color:var(--navy);}
+  .action-btn:disabled{opacity:0.5; cursor:not-allowed;}
+
+  .notes-cell{max-width:160px; font-size:0.78rem; color:var(--muted);}
+  .empty-state{padding:40px 20px; text-align:center; color:var(--muted);}
+  .loading-state{padding:40px 20px; text-align:center; color:var(--muted);}
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:200;
+    display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+  .modal-overlay[hidden]{display:none;}
+  .modal-panel{
+    background:#fff; border-radius:10px; width:100%; max-width:480px;
+    max-height:90vh; overflow-y:auto;
+  }
+  .modal-panel.wide{max-width:720px;}
+  .modal-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:18px 22px; border-bottom:1px solid #edf1f0;
+  }
+  .modal-head h3{font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.1rem; color:var(--navy);}
+  .modal-close{background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--muted); line-height:1;}
+  .modal-body{padding:20px 22px;}
+  .field-row-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .checkbox-row{display:flex; align-items:center; gap:8px; margin:10px 0;}
+  .checkbox-row input{width:auto;}
+  .checkbox-row label{font-size:0.86rem; font-weight:600; color:var(--ink);}
+  .days-grid{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+  .day-chip{
+    padding:7px 12px; border-radius:16px; border:1px solid #d7dfde; background:#fff;
+    font-size:0.8rem; font-weight:700; cursor:pointer; color:var(--muted);
+  }
+  .day-chip.active{background:var(--navy); border-color:var(--navy); color:#fff;}
+  .modal-warning{
+    font-size:0.82rem; color:#a83a1f; background:rgba(255,90,54,0.1);
+    border:1px solid rgba(255,90,54,0.25); border-radius:6px; padding:10px 12px; margin-bottom:12px;
+  }
+  .occurrence-list{max-height:220px; overflow-y:auto; border:1px solid #edf1f0; border-radius:6px; margin-bottom:14px;}
+  .occurrence-row{
+    display:flex; justify-content:space-between; padding:9px 12px; font-size:0.82rem;
+    border-bottom:1px solid #edf1f0;
+  }
+  .occurrence-row:last-child{border-bottom:none;}
+  .occurrence-row.conflict{background:rgba(255,90,54,0.06); color:#a83a1f;}
+  .occurrence-row.ok{color:#166b3f;}
+  .modal-actions{display:flex; gap:10px; margin-top:16px;}
+  .modal-actions .btn{width:auto; flex:1;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="brand"><span class="spark"></span>FRENZY</div>
+    <h1>Admin Login</h1>
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-flare" id="loginBtn">Log In</button>
+      <p class="login-error" id="loginError">Incorrect email or password.</p>
+    </form>
+  </div>
+</div>
+
+<div id="dashboard">
+  <header class="admin-nav">
+    <div class="admin-nav-inner">
+      <div class="brand" style="color:#fff;"><span class="spark"></span>FRENZY ADMIN</div>
+      <div class="admin-nav-right">
+        <span class="admin-badge" id="newBadge">0 NEW</span>
+        <button class="logout-btn" id="logoutBtn">Log Out</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="stats-card">
+          <p class="stats-label">Today</p>
+          <div class="stats-row"><span>Total</span><b id="statTodayTotal">0</b></div>
+          <div class="stats-row"><span>Pending</span><b id="statTodayPending">0</b></div>
+          <div class="stats-row"><span>Approved</span><b id="statTodayApproved">0</b></div>
+          <div class="stats-row"><span>Cancelled</span><b id="statTodayCancelled">0</b></div>
+          <div class="stats-row"><span>Revenue</span><b id="statTodayRevenue">৳0</b></div>
+          <div class="stats-row"><span>Booked Hours</span><b id="statTodayHours">0</b></div>
+          <div class="stats-row"><span>Top Facility</span><b id="statTodayTop">—</b></div>
+        </div>
+        <div class="stats-card">
+          <p class="stats-label">This Week</p>
+          <div class="stats-row"><span>Total</span><b id="statWeekTotal">0</b></div>
+          <div class="stats-row"><span>Revenue</span><b id="statWeekRevenue">৳0</b></div>
+          <div class="stats-row"><span>Booked Hours</span><b id="statWeekHours">0</b></div>
+          <div class="stats-row"><span>Top Facility</span><b id="statWeekTop">—</b></div>
+        </div>
+        <div class="stats-card">
+          <p class="stats-label">This Month</p>
+          <div class="stats-row"><span>Total</span><b id="statMonthTotal">0</b></div>
+          <div class="stats-row"><span>Revenue</span><b id="statMonthRevenue">৳0</b></div>
+          <div class="stats-row"><span>Booked Hours</span><b id="statMonthHours">0</b></div>
+          <div class="stats-row"><span>Top Facility</span><b id="statMonthTop">—</b></div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <h2>Booking Management</h2>
+        <div class="action-buttons">
+          <button class="btn btn-turf btn-sm" id="openNewBookingBtn">+ New Booking</button>
+          <button class="btn btn-outline btn-sm" style="background:var(--navy); border-color:var(--navy); color:#fff;" id="openCorporateBtn">+ Corporate / Recurring Booking</button>
+          <button class="btn btn-outline btn-sm" style="background:#fff; border-color:#d7dfde; color:var(--ink);" id="exportCsvBtn">Export CSV</button>
+        </div>
+      </div>
+
+      <div class="subtabs">
+        <button class="subtab active" data-tab="bookings">All Bookings</button>
+        <button class="subtab" data-tab="pending">Pending Requests</button>
+        <button class="subtab" data-tab="recurring">Recurring Bookings</button>
+      </div>
+
+      <div id="bookingsTab">
+        <div id="seriesFilterChip" class="series-filter-chip" hidden>
+          Showing occurrences for one recurring series
+          <button id="clearSeriesFilter" type="button">&times; Clear</button>
+        </div>
+        <div class="filters">
+          <input type="text" id="searchInput" placeholder="Search name or phone…">
+          <select id="dateFilter">
+            <option value="">All dates</option>
+            <option value="today">Today</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="past">Past</option>
+          </select>
+          <select id="facilityFilter">
+            <option value="">All facilities</option>
+            <option value="futsalTurf">Futsal Turf</option>
+            <option value="swimmingPool">Swimming Pool</option>
+            <option value="carrom">Carrom</option>
+          </select>
+          <select id="typeFilter">
+            <option value="">All types</option>
+            <option value="customer_request">Customer Request</option>
+            <option value="admin_direct">Admin Direct</option>
+            <option value="corporate_recurring">Corporate / Recurring</option>
+          </select>
+          <select id="statusFilter">
+            <option value="">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Facility</th>
+                <th>Date &amp; Time</th>
+                <th>Type</th>
+                <th>Fee</th>
+                <th>Notes</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="requestsBody"></tbody>
+          </table>
+          <div class="loading-state" id="loadingState">Loading requests…</div>
+          <div class="empty-state" id="emptyState" style="display:none;">No requests match these filters.</div>
+        </div>
+      </div>
+
+      <div id="recurringTab" style="display:none;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Facility</th>
+                <th>Days</th>
+                <th>Date Range</th>
+                <th>Time</th>
+                <th>Fee</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="recurringBody"></tbody>
+          </table>
+          <div class="empty-state" id="recurringEmptyState" style="display:none;">No recurring series yet.</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="approveOverlay" hidden>
+  <div class="modal-panel">
+    <div class="modal-head"><h3>Approve Booking</h3><button class="modal-close" id="approveClose">&times;</button></div>
+    <div class="modal-body">
+      <p id="approveSummary" style="font-size:0.9rem; color:var(--muted); margin-bottom:16px;"></p>
+      <div class="field">
+        <label for="approveFee">Booking Fee (optional, BDT)</label>
+        <input type="number" id="approveFee" min="0" placeholder="e.g. 1500">
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="approveShowFee">
+        <label for="approveShowFee">Show fee on website</label>
+      </div>
+      <button class="btn btn-flare" id="approveConfirmBtn" style="background:var(--turf);">Approve Booking</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="newBookingOverlay" hidden>
+  <div class="modal-panel">
+    <div class="modal-head"><h3 id="newBookingTitle">New Booking</h3><button class="modal-close" id="newBookingClose">&times;</button></div>
+    <div class="modal-body">
+      <form id="newBookingForm">
+        <div class="field-row-2">
+          <div class="field"><label for="nbName">Customer Name *</label><input type="text" id="nbName" required></div>
+          <div class="field"><label for="nbPhone">Phone Number *</label><input type="tel" id="nbPhone" placeholder="01XXXXXXXXX" required></div>
+        </div>
+        <div class="field"><label for="nbEmail">Email (optional)</label><input type="email" id="nbEmail"></div>
+        <div class="field-row-2">
+          <div class="field">
+            <label for="nbFacility">Facility *</label>
+            <select id="nbFacility">
+              <option value="futsalTurf">Futsal Turf</option>
+              <option value="swimmingPool">Swimming Pool</option>
+              <option value="carrom">Carrom</option>
+            </select>
+          </div>
+          <div class="field"><label for="nbDate">Date *</label><input type="date" id="nbDate" required></div>
+        </div>
+        <div class="field-row-2">
+          <div class="field"><label for="nbStart">Start Time *</label><select id="nbStart"></select></div>
+          <div class="field"><label for="nbDuration">Duration *</label><select id="nbDuration"></select></div>
+        </div>
+        <p id="nbWarning" class="modal-warning" hidden></p>
+        <div class="field"><label for="nbNotes">Notes (optional)</label><textarea id="nbNotes"></textarea></div>
+        <div class="field-row-2">
+          <div class="field"><label for="nbFee">Booking Fee (optional, BDT)</label><input type="number" id="nbFee" min="0"></div>
+          <div class="checkbox-row" style="margin-top:28px;">
+            <input type="checkbox" id="nbShowFee">
+            <label for="nbShowFee">Show fee on website</label>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-flare" id="nbSubmitBtn" style="background:var(--turf);" disabled>Create Booking</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="corpOverlay" hidden>
+  <div class="modal-panel wide">
+    <div class="modal-head"><h3>Corporate / Recurring Booking</h3><button class="modal-close" id="corpClose">&times;</button></div>
+    <div class="modal-body">
+      <div id="corpStep1">
+        <div class="field-row-2">
+          <div class="field"><label for="cbName">Customer Name *</label><input type="text" id="cbName" required></div>
+          <div class="field"><label for="cbPhone">Phone Number *</label><input type="tel" id="cbPhone" placeholder="01XXXXXXXXX" required></div>
+        </div>
+        <div class="field"><label for="cbEmail">Email (optional)</label><input type="email" id="cbEmail"></div>
+        <div class="field">
+          <label for="cbFacility">Facility *</label>
+          <select id="cbFacility">
+            <option value="futsalTurf">Futsal Turf</option>
+            <option value="swimmingPool">Swimming Pool</option>
+            <option value="carrom">Carrom</option>
+          </select>
+        </div>
+        <div class="field"><label>Day(s) of Week *</label>
+          <div class="days-grid" id="cbDaysGrid">
+            <button type="button" class="day-chip" data-day="0">Sun</button>
+            <button type="button" class="day-chip" data-day="1">Mon</button>
+            <button type="button" class="day-chip" data-day="2">Tue</button>
+            <button type="button" class="day-chip" data-day="3">Wed</button>
+            <button type="button" class="day-chip" data-day="4">Thu</button>
+            <button type="button" class="day-chip" data-day="5">Fri</button>
+            <button type="button" class="day-chip" data-day="6">Sat</button>
+          </div>
+        </div>
+        <div class="field-row-2">
+          <div class="field"><label for="cbStartDate">Start Date *</label><input type="date" id="cbStartDate" required></div>
+          <div class="field"><label for="cbEndDate">End Date *</label><input type="date" id="cbEndDate" required></div>
+        </div>
+        <div class="field-row-2">
+          <div class="field"><label for="cbStart">Start Time *</label><select id="cbStart"></select></div>
+          <div class="field"><label for="cbDuration">Duration *</label><select id="cbDuration"></select></div>
+        </div>
+        <div class="field"><label for="cbNotes">Notes (optional)</label><textarea id="cbNotes"></textarea></div>
+        <div class="field-row-2">
+          <div class="field">
+            <label for="cbFeeType">Fee Type</label>
+            <select id="cbFeeType">
+              <option value="per_occurrence">Fee per occurrence</option>
+              <option value="monthly">Total recurring fee</option>
+            </select>
+          </div>
+          <div class="field"><label for="cbFee">Booking Fee (optional, BDT)</label><input type="number" id="cbFee" min="0"></div>
+        </div>
+        <div class="checkbox-row"><input type="checkbox" id="cbShowFee"><label for="cbShowFee">Show fee on website</label></div>
+        <button type="button" class="btn btn-flare" id="cbCheckBtn" style="background:var(--navy);">Check Availability &amp; Review</button>
+      </div>
+
+      <div id="corpStep2" hidden>
+        <p style="font-size:0.9rem; color:var(--muted); margin-bottom:10px;" id="corpSummaryText"></p>
+        <div class="occurrence-list" id="occurrenceList"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-flare" id="cbSkipCreateBtn" style="background:var(--turf);">Skip Conflicts &amp; Create Rest</button>
+          <button type="button" class="btn btn-outline" style="background:#fff; border-color:#d7dfde; color:var(--ink);" id="cbCancelSeriesBtn">Cancel, Go Back</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, writeBatch, updateDoc, onSnapshot, query, orderBy,
+    where, getDocs, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDCtXGoYt1znhi1wyUhgoOYLiNS-xekiYk",
+    authDomain: "frenzy-arena.firebaseapp.com",
+    projectId: "frenzy-arena",
+    storageBucket: "frenzy-arena.firebasestorage.app",
+    messagingSenderId: "921384529735",
+    appId: "1:921384529735:web:0f8228d244034cbc07a662"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const STEP = 30;
+  const DAY_MINUTES = 1440;
+  const MAX_DURATION_UNITS = 16;
+  const HALF_HOUR_MARKS = Array.from({ length: DAY_MINUTES / STEP }, (_, i) => i * STEP);
+  const FACILITY_LABELS = { futsalTurf: "Futsal Turf", swimmingPool: "Swimming Pool", carrom: "Carrom" };
+  const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  function pad2(n) { return String(n).padStart(2, "0"); }
+  function getDhakaNow() {
+    const now = new Date();
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Dhaka', hour12: false,
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+    }).formatToParts(now);
+    const map = {};
+    parts.forEach(p => { map[p.type] = p.value; });
+    return { dateStr: `${map.year}-${map.month}-${map.day}`, minutes: parseInt(map.hour, 10) * 60 + parseInt(map.minute, 10) };
+  }
+  function addDaysStr(dateStr, delta) {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + delta);
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  }
+  function addMinutesToDate(baseDateStr, absMinutes) {
+    const dayOffset = Math.floor(absMinutes / DAY_MINUTES);
+    const minutesInDay = ((absMinutes % DAY_MINUTES) + DAY_MINUTES) % DAY_MINUTES;
+    return { date: addDaysStr(baseDateStr, dayOffset), minutes: minutesInDay };
+  }
+  function minutesToHHMM(min) { return `${pad2(Math.floor(min / 60))}${pad2(min % 60)}`; }
+  function minutesToLabel(min) {
+    const h = Math.floor(min / 60) % 24, m = min % 60;
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return `${h12}:${pad2(m)} ${h < 12 ? "AM" : "PM"}`;
+  }
+  function durationLabel(totalMinutes) {
+    const h = Math.floor(totalMinutes / 60), m = totalMinutes % 60;
+    const parts = [];
+    if (h > 0) parts.push(`${h} Hour${h > 1 ? "s" : ""}`);
+    if (m > 0) parts.push(`${m} Minutes`);
+    return parts.join(" ") || "0 Minutes";
+  }
+  function fmtTimestamp(ts) {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+  function isValidBDPhone(phone) {
+    return /^(?:\+?880|0)1[3-9]\d{8}$/.test(phone.replace(/[\s-]/g, ""));
+  }
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str == null ? '' : String(str);
+    return d.innerHTML;
+  }
+  function slotDocId(facility, date, hhmm) { return `${facility}_${date}_${hhmm}`; }
+
+  const loginScreen = document.getElementById('loginScreen');
+  const dashboard = document.getElementById('dashboard');
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+  const loginBtn = document.getElementById('loginBtn');
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginError.classList.remove('show');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Logging in…';
+    try {
+      await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value.trim(), document.getElementById('loginPassword').value);
+    } catch (err) {
+      console.error(err);
+      loginError.classList.add('show');
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Log In';
+    }
+  });
+  document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+
+  let allRequests = [];
+  let allRecurring = [];
+  let requestsUnsub = null, recurringUnsub = null;
+  let seriesFilterId = null;
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loginScreen.style.display = 'none';
+      dashboard.classList.add('show');
+      subscribeRequests();
+      subscribeRecurring();
+    } else {
+      loginScreen.style.display = 'flex';
+      dashboard.classList.remove('show');
+      if (requestsUnsub) { requestsUnsub(); requestsUnsub = null; }
+      if (recurringUnsub) { recurringUnsub(); recurringUnsub = null; }
+    }
+  });
+
+  const bookingsTab = document.getElementById('bookingsTab');
+  const recurringTab = document.getElementById('recurringTab');
+  let activeSubtab = 'bookings';
+  document.querySelectorAll('.subtab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.subtab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeSubtab = btn.dataset.tab;
+      bookingsTab.style.display = activeSubtab === 'recurring' ? 'none' : 'block';
+      recurringTab.style.display = activeSubtab === 'recurring' ? 'block' : 'none';
+      if (activeSubtab === 'pending') statusFilter.value = 'pending'; else if (activeSubtab === 'bookings' && statusFilter.value === 'pending') statusFilter.value = '';
+      renderTable();
+    });
+  });
+
+  function subscribeRequests() {
+    const q = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
+    requestsUnsub = onSnapshot(q, (snap) => {
+      allRequests = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderTable();
+    }, (err) => {
+      console.error(err);
+      document.getElementById('loadingState').textContent = 'Could not load requests — check Firestore rules and that this account is the admin.';
+    });
+  }
+  function subscribeRecurring() {
+    const q = query(collection(db, 'recurringBookings'), orderBy('createdAt', 'desc'));
+    recurringUnsub = onSnapshot(q, (snap) => {
+      allRecurring = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderRecurringTable();
+    }, (err) => console.error(err));
+  }
+
+  const searchInput = document.getElementById('searchInput');
+  const dateFilter = document.getElementById('dateFilter');
+  const facilityFilter = document.getElementById('facilityFilter');
+  const typeFilter = document.getElementById('typeFilter');
+  const statusFilter = document.getElementById('statusFilter');
+  [searchInput, dateFilter, facilityFilter, typeFilter, statusFilter].forEach(el => el.addEventListener('input', renderTable));
+
+  document.getElementById('clearSeriesFilter').addEventListener('click', () => {
+    seriesFilterId = null;
+    document.getElementById('seriesFilterChip').hidden = true;
+    renderTable();
+  });
+
+  // ---------- CSV EXPORT ----------
+  function csvEscape(val) {
+    const s = val == null ? '' : String(val);
+    if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  }
+  document.getElementById('exportCsvBtn').addEventListener('click', () => {
+    const rows = getFilteredRequests();
+    const header = [
+      'Booking ID', 'Customer Name', 'Phone', 'Email', 'Facility', 'Booking Date',
+      'Start Time', 'End Time', 'Duration', 'Status', 'Booking Type', 'Booking Source',
+      'Booking Fee', 'Fee Currency', 'Fee Shown Publicly', 'Notes',
+      'Created At', 'Approved At', 'Rejected At',
+    ];
+    const lines = [header.map(csvEscape).join(',')];
+    rows.forEach(r => {
+      const { date: endDate, minutes: endMin } = addMinutesToDate(r.bookingDate, r.endMinutes);
+      const endStr = endDate === r.bookingDate ? minutesToLabel(endMin) : `${minutesToLabel(endMin)} (+1d)`;
+      lines.push([
+        r.id, r.customerName, r.phone, r.email || '', FACILITY_LABELS[r.facility] || r.facility, r.bookingDate,
+        minutesToLabel(r.startMinutes), endStr, durationLabel(r.durationMinutes), r.status,
+        (r.bookingType || '').replace('_', ' '), r.bookingSource || '',
+        r.bookingFee != null ? r.bookingFee : '', r.feeCurrency || '', r.showFeePublicly ? 'Yes' : 'No',
+        r.notes || '', fmtTimestamp(r.createdAt), fmtTimestamp(r.approvedAt), fmtTimestamp(r.rejectedAt),
+      ].map(csvEscape).join(','));
+    });
+    // UTF-8 BOM so Excel opens Bangla/English text correctly instead of mangling it
+    const csvContent = '\uFEFF' + lines.join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `frenzy-bookings-${todayKey()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  function todayKey() { return getDhakaNow().dateStr; }
+
+  // ---------- DASHBOARD STATS ----------
+  function startOfWeek(dateStr) {
+    // Week starts Sunday, to match the day-of-week convention used elsewhere (corporate booking day chips)
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() - d.getDay());
+    return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  }
+  function startOfMonth(dateStr) { return dateStr.slice(0, 7) + '-01'; }
+
+  function computeStats(bookings, fromDate, today) {
+    const countable = bookings.filter(b => b.bookingDate >= fromDate && b.bookingDate <= today);
+    const revenueEligible = countable.filter(b => (b.status === 'approved' || b.status === 'completed') && b.bookingFee != null);
+    const revenue = revenueEligible.reduce((sum, b) => sum + Number(b.bookingFee || 0), 0);
+    const hoursEligible = countable.filter(b => b.status === 'approved' || b.status === 'completed');
+    const totalHours = hoursEligible.reduce((sum, b) => sum + (b.durationMinutes || 0), 0) / 60;
+    const facilityCounts = {};
+    hoursEligible.forEach(b => { facilityCounts[b.facility] = (facilityCounts[b.facility] || 0) + 1; });
+    let topFacility = '—';
+    let topCount = 0;
+    Object.entries(facilityCounts).forEach(([f, c]) => { if (c > topCount) { topCount = c; topFacility = FACILITY_LABELS[f] || f; } });
+    return {
+      total: countable.length,
+      pending: countable.filter(b => b.status === 'pending').length,
+      approved: countable.filter(b => b.status === 'approved').length,
+      cancelled: countable.filter(b => b.status === 'cancelled' || b.status === 'rejected').length,
+      revenue,
+      hours: totalHours,
+      topFacility,
+    };
+  }
+
+  function renderStats() {
+    const today = todayKey();
+    const day = computeStats(allRequests, today, today);
+    document.getElementById('statTodayTotal').textContent = day.total;
+    document.getElementById('statTodayPending').textContent = day.pending;
+    document.getElementById('statTodayApproved').textContent = day.approved;
+    document.getElementById('statTodayCancelled').textContent = day.cancelled;
+    document.getElementById('statTodayRevenue').textContent = `৳${day.revenue}`;
+    document.getElementById('statTodayHours').textContent = day.hours.toFixed(1);
+    document.getElementById('statTodayTop').textContent = day.topFacility;
+
+    const week = computeStats(allRequests, startOfWeek(today), today);
+    document.getElementById('statWeekTotal').textContent = week.total;
+    document.getElementById('statWeekRevenue').textContent = `৳${week.revenue}`;
+    document.getElementById('statWeekHours').textContent = week.hours.toFixed(1);
+    document.getElementById('statWeekTop').textContent = week.topFacility;
+
+    const month = computeStats(allRequests, startOfMonth(today), today);
+    document.getElementById('statMonthTotal').textContent = month.total;
+    document.getElementById('statMonthRevenue').textContent = `৳${month.revenue}`;
+    document.getElementById('statMonthHours').textContent = month.hours.toFixed(1);
+    document.getElementById('statMonthTop').textContent = month.topFacility;
+  }
+
+  function getFilteredRequests() {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const today = todayKey();
+    return allRequests.filter(r => {
+      if (seriesFilterId && r.recurringBookingId !== seriesFilterId) return false;
+      if (searchTerm && !(`${r.customerName} ${r.phone}`.toLowerCase().includes(searchTerm))) return false;
+      if (facilityFilter.value && r.facility !== facilityFilter.value) return false;
+      if (typeFilter.value && r.bookingType !== typeFilter.value) return false;
+      if (statusFilter.value && r.status !== statusFilter.value) return false;
+      if (dateFilter.value === 'today' && r.bookingDate !== today) return false;
+      if (dateFilter.value === 'upcoming' && !(r.bookingDate > today)) return false;
+      if (dateFilter.value === 'past' && !(r.bookingDate < today)) return false;
+      return true;
+    });
+  }
+
+  function renderTable() {
+    renderStats();
+    const tbody = document.getElementById('requestsBody');
+    const loadingState = document.getElementById('loadingState');
+    const emptyState = document.getElementById('emptyState');
+    loadingState.style.display = 'none';
+
+    let filtered = getFilteredRequests();
+
+    const pendingCount = allRequests.filter(r => r.status === 'pending').length;
+    const badge = document.getElementById('newBadge');
+    badge.textContent = `${pendingCount} NEW`;
+    badge.classList.toggle('show', pendingCount > 0);
+
+    tbody.innerHTML = '';
+    emptyState.style.display = filtered.length ? 'none' : 'block';
+
+    filtered.forEach(r => {
+      const tr = document.createElement('tr');
+      if (r.status === 'pending') tr.classList.add('new-row');
+      const { date: endDate, minutes: endMin } = addMinutesToDate(r.bookingDate, r.endMinutes);
+      const timeStr = endDate === r.bookingDate
+        ? `${minutesToLabel(r.startMinutes)} – ${minutesToLabel(endMin)}`
+        : `${minutesToLabel(r.startMinutes)} – ${minutesToLabel(endMin)} (+1d)`;
+      const feeStr = r.bookingFee != null ? `৳${r.bookingFee}${r.showFeePublicly ? '' : ' (hidden)'}` : '—';
+      tr.innerHTML = `
+        <td>
+          <div class="cell-name">${escapeHtml(r.customerName || '—')}</div>
+          <div class="cell-sub">${escapeHtml(r.phone || '')}${r.email ? ' · ' + escapeHtml(r.email) : ''}</div>
+        </td>
+        <td>${FACILITY_LABELS[r.facility] || r.facility}</td>
+        <td>
+          <div>${r.bookingDate}</div>
+          <div class="cell-sub">${timeStr} (${durationLabel(r.durationMinutes)})</div>
+        </td>
+        <td><span class="type-tag">${(r.bookingType || '').replace('_', ' ')}</span></td>
+        <td class="cell-sub">${feeStr}</td>
+        <td class="notes-cell">${r.notes ? escapeHtml(r.notes) : '—'}</td>
+        <td><span class="status-pill ${r.status}">${r.status}</span></td>
+        <td class="row-actions">${renderActions(r)}</td>
+      `;
+      tbody.appendChild(tr);
+      tr.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => handleAction(btn.dataset.action, r));
+      });
+    });
+  }
+
+  function renderActions(r) {
+    const parts = [];
+    if (r.status === 'pending') {
+      parts.push(`<button class="action-btn approve" data-action="approve">Approve</button>`);
+      parts.push(`<button class="action-btn reject" data-action="reject">Reject</button>`);
+    }
+    if (r.status === 'approved') {
+      parts.push(`<button class="action-btn edit" data-action="edit">Edit</button>`);
+      parts.push(`<button class="action-btn cancel" data-action="cancel">Cancel</button>`);
+      parts.push(`<button class="action-btn complete" data-action="complete">Complete</button>`);
+    }
+    if (!parts.length) parts.push(`<span class="cell-sub">No actions</span>`);
+    return parts.join('');
+  }
+
+  function slotIdsForBooking(facility, bookingDate, startMinutes, durationMinutes) {
+    const ids = [];
+    for (let offset = 0; offset < durationMinutes; offset += STEP) {
+      const { date, minutes } = addMinutesToDate(bookingDate, startMinutes + offset);
+      ids.push({ ref: doc(db, 'slots', slotDocId(facility, date, minutesToHHMM(minutes))), date, hhmm: minutesToHHMM(minutes) });
+    }
+    return ids;
+  }
+
+  let approveTarget = null;
+  const approveOverlay = document.getElementById('approveOverlay');
+  document.getElementById('approveClose').addEventListener('click', () => { approveOverlay.hidden = true; approveTarget = null; });
+
+  async function handleAction(action, r) {
+    const ref = doc(db, 'bookings', r.id);
+    if (action === 'approve') {
+      approveTarget = r;
+      document.getElementById('approveSummary').textContent =
+        `${r.customerName} — ${FACILITY_LABELS[r.facility]} — ${r.bookingDate} ${minutesToLabel(r.startMinutes)} (${durationLabel(r.durationMinutes)})`;
+      document.getElementById('approveFee').value = '';
+      document.getElementById('approveShowFee').checked = false;
+      approveOverlay.hidden = false;
+      return;
+    }
+    try {
+      if (action === 'reject') {
+        const batch = writeBatch(db);
+        slotIdsForBooking(r.facility, r.bookingDate, r.startMinutes, r.durationMinutes).forEach(s => batch.delete(s.ref));
+        batch.update(ref, { status: 'rejected', rejectedAt: serverTimestamp(), updatedAt: serverTimestamp() });
+        await batch.commit();
+      } else if (action === 'cancel') {
+        const batch = writeBatch(db);
+        slotIdsForBooking(r.facility, r.bookingDate, r.startMinutes, r.durationMinutes).forEach(s => batch.delete(s.ref));
+        batch.update(ref, { status: 'cancelled', updatedAt: serverTimestamp() });
+        await batch.commit();
+      } else if (action === 'complete') {
+        await updateDoc(ref, { status: 'completed', updatedAt: serverTimestamp() });
+      } else if (action === 'edit') {
+        openEditBooking(r);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Action failed — check the browser console and your Firestore rules.');
+    }
+  }
+
+  document.getElementById('approveConfirmBtn').addEventListener('click', async () => {
+    if (!approveTarget) return;
+    const r = approveTarget;
+    const feeVal = document.getElementById('approveFee').value.trim();
+    const bookingFee = feeVal === '' ? null : Number(feeVal);
+    const showFeePublicly = document.getElementById('approveShowFee').checked;
+    try {
+      const batch = writeBatch(db);
+      slotIdsForBooking(r.facility, r.bookingDate, r.startMinutes, r.durationMinutes).forEach(s => {
+        batch.update(s.ref, {
+          status: 'approved',
+          customerName: r.customerName,
+          feePublic: (showFeePublicly && bookingFee != null) ? bookingFee : null,
+          feeCurrency: (showFeePublicly && bookingFee != null) ? 'BDT' : null,
+        });
+      });
+      batch.update(doc(db, 'bookings', r.id), {
+        status: 'approved', approvedAt: serverTimestamp(), updatedAt: serverTimestamp(),
+        bookingFee, feeCurrency: bookingFee != null ? 'BDT' : null, showFeePublicly,
+      });
+      await batch.commit();
+      approveOverlay.hidden = true;
+      approveTarget = null;
+    } catch (err) {
+      console.error(err);
+      alert('Could not approve — one of the requested slots may already be taken, or check Firestore rules.');
+    }
+  });
+
+  const nbOverlay = document.getElementById('newBookingOverlay');
+  const nbForm = document.getElementById('newBookingForm');
+  const nbFacility = document.getElementById('nbFacility');
+  const nbDate = document.getElementById('nbDate');
+  const nbStart = document.getElementById('nbStart');
+  const nbDuration = document.getElementById('nbDuration');
+  const nbWarning = document.getElementById('nbWarning');
+  const nbSubmitBtn = document.getElementById('nbSubmitBtn');
+  let nbSlotsCache = { current: {}, next: {} };
+  let editingBooking = null;
+
+  document.getElementById('openNewBookingBtn').addEventListener('click', () => openNewBooking(null));
+  document.getElementById('newBookingClose').addEventListener('click', () => { nbOverlay.hidden = true; });
+
+  function openNewBooking(prefill) {
+    editingBooking = prefill;
+    document.getElementById('newBookingTitle').textContent = prefill ? 'Edit Booking' : 'New Booking';
+    nbForm.reset();
+    nbWarning.hidden = true;
+    document.getElementById('nbDate').min = todayKey();
+    if (prefill) {
+      document.getElementById('nbName').value = prefill.customerName || '';
+      document.getElementById('nbPhone').value = prefill.phone || '';
+      document.getElementById('nbEmail').value = prefill.email || '';
+      nbFacility.value = prefill.facility;
+      nbDate.value = prefill.bookingDate;
+      document.getElementById('nbNotes').value = prefill.notes || '';
+      document.getElementById('nbFee').value = prefill.bookingFee != null ? prefill.bookingFee : '';
+      document.getElementById('nbShowFee').checked = !!prefill.showFeePublicly;
+    } else {
+      nbDate.value = todayKey();
+    }
+    loadNbSlots().then(() => {
+      populateNbStart(prefill ? prefill.startMinutes : null);
+      populateNbDuration();
+      if (prefill) nbDuration.value = Math.round(prefill.durationMinutes / STEP);
+      refreshNbValidity();
+    });
+    nbOverlay.hidden = false;
+  }
+
+  function openEditBooking(r) { openNewBooking(r); }
+
+  async function fetchSlotsMap(facility, date) {
+    const snap = await getDocs(query(collection(db, 'slots'), where('facility', '==', facility), where('date', '==', date)));
+    const map = {};
+    snap.forEach(d => {
+      const data = d.data();
+      if (editingBooking && data.bookingId === editingBooking.id) return;
+      map[parseInt(data.hhmm.slice(0, 2), 10) * 60 + parseInt(data.hhmm.slice(2), 10)] = data;
+    });
+    return map;
+  }
+
+  async function loadNbSlots() {
+    const facility = nbFacility.value, date = nbDate.value;
+    nbSlotsCache.current = await fetchSlotsMap(facility, date);
+    nbSlotsCache.next = await fetchSlotsMap(facility, addDaysStr(date, 1));
+  }
+  function nbSlotStatusAt(baseDate, absMinutes) {
+    const { date, minutes } = addMinutesToDate(baseDate, absMinutes);
+    if (date === nbDate.value) return nbSlotsCache.current[minutes] || null;
+    if (date === addDaysStr(nbDate.value, 1)) return nbSlotsCache.next[minutes] || null;
+    return undefined;
+  }
+  function nbConsecutiveFrom(startMinutes) {
+    let count = 0;
+    for (let i = 0; i < MAX_DURATION_UNITS; i++) {
+      const s = nbSlotStatusAt(nbDate.value, startMinutes + i * STEP);
+      if (s === undefined || s) break;
+      count++;
+    }
+    return count;
+  }
+  function populateNbStart(preferred) {
+    const isToday = nbDate.value === todayKey();
+    const nowMin = getDhakaNow().minutes;
+    nbStart.innerHTML = '';
+    HALF_HOUR_MARKS.forEach(min => {
+      const isPast = isToday && min < nowMin;
+      const occupied = nbSlotsCache.current[min];
+      if (isPast || occupied) return;
+      const opt = document.createElement('option');
+      opt.value = min;
+      opt.textContent = minutesToLabel(min);
+      if (min === preferred) opt.selected = true;
+      nbStart.appendChild(opt);
+    });
+    if (preferred !== null && ![...nbStart.options].some(o => Number(o.value) === preferred)) {
+      const opt = document.createElement('option');
+      opt.value = preferred;
+      opt.textContent = minutesToLabel(preferred) + ' (current)';
+      opt.selected = true;
+      nbStart.prepend(opt);
+    }
+  }
+  function populateNbDuration() {
+    const start = Number(nbStart.value);
+    const maxUnits = Number.isNaN(start) ? 0 : nbConsecutiveFrom(start);
+    nbDuration.innerHTML = '';
+    for (let units = 2; units <= Math.max(maxUnits, editingBooking ? Math.round(editingBooking.durationMinutes / STEP) : 0); units++) {
+      const opt = document.createElement('option');
+      opt.value = units;
+      opt.textContent = durationLabel(units * STEP);
+      nbDuration.appendChild(opt);
+    }
+  }
+  function refreshNbValidity() {
+    const name = document.getElementById('nbName').value.trim();
+    const phone = document.getElementById('nbPhone').value.trim();
+    const start = Number(nbStart.value);
+    const units = Number(nbDuration.value);
+    const maxUnits = Number.isNaN(start) ? 0 : nbConsecutiveFrom(start);
+    const fits = units >= 2 && units <= Math.max(maxUnits, editingBooking && start === editingBooking.startMinutes ? Math.round(editingBooking.durationMinutes / STEP) : 0);
+    nbWarning.hidden = fits || Number.isNaN(units);
+    if (!fits) nbWarning.textContent = `Only ${durationLabel(maxUnits * STEP)} is available from this start time.`;
+    nbSubmitBtn.disabled = !(name && isValidBDPhone(phone) && start >= 0 && units >= 2 && fits);
+  }
+  nbFacility.addEventListener('change', () => loadNbSlots().then(() => { populateNbStart(null); populateNbDuration(); refreshNbValidity(); }));
+  nbDate.addEventListener('change', () => loadNbSlots().then(() => { populateNbStart(null); populateNbDuration(); refreshNbValidity(); }));
+  nbStart.addEventListener('change', () => { populateNbDuration(); refreshNbValidity(); });
+  nbDuration.addEventListener('change', refreshNbValidity);
+  document.getElementById('nbName').addEventListener('input', refreshNbValidity);
+  document.getElementById('nbPhone').addEventListener('input', refreshNbValidity);
+
+  nbForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('nbName').value.trim();
+    const phone = document.getElementById('nbPhone').value.trim();
+    const email = document.getElementById('nbEmail').value.trim();
+    const facility = nbFacility.value;
+    const date = nbDate.value;
+    const start = Number(nbStart.value);
+    const units = Number(nbDuration.value);
+    const durationMinutes = units * STEP;
+    const notes = document.getElementById('nbNotes').value.trim();
+    const feeVal = document.getElementById('nbFee').value.trim();
+    const bookingFee = feeVal === '' ? null : Number(feeVal);
+    const showFeePublicly = document.getElementById('nbShowFee').checked;
+
+    nbSubmitBtn.disabled = true;
+    nbSubmitBtn.textContent = 'Saving…';
+    try {
+      if (editingBooking) {
+        const freeBatch = writeBatch(db);
+        slotIdsForBooking(editingBooking.facility, editingBooking.bookingDate, editingBooking.startMinutes, editingBooking.durationMinutes)
+          .forEach(s => freeBatch.delete(s.ref));
+        await freeBatch.commit();
+
+        const claimBatch = writeBatch(db);
+        slotIdsForBooking(facility, date, start, durationMinutes).forEach(s => {
+          claimBatch.set(s.ref, {
+            facility, date: s.date, hhmm: s.hhmm, status: 'approved',
+            bookingId: editingBooking.id, customerName: name,
+            feePublic: (showFeePublicly && bookingFee != null) ? bookingFee : null,
+            feeCurrency: (showFeePublicly && bookingFee != null) ? 'BDT' : null,
+            createdAt: serverTimestamp(),
+          });
+        });
+        claimBatch.update(doc(db, 'bookings', editingBooking.id), {
+          customerName: name, phone, email: email || null, facility, bookingDate: date,
+          startMinutes: start, durationMinutes, endMinutes: start + durationMinutes,
+          notes: notes || null, bookingFee, feeCurrency: bookingFee != null ? 'BDT' : null,
+          showFeePublicly, updatedAt: serverTimestamp(),
+        });
+        await claimBatch.commit();
+      } else {
+        const batch = writeBatch(db);
+        const ref = doc(collection(db, 'bookings'));
+        batch.set(ref, {
+          customerName: name, phone, email: email || null, facility, bookingDate: date,
+          startMinutes: start, durationMinutes, endMinutes: start + durationMinutes,
+          notes: notes || null, status: 'approved', bookingType: 'admin_direct', bookingSource: 'admin',
+          bookingFee, feeCurrency: bookingFee != null ? 'BDT' : null, showFeePublicly,
+          recurringBookingId: null, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+          approvedAt: serverTimestamp(), rejectedAt: null,
+        });
+        slotIdsForBooking(facility, date, start, durationMinutes).forEach(s => {
+          batch.set(s.ref, {
+            facility, date: s.date, hhmm: s.hhmm, status: 'approved', bookingId: ref.id, customerName: name,
+            feePublic: (showFeePublicly && bookingFee != null) ? bookingFee : null,
+            feeCurrency: (showFeePublicly && bookingFee != null) ? 'BDT' : null,
+            createdAt: serverTimestamp(),
+          });
+        });
+        await batch.commit();
+      }
+      nbOverlay.hidden = true;
+    } catch (err) {
+      console.error(err);
+      alert('Could not save this booking — one of the requested slots may already be taken, or check Firestore rules.');
+    } finally {
+      nbSubmitBtn.disabled = false;
+      nbSubmitBtn.textContent = editingBooking ? 'Save Changes' : 'Create Booking';
+    }
+  });
+
+  const corpOverlay = document.getElementById('corpOverlay');
+  const corpStep1 = document.getElementById('corpStep1');
+  const corpStep2 = document.getElementById('corpStep2');
+  const cbFacility = document.getElementById('cbFacility');
+  const cbStart = document.getElementById('cbStart');
+  const cbDuration = document.getElementById('cbDuration');
+  let selectedDays = new Set();
+  let pendingOccurrences = [];
+
+  document.getElementById('openCorporateBtn').addEventListener('click', () => {
+    corpStep1.hidden = false;
+    corpStep2.hidden = true;
+    document.querySelectorAll('#corpOverlay input, #corpOverlay textarea').forEach(el => el.value = '');
+    selectedDays.clear();
+    document.querySelectorAll('.day-chip').forEach(c => c.classList.remove('active'));
+    populateSimpleStartAndDuration();
+    document.getElementById('cbStartDate').min = todayKey();
+    document.getElementById('cbEndDate').min = todayKey();
+    corpOverlay.hidden = false;
+  });
+  document.getElementById('corpClose').addEventListener('click', () => { corpOverlay.hidden = true; });
+
+  document.querySelectorAll('.day-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const day = Number(chip.dataset.day);
+      if (selectedDays.has(day)) { selectedDays.delete(day); chip.classList.remove('active'); }
+      else { selectedDays.add(day); chip.classList.add('active'); }
+    });
+  });
+
+  function populateSimpleStartAndDuration() {
+    cbStart.innerHTML = '';
+    HALF_HOUR_MARKS.forEach(min => {
+      const opt = document.createElement('option');
+      opt.value = min; opt.textContent = minutesToLabel(min);
+      cbStart.appendChild(opt);
+    });
+    cbDuration.innerHTML = '';
+    for (let units = 2; units <= 8; units++) {
+      const opt = document.createElement('option');
+      opt.value = units; opt.textContent = durationLabel(units * STEP);
+      cbDuration.appendChild(opt);
+    }
+  }
+
+  document.getElementById('cbCheckBtn').addEventListener('click', async () => {
+    const name = document.getElementById('cbName').value.trim();
+    const phone = document.getElementById('cbPhone').value.trim();
+    const facility = cbFacility.value;
+    const startDate = document.getElementById('cbStartDate').value;
+    const endDate = document.getElementById('cbEndDate').value;
+    const start = Number(cbStart.value);
+    const units = Number(cbDuration.value);
+    const durationMinutes = units * STEP;
+
+    if (!name || !isValidBDPhone(phone) || !startDate || !endDate || selectedDays.size === 0 || endDate < startDate) {
+      alert('Please fill in name, a valid phone number, at least one day of the week, and a valid date range.');
+      return;
+    }
+
+    const occurrences = [];
+    let cursor = startDate;
+    while (cursor <= endDate) {
+      const weekday = new Date(cursor + "T00:00:00").getDay();
+      if (selectedDays.has(weekday)) occurrences.push(cursor);
+      cursor = addDaysStr(cursor, 1);
+    }
+
+    const snap = await getDocs(query(
+      collection(db, 'slots'), where('facility', '==', facility),
+      where('date', '>=', startDate), where('date', '<=', addDaysStr(endDate, 1))
+    ));
+    const existingKeys = new Set();
+    snap.forEach(d => existingKeys.add(d.id));
+
+    pendingOccurrences = occurrences.map(occDate => {
+      const ids = slotIdsForBooking(facility, occDate, start, durationMinutes).map(s => slotDocId(facility, s.date, s.hhmm));
+      const conflict = ids.some(id => existingKeys.has(id));
+      return { date: occDate, conflict, ids };
+    });
+
+    const list = document.getElementById('occurrenceList');
+    list.innerHTML = pendingOccurrences.map(o => `
+      <div class="occurrence-row ${o.conflict ? 'conflict' : 'ok'}">
+        <span>${o.date} — ${minutesToLabel(start)} (${durationLabel(durationMinutes)})</span>
+        <span>${o.conflict ? 'Conflict' : 'OK'}</span>
+      </div>
+    `).join('');
+    const conflictCount = pendingOccurrences.filter(o => o.conflict).length;
+    document.getElementById('corpSummaryText').textContent =
+      `${pendingOccurrences.length} occurrence(s) found — ${conflictCount} conflict(s). Skipping conflicts will create the remaining ${pendingOccurrences.length - conflictCount}.`;
+
+    corpStep1.hidden = true;
+    corpStep2.hidden = false;
+  });
+
+  document.getElementById('cbCancelSeriesBtn').addEventListener('click', () => { corpStep1.hidden = false; corpStep2.hidden = true; });
+
+  document.getElementById('cbSkipCreateBtn').addEventListener('click', async () => {
+    const name = document.getElementById('cbName').value.trim();
+    const phone = document.getElementById('cbPhone').value.trim();
+    const email = document.getElementById('cbEmail').value.trim();
+    const facility = cbFacility.value;
+    const startDate = document.getElementById('cbStartDate').value;
+    const endDate = document.getElementById('cbEndDate').value;
+    const start = Number(cbStart.value);
+    const units = Number(cbDuration.value);
+    const durationMinutes = units * STEP;
+    const notes = document.getElementById('cbNotes').value.trim();
+    const feeType = document.getElementById('cbFeeType').value;
+    const feeVal = document.getElementById('cbFee').value.trim();
+    const bookingFee = feeVal === '' ? null : Number(feeVal);
+    const showFeePublicly = document.getElementById('cbShowFee').checked;
+    const daysArr = [...selectedDays].sort();
+
+    const btn = document.getElementById('cbSkipCreateBtn');
+    btn.disabled = true;
+    btn.textContent = 'Creating…';
+    try {
+      const seriesRef = doc(collection(db, 'recurringBookings'));
+      const seriesBatch = writeBatch(db);
+      seriesBatch.set(seriesRef, {
+        customerName: name, phone, email: email || null, facility,
+        daysOfWeek: daysArr, startDate, endDate, startMinutes: start, durationMinutes,
+        feeType, bookingFee, feeCurrency: bookingFee != null ? 'BDT' : null, showFeePublicly,
+        notes: notes || null, status: 'active', createdAt: serverTimestamp(),
+      });
+      await seriesBatch.commit();
+
+      const perOccurrenceFee = feeType === 'per_occurrence' ? bookingFee : null;
+
+      for (const occ of pendingOccurrences) {
+        if (occ.conflict) continue;
+        const batch = writeBatch(db);
+        const bookingRef = doc(collection(db, 'bookings'));
+        batch.set(bookingRef, {
+          customerName: name, phone, email: email || null, facility, bookingDate: occ.date,
+          startMinutes: start, durationMinutes, endMinutes: start + durationMinutes,
+          notes: notes || null, status: 'approved', bookingType: 'corporate_recurring', bookingSource: 'admin',
+          bookingFee: perOccurrenceFee, feeCurrency: perOccurrenceFee != null ? 'BDT' : null, showFeePublicly,
+          recurringBookingId: seriesRef.id, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+          approvedAt: serverTimestamp(), rejectedAt: null,
+        });
+        slotIdsForBooking(facility, occ.date, start, durationMinutes).forEach(s => {
+          batch.set(s.ref, {
+            facility, date: s.date, hhmm: s.hhmm, status: 'approved', bookingId: bookingRef.id, customerName: name,
+            feePublic: (showFeePublicly && perOccurrenceFee != null) ? perOccurrenceFee : null,
+            feeCurrency: (showFeePublicly && perOccurrenceFee != null) ? 'BDT' : null,
+            createdAt: serverTimestamp(),
+          });
+        });
+        await batch.commit();
+      }
+      corpOverlay.hidden = true;
+    } catch (err) {
+      console.error(err);
+      alert('Some occurrences may not have been created — check the console and your Firestore rules, then review the Bookings tab.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Skip Conflicts & Create Rest';
+    }
+  });
+
+  function renderRecurringTable() {
+    const tbody = document.getElementById('recurringBody');
+    const empty = document.getElementById('recurringEmptyState');
+    tbody.innerHTML = '';
+    empty.style.display = allRecurring.length ? 'none' : 'block';
+    allRecurring.forEach(rb => {
+      const tr = document.createElement('tr');
+      const daysStr = (rb.daysOfWeek || []).map(d => DAY_NAMES[d]).join(', ');
+      const feeStr = rb.bookingFee != null ? `৳${rb.bookingFee} (${rb.feeType === 'monthly' ? 'total' : 'per occ.'})` : '—';
+      tr.innerHTML = `
+        <td><div class="cell-name">${escapeHtml(rb.customerName)}</div><div class="cell-sub">${escapeHtml(rb.phone)}</div></td>
+        <td>${FACILITY_LABELS[rb.facility] || rb.facility}</td>
+        <td>${daysStr}</td>
+        <td>${rb.startDate} – ${rb.endDate}</td>
+        <td>${minutesToLabel(rb.startMinutes)} (${durationLabel(rb.durationMinutes)})</td>
+        <td class="cell-sub">${feeStr}</td>
+        <td><span class="status-pill ${rb.status === 'active' ? 'approved' : 'cancelled'}">${rb.status}</span></td>
+        <td class="row-actions">
+          <button class="action-btn edit" data-action="view">View Occurrences</button>
+          ${rb.status === 'active' ? '<button class="action-btn cancel" data-action="cancelSeries">Cancel Series</button>' : ''}
+        </td>
+      `;
+      tbody.appendChild(tr);
+      tr.querySelector('[data-action="view"]').addEventListener('click', () => {
+        seriesFilterId = rb.id;
+        document.getElementById('seriesFilterChip').hidden = false;
+        document.querySelectorAll('.subtab').forEach(b => b.classList.remove('active'));
+        document.querySelector('.subtab[data-tab="bookings"]').classList.add('active');
+        activeSubtab = 'bookings';
+        bookingsTab.style.display = 'block';
+        recurringTab.style.display = 'none';
+        renderTable();
+      });
+      const cancelBtn = tr.querySelector('[data-action="cancelSeries"]');
+      if (cancelBtn) cancelBtn.addEventListener('click', () => cancelSeries(rb));
+    });
+  }
+
+  async function cancelSeries(rb) {
+    if (!confirm(`Cancel the entire recurring series for ${rb.customerName}? This frees all future occurrences.`)) return;
+    try {
+      const today = todayKey();
+      const occSnap = await getDocs(query(
+        collection(db, 'bookings'),
+        where('recurringBookingId', '==', rb.id),
+        where('status', '==', 'approved')
+      ));
+      for (const occDoc of occSnap.docs) {
+        const occ = occDoc.data();
+        if (occ.bookingDate < today) continue;
+        const batch = writeBatch(db);
+        slotIdsForBooking(occ.facility, occ.bookingDate, occ.startMinutes, occ.durationMinutes).forEach(s => batch.delete(s.ref));
+        batch.update(doc(db, 'bookings', occDoc.id), { status: 'cancelled', updatedAt: serverTimestamp() });
+        await batch.commit();
+      }
+      await updateDoc(doc(db, 'recurringBookings', rb.id), { status: 'cancelled' });
+    } catch (err) {
+      console.error(err);
+      alert('Could not fully cancel the series — check the console and your Firestore rules.');
+    }
+  }
+
+</script>
+
+</body>
+</html>
