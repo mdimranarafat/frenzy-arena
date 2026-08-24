@@ -345,6 +345,28 @@ If you had live data under the old `bookingRequests` collection with hourly slot
 ## Admin access
 Go to `https://<your-username>.github.io/<your-repo>/admin.html`, log in with either your super_admin email or the manager's email/password from Firebase Authentication → Users. Keep this URL and both sets of credentials private — it's not linked from the public site. Anyone who knows the URL but doesn't have valid credentials, or has credentials but no `/users` role doc, just sees a login screen or an immediate "access denied" message; they can't read or act on bookings without both a valid login **and** a matching role — enforced by the security rules, not just the page hiding itself. If the manager's subscription lapses, they're signed out and denied on their very next request, automatically, with no code change needed.
 
+## Admin CSV export
+The Admin Panel (All Bookings view → **Export CSV** button in the filter bar) downloads every booking as `bookings-export-YYYY-MM-DD.csv` (date is Asia/Dhaka).
+
+- **Real data only** — the export re-fetches the live, admin-only `bookings` collection at click time (never fake/static data). Columns: ID, Name, Phone, Email, Facility, Date, Time, Duration, Type, Status, Price (BDT), Fee (BDT), Notes, Created At — all fields that actually exist on booking records.
+- **Proper CSV output** — RFC 4180 escaping (commas/quotes/newlines), CRLF rows, UTF-8 BOM so Bengali characters open correctly in Excel.
+- **Loading & errors** — the button disables with an "Exporting…" state while working; network failure, timeout (20s), empty dataset, invalid response, or a permission error all surface a friendly inline message ("Unable to export data right now. Please try again." / "No bookings to export yet.") without exposing stack traces to the UI.
+- **Authorization** — the button only exists inside the logged-in dashboard, but that's just UX: the underlying read is enforced server-side by the Firestore Security Rules' `isAdmin()` / `isActiveManager()` checks. A signed-in non-admin gets a permission error, not the data.
+
+### Optional Google Apps Script sync to Google Sheets
+Firestore stays the source of truth; optionally, every export can also mirror the fresh bookings into a Google Sheet. The ready-made script is in **`google-apps-script.gs`**, written for Frenzy's sheet:
+
+1. Open the [Frenzy Google Sheet](https://docs.google.com/spreadsheets/d/18azspQLSNou19biZ_3NvWInGgRPdBMG6ImKyF91B0k0/edit) → **Extensions → Apps Script**.
+2. Paste the full contents of `google-apps-script.gs`, save.
+3. **Deploy → New deployment → Web app** — *Execute as: Me*, *Who has access: Anyone with the link* (required so the admin page can call it anonymously; it only runs as your account, and the sheet itself stays private).
+4. Copy the `/exec` URL and set it before admin.html's module script:
+   ```html
+   <script>window.APP_CONFIG = { GOOGLE_APPS_SCRIPT_URL: "https://script.google.com/macros/s/…/exec" };</script>
+   ```
+   (or paste it into `EXPORT_CONFIG.GOOGLE_APPS_SCRIPT_URL` at the bottom of `admin.html`).
+
+With the URL configured, clicking **Export CSV** downloads the CSV *and* replaces the sheet's **Bookings** tab with the same rows, confirming with "Google Sheet updated (N rows)". If the sync fails but the download succeeded, you'll see a non-blocking warning. With no URL configured, export simply downloads the CSV. A browser POST `{dataset, columns, rows}` is the whole contract (`google-apps-script.gs` header documents it); no secrets belong in either file.
+
 ## Push to GitHub
 
 ```bash
