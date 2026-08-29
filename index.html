@@ -763,7 +763,7 @@
   import {
     getFirestore, collection, doc, writeBatch, serverTimestamp, onSnapshot, query, where
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import { FACILITY_LABELS, calculateBookingPrice } from "./pricing.js";
+  import { FACILITY_LABELS, calculateBookingPrice, makeInvoiceNumber } from "./pricing.js";
 
   // Frenzy Arena's Firebase config
   const firebaseConfig = {
@@ -1221,6 +1221,13 @@
         feeCurrency: 'BDT',
         showFeePublicly: false,
         calculatedPrice: price.finalPrice,
+        // Assigned once, here, at document-creation time — never regenerated on approval/edit.
+        // Uses this booking's own doc id, so it's collision-free without a sequential counter.
+        invoiceNumber: makeInvoiceNumber(currentDate, bookingRef.id),
+        discount: 0,
+        paymentStatus: 'unpaid',
+        paidAmount: 0,
+        refundAmount: 0,
         recurringBookingId: null,
         notes: notes || null,
         createdAt: serverTimestamp(),
