@@ -106,3 +106,75 @@ export function calculateBookingPrice({ facility, bookingDate, startSlot, durati
     isSurchargeDay: surcharge,
   };
 }
+
+// ---------------------------------------------------------------------------
+// PAYMENT / DISCOUNT / INVOICE HELPERS
+// New in this pass. These are intentionally NOT part of calculateBookingPrice() above — discount
+// is an admin-applied adjustment on top of the calculated price, never a change to the pricing
+// tables themselves, and payment tracking is orthogonal to pricing entirely. Kept here (rather
+// than duplicated in index.html/admin.html) so invoice numbering and discount math can never
+// drift between the customer site and the admin panel, same rationale as calculateBookingPrice.
+
+/**
+ * Deterministic, collision-free invoice number derived from the booking's own Firestore document
+ * ID — never a sequential counter (which would be race-condition-prone under concurrent writes,
+ * exactly what the brief said to avoid). Assign this ONCE, at booking-document-creation time (the
+ * doc ref's .id is known before the write commits), for every booking regardless of source
+ * (customer_request / admin_direct / corporate_recurring). Never regenerate it afterwards —
+ * approving, editing, or repricing a booking must never change its invoice number.
+ *
+ * Format: FRZ-YYYYMMDD-XXXXXX (date = the booking's bookingDate, XXXXXX = last 6 chars of the doc
+ * ID, uppercased). Two bookings on the same date can never collide because Firestore doc IDs are
+ * globally unique; the suffix is just for human readability, not the uniqueness guarantee.
+ *
+ * @param {string} bookingDate - "YYYY-MM-DD"
+ * @param {string} docId - the Firestore booking document's own id
+ * @returns {string}
+ */
+export function makeInvoiceNumber(bookingDate, docId) {
+  const compact = (bookingDate || "").replace(/-/g, "");
+  const suffix = String(docId || "").slice(-6).toUpperCase().padStart(6, "0");
+  return `FRZ-${compact}-${suffix}`;
+}
+
+/**
+ * Net price after an admin-applied discount, floored at 0 (a discount can never make a booking
+ * "owe" a negative amount). `discount` is a flat BDT amount, not a percentage — matches how the
+ * admin panel's other money fields (bookingFee, calculatedPrice) already work.
+ */
+export function applyDiscount(calculatedPrice, discount) {
+  const d = Number(discount) || 0;
+  return Math.max(0, Number(calculatedPrice) - d);
+}
+
+/**
+ * The customer's full total for a booking: discounted price + the separate optional booking fee.
+ * Matches the existing admin-panel comment that "the Booking Fee is a separate, optional admin
+ * override — it doesn't replace the calculated price."
+ */
+export function totalDue({ calculatedPrice, discount, bookingFee }) {
+  return applyDiscount(calculatedPrice, discount) + (Number(bookingFee) || 0);
+}
+
+/**
+ * Outstanding balance given what's been paid so far. Refunded bookings are treated as fully
+ * settled (0 outstanding) regardless of paidAmount bookkeeping, since a refund closes the
+ * financial loop on that booking.
+ */
+export function outstandingAmount({ calculatedPrice, discount, bookingFee, paidAmount, paymentStatus }) {
+  if (paymentStatus === "refunded") return 0;
+  const total = totalDue({ calculatedPrice, discount, bookingFee });
+  return Math.max(0, total - (Number(paidAmount) || 0));
+}
+
+// Default payment fields for any booking document that predates this feature. Applied ONLY at
+// read/display/export time (renderers and CSV export use `b.paymentStatus || 'unpaid'` etc.) —
+// never backfilled as a write to old Firestore documents, so historical bookings are never
+// touched. See PAYMENT_STATUSES for the fixed set of valid values used by the UI <select>s.
+export const PAYMENT_STATUSES = ["unpaid", "partial", "paid", "refunded"];
+export const PAYMENT_STATUS_LABELS = {
+  unpaid: "Unpaid",
+  partial: "Partial",
+  paid: "Paid",
+  refunded: "Refunded",
+};
