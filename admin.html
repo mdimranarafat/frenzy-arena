@@ -360,14 +360,6 @@
       </div>
       <label class="adm-checkbox-row"><input type="checkbox" id="approveShowFee"> Show fee on website</label>
       <p class="adm-form-note">Leave the fee blank if none applies. Approval books the slot either way. The Booking Fee here is a separate, optional admin override — it doesn't replace the calculated price above.</p>
-      <div class="field-row-3">
-        <div class="field"><label for="approveDiscount">Discount (৳)</label><input type="number" id="approveDiscount" min="0" step="1" value="0"></div>
-        <div class="field"><label for="approvePaymentStatus">Payment Status</label>
-          <select id="approvePaymentStatus"><option value="unpaid">Unpaid</option><option value="partial">Partial</option><option value="paid">Paid</option></select>
-        </div>
-        <div class="field"><label for="approvePaidAmount">Paid Amount (৳)</label><input type="number" id="approvePaidAmount" min="0" step="1" value="0"></div>
-      </div>
-      <p id="approveTotalPreview" class="cell-sub"></p>
       <button class="btn btn-turf full" id="approveConfirmBtn">Approve Booking</button>
     </div>
   </div>
@@ -408,14 +400,6 @@
         <div class="field"><label for="nbFee">Booking Fee</label><input type="number" id="nbFee" min="0" step="1"></div>
         <label class="adm-checkbox-row" style="align-self:end; padding-bottom:10px;"><input type="checkbox" id="nbShowFee"> Show fee publicly</label>
       </div>
-      <div class="field-row-3">
-        <div class="field"><label for="nbDiscount">Discount (৳)</label><input type="number" id="nbDiscount" min="0" step="1" value="0"></div>
-        <div class="field"><label for="nbPaymentStatus">Payment Status</label>
-          <select id="nbPaymentStatus"><option value="unpaid">Unpaid</option><option value="partial">Partial</option><option value="paid">Paid</option></select>
-        </div>
-        <div class="field"><label for="nbPaidAmount">Paid Amount (৳)</label><input type="number" id="nbPaidAmount" min="0" step="1" value="0"></div>
-      </div>
-      <p id="nbTotalPreview" class="cell-sub" style="margin:-6px 0 10px;"></p>
       <button type="submit" class="btn btn-flare full" id="nbSubmitBtn">Create Booking</button>
     </form>
   </div>
@@ -456,15 +440,6 @@
         <div class="field"><label for="ebFee">Booking Fee</label><input type="number" id="ebFee" min="0" step="1"></div>
         <label class="adm-checkbox-row" style="align-self:end; padding-bottom:10px;"><input type="checkbox" id="ebShowFee"> Show fee publicly</label>
       </div>
-      <div class="field-row-3">
-        <div class="field"><label for="ebDiscount">Discount (৳)</label><input type="number" id="ebDiscount" min="0" step="1" value="0"></div>
-        <div class="field"><label for="ebPaymentStatus">Payment Status</label>
-          <select id="ebPaymentStatus"><option value="unpaid">Unpaid</option><option value="partial">Partial</option><option value="paid">Paid</option><option value="refunded">Refunded</option></select>
-        </div>
-        <div class="field"><label for="ebPaidAmount">Paid Amount (৳)</label><input type="number" id="ebPaidAmount" min="0" step="1" value="0"></div>
-      </div>
-      <p id="ebTotalPreview" class="cell-sub" style="margin:-6px 0 10px;"></p>
-      <p id="ebInvoiceNumber" class="adm-form-note"></p>
       <button type="submit" class="btn btn-flare full" id="ebSubmitBtn">Save Changes</button>
     </form>
   </div>
@@ -568,10 +543,7 @@
     getFirestore, collection, doc, writeBatch, updateDoc, deleteDoc, getDoc, getDocs,
     onSnapshot, query, orderBy, where, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import {
-    FACILITY_LABELS, calculateBookingPrice, makeInvoiceNumber,
-    totalDue, outstandingAmount, PAYMENT_STATUS_LABELS,
-  } from "./pricing.js";
+  import { FACILITY_LABELS, calculateBookingPrice } from "./pricing.js";
 
   // Frenzy Arena's Firebase config — same project as index.html
   const firebaseConfig = {
@@ -598,16 +570,6 @@
   const TYPE_LABEL = { customer_request: 'Customer Request', admin_direct: 'Admin Direct', corporate_recurring: 'Corporate' };
 
   function formatBDT(amount) { return `৳${Number(amount).toLocaleString()}`; }
-  // Defaults applied only at read/display/export time for bookings created before this feature —
-  // never written back to Firestore, so historical documents are never touched.
-  function paymentStatusOf(r) { return r.paymentStatus || 'unpaid'; }
-  function discountOf(r) { return Number(r.discount) || 0; }
-  function paidAmountOf(r) { return Number(r.paidAmount) || 0; }
-  function invoiceNumberOf(r) {
-    // Bookings created before this feature have no stored invoiceNumber — derive one on the fly
-    // for display only; it is NOT written back, so it must stay derivable/stable across renders.
-    return r.invoiceNumber || makeInvoiceNumber(r.bookingDate, r.id);
-  }
 
   function pad(n) { return String(n).padStart(2, "0"); }
   function dhakaNow() {
@@ -929,11 +891,7 @@
           <div class="cell-sub">${slotLabel(r.startSlot)} – ${slotLabel(r.endSlot)}${r.endDate && r.endDate !== r.bookingDate ? ' (+1 day)' : ''} (${durationLabel(r.durationSlots)})</div>
         </td>
         <td><span class="type-pill">${TYPE_LABEL[r.bookingType] || r.bookingType}</span></td>
-        <td class="cell-sub">
-          ${r.calculatedPrice != null ? formatBDT(r.calculatedPrice) : '—'}
-          ${discountOf(r) > 0 ? `<div>−${formatBDT(discountOf(r))} disc.</div>` : ''}
-          <div><span class="status-pill ${paymentStatusOf(r) === 'paid' ? 'approved' : paymentStatusOf(r) === 'refunded' ? 'cancelled' : 'pending'}" style="font-size:0.62rem;">${PAYMENT_STATUS_LABELS[paymentStatusOf(r)]}</span></div>
-        </td>
+        <td class="cell-sub">${r.calculatedPrice != null ? formatBDT(r.calculatedPrice) : '—'}</td>
         <td class="cell-sub">${feeText}</td>
         <td class="notes-cell">${r.notes ? escapeHtml(r.notes) : '—'}</td>
         <td class="cell-sub">${fmtTimestamp(r.createdAt)}</td>
@@ -981,10 +939,6 @@
           r.calculatedPrice != null ? `Calculated Price: ${formatBDT(r.calculatedPrice)}` : 'Calculated Price: not available for this booking';
         document.getElementById('approveFee').value = '';
         document.getElementById('approveShowFee').checked = false;
-        document.getElementById('approveDiscount').value = discountOf(r);
-        document.getElementById('approvePaymentStatus').value = paymentStatusOf(r) === 'refunded' ? 'unpaid' : paymentStatusOf(r);
-        document.getElementById('approvePaidAmount').value = paidAmountOf(r);
-        updateApproveTotalPreview();
         openOverlay('approveOverlay');
       } else if (action === 'reject') {
         const batch = writeBatch(db);
@@ -1013,43 +967,19 @@
     }
   }
 
-  function updateApproveTotalPreview() {
-    if (!pendingApproveBooking) return;
-    const r = pendingApproveBooking;
-    const discount = Number(document.getElementById('approveDiscount').value) || 0;
-    const feeVal = document.getElementById('approveFee').value;
-    const fee = feeVal ? Number(feeVal) : 0;
-    const el = document.getElementById('approveTotalPreview');
-    if (r.calculatedPrice == null) { el.textContent = ''; return; }
-    const total = totalDue({ calculatedPrice: r.calculatedPrice, discount, bookingFee: fee });
-    el.textContent = discount > 0
-      ? `Discount: −${formatBDT(discount)} · Total Due: ${formatBDT(total)}`
-      : `Total Due: ${formatBDT(total)}`;
-  }
-  document.getElementById('approveDiscount').addEventListener('input', updateApproveTotalPreview);
-  document.getElementById('approveFee').addEventListener('input', updateApproveTotalPreview);
-
   document.getElementById('approveConfirmBtn').addEventListener('click', async () => {
     if (!pendingApproveBooking) return;
     const r = pendingApproveBooking;
     const feeRaw = document.getElementById('approveFee').value;
     const fee = feeRaw ? Number(feeRaw) : null;
     const showFee = document.getElementById('approveShowFee').checked;
-    const discount = Number(document.getElementById('approveDiscount').value) || 0;
-    const paymentStatus = document.getElementById('approvePaymentStatus').value;
-    const paidAmount = Number(document.getElementById('approvePaidAmount').value) || 0;
     try {
       const batch = writeBatch(db);
       const ref = doc(db, 'bookings', r.id);
-      const updates = {
+      batch.update(ref, {
         status: 'approved', approvedAt: serverTimestamp(), updatedAt: serverTimestamp(),
         bookingFee: fee, showFeePublicly: !!showFee,
-        discount, paymentStatus, paidAmount,
-      };
-      // Only ever set on a booking that never had one — this is a targeted fix for the one
-      // record being approved right now, not a bulk backfill of historical documents.
-      if (!r.invoiceNumber) updates.invoiceNumber = makeInvoiceNumber(r.bookingDate, r.id);
-      batch.update(ref, updates);
+      });
       coveredIntervals(r.bookingDate, r.startSlot, r.durationSlots).forEach(({date, slot}) => {
         batch.update(doc(db, 'slots', slotDocId(r.facility, date, slot)), {
           status: 'approved', bookingFee: fee, showFeePublicly: !!showFee,
@@ -1073,8 +1003,6 @@
     fee: document.getElementById('nbFee'), showFee: document.getElementById('nbShowFee'),
     warning: document.getElementById('nbWarning'), submitBtn: document.getElementById('nbSubmitBtn'),
     endPreview: document.getElementById('nbEndPreview'),
-    discount: document.getElementById('nbDiscount'), paymentStatus: document.getElementById('nbPaymentStatus'),
-    paidAmount: document.getElementById('nbPaidAmount'), totalPreview: document.getElementById('nbTotalPreview'),
   };
 
   document.getElementById('openNewBookingBtn').addEventListener('click', async () => {
@@ -1129,23 +1057,6 @@
     const crosses = end.date !== nb.date.value;
     const price = calculateBookingPrice({ facility: nb.facility.value, bookingDate: nb.date.value, startSlot: start, durationSlots: duration });
     nb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''} · Calculated Price: ${formatBDT(price.finalPrice)}`;
-    updateNbTotalPreview(price.finalPrice);
-  }
-  // Recomputed on any change to discount/fee — the calculated price itself only changes with
-  // date/start/duration (handled by updateNbEndPreview above), so this stays cheap.
-  function updateNbTotalPreview(calculatedPrice) {
-    if (calculatedPrice == null) {
-      const duration = Number(nb.duration.value) || 0;
-      if (!duration) { nb.totalPreview.textContent = ''; return; }
-      const price = calculateBookingPrice({ facility: nb.facility.value, bookingDate: nb.date.value, startSlot: Number(nb.start.value) || 0, durationSlots: duration });
-      calculatedPrice = price.finalPrice;
-    }
-    const discount = Number(nb.discount.value) || 0;
-    const fee = nb.fee.value ? Number(nb.fee.value) : 0;
-    const total = totalDue({ calculatedPrice, discount, bookingFee: fee });
-    nb.totalPreview.textContent = discount > 0
-      ? `Discount: −${formatBDT(discount)} · Total Due: ${formatBDT(total)}`
-      : `Total Due: ${formatBDT(total)}`;
   }
   nb.facility.addEventListener('change', refreshNbAvailability);
   nb.date.addEventListener('change', refreshNbAvailability);
@@ -1157,8 +1068,6 @@
     updateNbDuration(occupied, occupiedNext);
   });
   nb.duration.addEventListener('change', updateNbEndPreview);
-  nb.discount.addEventListener('input', () => updateNbTotalPreview());
-  nb.fee.addEventListener('input', () => updateNbTotalPreview());
 
   document.getElementById('newBookingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1183,9 +1092,6 @@
       }
       const feeRaw = nb.fee.value; const fee = feeRaw ? Number(feeRaw) : null;
       const showFee = nb.showFee.checked;
-      const discount = Number(nb.discount.value) || 0;
-      const paymentStatus = nb.paymentStatus.value;
-      const paidAmount = Number(nb.paidAmount.value) || 0;
       const batch = writeBatch(db);
       const ref = doc(collection(db, 'bookings'));
       batch.set(ref, {
@@ -1194,9 +1100,6 @@
         endDate: end.date, endSlot: end.slot,
         status: 'approved', bookingType: 'admin_direct', bookingSource: 'admin',
         bookingFee: fee, feeCurrency: 'BDT', showFeePublicly: !!showFee, calculatedPrice: price.finalPrice, recurringBookingId: null,
-        // Assigned once at creation — never regenerated afterward (see makeInvoiceNumber in pricing.js).
-        invoiceNumber: makeInvoiceNumber(date, ref.id),
-        discount, paymentStatus, paidAmount, refundAmount: 0,
         notes: nb.notes.value.trim() || null,
         createdAt: serverTimestamp(), updatedAt: serverTimestamp(), approvedAt: serverTimestamp(), rejectedAt: null,
       });
@@ -1225,9 +1128,6 @@
     fee: document.getElementById('ebFee'), showFee: document.getElementById('ebShowFee'),
     warning: document.getElementById('ebWarning'), submitBtn: document.getElementById('ebSubmitBtn'),
     endPreview: document.getElementById('ebEndPreview'),
-    discount: document.getElementById('ebDiscount'), paymentStatus: document.getElementById('ebPaymentStatus'),
-    paidAmount: document.getElementById('ebPaidAmount'), totalPreview: document.getElementById('ebTotalPreview'),
-    invoiceEl: document.getElementById('ebInvoiceNumber'),
   };
   let editingBooking = null;
 
@@ -1236,9 +1136,6 @@
     eb.name.value = r.customerName || ''; eb.phone.value = r.phone || ''; eb.email.value = r.email || '';
     eb.facility.value = r.facility; eb.date.value = r.bookingDate; eb.date.min = todayKey();
     eb.notes.value = r.notes || ''; eb.fee.value = r.bookingFee || ''; eb.showFee.checked = !!r.showFeePublicly;
-    eb.discount.value = discountOf(r); eb.paymentStatus.value = paymentStatusOf(r); eb.paidAmount.value = paidAmountOf(r);
-    // Display-only — the invoice number itself is never changed by editing a booking.
-    eb.invoiceEl.textContent = `Invoice: ${invoiceNumberOf(r)}`;
     eb.warning.hidden = true;
     await refreshEbAvailability(r.startSlot, r.durationSlots);
     openOverlay('editBookingOverlay');
@@ -1282,28 +1179,11 @@
     const crosses = end.date !== eb.date.value;
     const price = calculateBookingPrice({ facility: eb.facility.value, bookingDate: eb.date.value, startSlot: start, durationSlots: duration });
     eb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''} · Calculated Price: ${formatBDT(price.finalPrice)}`;
-    updateEbTotalPreview(price.finalPrice);
-  }
-  function updateEbTotalPreview(calculatedPrice) {
-    if (calculatedPrice == null) {
-      const duration = Number(eb.duration.value) || 0;
-      if (!duration) { eb.totalPreview.textContent = ''; return; }
-      const price = calculateBookingPrice({ facility: eb.facility.value, bookingDate: eb.date.value, startSlot: Number(eb.start.value) || 0, durationSlots: duration });
-      calculatedPrice = price.finalPrice;
-    }
-    const discount = Number(eb.discount.value) || 0;
-    const fee = eb.fee.value ? Number(eb.fee.value) : 0;
-    const total = totalDue({ calculatedPrice, discount, bookingFee: fee });
-    eb.totalPreview.textContent = discount > 0
-      ? `Discount: −${formatBDT(discount)} · Total Due: ${formatBDT(total)}`
-      : `Total Due: ${formatBDT(total)}`;
   }
   eb.facility.addEventListener('change', () => refreshEbAvailability());
   eb.date.addEventListener('change', () => refreshEbAvailability());
   eb.start.addEventListener('change', () => refreshEbAvailability(Number(eb.start.value)));
   eb.duration.addEventListener('change', updateEbEndPreview);
-  eb.discount.addEventListener('input', () => updateEbTotalPreview());
-  eb.fee.addEventListener('input', () => updateEbTotalPreview());
 
   document.getElementById('editBookingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1323,9 +1203,6 @@
       const end = endPoint(date, start, duration);
       const fee = eb.fee.value ? Number(eb.fee.value) : null;
       const showFee = eb.showFee.checked;
-      const discount = Number(eb.discount.value) || 0;
-      const paymentStatus = eb.paymentStatus.value;
-      const paidAmount = Number(eb.paidAmount.value) || 0;
       // Recomputed because the admin edited this specific booking's own parameters (facility/date/
       // start/duration) — not a retroactive repricing of history if the pricing table itself changes.
       const price = calculateBookingPrice({ facility, bookingDate: date, startSlot: start, durationSlots: duration });
@@ -1343,10 +1220,7 @@
         customerName: eb.name.value.trim(), phone: normalizePhone(eb.phone.value), email: eb.email.value.trim() || null,
         facility, businessId: BUSINESS_ID, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
         endDate: end.date, endSlot: end.slot, notes: eb.notes.value.trim() || null,
-        bookingFee: fee, showFeePublicly: !!showFee, calculatedPrice: price.finalPrice,
-        discount, paymentStatus, paidAmount, updatedAt: serverTimestamp(),
-        // invoiceNumber intentionally omitted — updateDoc() only touches the fields listed here,
-        // so the booking's original invoice number is left exactly as it was.
+        bookingFee: fee, showFeePublicly: !!showFee, calculatedPrice: price.finalPrice, updatedAt: serverTimestamp(),
       });
       await batch.commit();
       closeOverlay('editBookingOverlay');
@@ -1494,11 +1368,6 @@
           bookingFee: plan.feeType === 'perOccurrence' ? plan.fee : null,
           feeCurrency: 'BDT', showFeePublicly: plan.showFee, recurringBookingId: seriesRef.id,
           calculatedPrice: price.finalPrice,
-          // Per-occurrence invoice number (each occurrence is its own booking doc/id). Payment is
-          // tracked per-occurrence too — defaults here; adjust an individual occurrence's payment
-          // status/discount later via its own Edit Booking (each occurrence is a normal booking).
-          invoiceNumber: makeInvoiceNumber(occ.date, bookingRef.id),
-          discount: 0, paymentStatus: 'unpaid', paidAmount: 0, refundAmount: 0,
           notes: plan.notes, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
           approvedAt: serverTimestamp(), rejectedAt: null,
         });
@@ -1630,7 +1499,7 @@
     // "spreadsheetReady":true} bound to the Bookings spreadsheet). Mirrors every export's rows
     // into the sheet's "Bookings" tab. Override via window.APP_CONFIG if redeployed.
     GOOGLE_APPS_SCRIPT_URL: window.APP_CONFIG && window.APP_CONFIG.GOOGLE_APPS_SCRIPT_URL
-      || "https://script.google.com/macros/s/AKfycbxgK3sdS_PIWnPXYR__URuFIazirg7ogFzCLd9LhJeIqXLI-taHse6dyx10o6gikfK4/exec",
+      || "https://script.google.com/macros/s/AKfycbzFoovG7e270PhI8f9S2x1BK-GUXmknOowH5VTqn4SdMAwxrJTertE-ouaMwT5C2F3F/exec",
   };
   const CSV_EXPORT_TIMEOUT_MS = 20000;
 
@@ -1707,13 +1576,7 @@
         type: TYPE_LABEL[b.bookingType] || b.bookingType || "",
         status: b.status || "",
         price: b.calculatedPrice != null ? String(b.calculatedPrice) : "",
-        discount: String(Number(b.discount) || 0),
         fee: b.bookingFee != null ? String(b.bookingFee) : "",
-        total: b.calculatedPrice != null ? String(totalDue({ calculatedPrice: b.calculatedPrice, discount: b.discount, bookingFee: b.bookingFee })) : "",
-        paymentStatus: PAYMENT_STATUS_LABELS[b.paymentStatus || 'unpaid'],
-        paidAmount: String(Number(b.paidAmount) || 0),
-        outstanding: b.calculatedPrice != null ? String(outstandingAmount({ calculatedPrice: b.calculatedPrice, discount: b.discount, bookingFee: b.bookingFee, paidAmount: b.paidAmount, paymentStatus: b.paymentStatus })) : "",
-        invoiceNumber: b.invoiceNumber || makeInvoiceNumber(b.bookingDate || "", d.id),
         notes: b.notes || "",
         createdAt: csvTimestamp(b.createdAt),
       };
@@ -1738,13 +1601,7 @@
         { key: "type",         label: "Type" },
         { key: "status",       label: "Status" },
         { key: "price",        label: "Price (BDT)" },
-        { key: "discount",     label: "Discount (BDT)" },
         { key: "fee",          label: "Fee (BDT)" },
-        { key: "total",        label: "Total Due (BDT)" },
-        { key: "paymentStatus",label: "Payment Status" },
-        { key: "paidAmount",   label: "Paid Amount (BDT)" },
-        { key: "outstanding",  label: "Outstanding (BDT)" },
-        { key: "invoiceNumber",label: "Invoice No." },
         { key: "notes",        label: "Notes" },
         { key: "createdAt",    label: "Created At" },
       ],
