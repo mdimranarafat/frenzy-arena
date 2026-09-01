@@ -110,6 +110,9 @@ bookingType         "customer_request" | "admin_direct" | "corporate_recurring"
 bookingSource       "website" | "admin"
 bookingFee, feeCurrency, showFeePublicly   admin-controlled optional manual override, unrelated to calculatedPrice
 calculatedPrice     system-computed price (see "Pricing" below) — a snapshot taken at creation/edit time, never silently recalculated later
+paidAmount          money actually collected so far; defaults to 0 on new bookings
+paymentMethod       "bKash" | "Nagad" | "Cash" | "Bank Transfer" | "Card" | "Other" | null
+paymentStatus       derived snapshot: "unpaid" | "partial" | "paid"; UI derives it from total and paid amount
 recurringBookingId  set on corporate occurrences, else null
 notes
 createdAt, updatedAt, approvedAt, rejectedAt
@@ -276,7 +279,8 @@ service cloud.firestore {
           "customerName","phone","email","facility","bookingDate","startSlot",
           "durationSlots","durationMinutes","endDate","endSlot","status","bookingType",
           "bookingSource","bookingFee","feeCurrency","showFeePublicly","calculatedPrice",
-          "recurringBookingId","notes","businessId","createdAt","updatedAt","approvedAt","rejectedAt"
+          "paidAmount","paymentMethod","paymentStatus","recurringBookingId","notes","businessId",
+          "createdAt","updatedAt","approvedAt","rejectedAt"
         ])
       );
 
@@ -393,7 +397,18 @@ git push -u origin main
 - This was built and reviewed as code; it hasn't been exercised against a live Firebase project in this environment (no network access here), so run through the test list below once your Firebase project is wired up.
 
 ## ⚠️ Required Firestore rules update before deploying this version
-This update added a new field, `calculatedPrice`, to what the public site writes when a customer submits a booking request. The **documented** rules above already include it in the public `bookings` create rule's `hasOnly([...])` field whitelist — but that's only this file. **Your actual, deployed Firestore Security Rules (in the Firebase console, or wherever your live rules file is) must be updated to match before you publish these updated `index.html`/`admin.html`/`pricing.js` files.** If you deploy the new site code against the old, un-updated live rules, every customer booking request will fail with a permission-denied error the instant someone submits, because the write will contain a field (`calculatedPrice`) the live rule doesn't recognize. Copy the updated `allow create` rule for `/bookings/{bookingId}` above into your live rules and publish it first.
+This update added `calculatedPrice`, `paidAmount`, `paymentMethod`, and `paymentStatus` to what the public site writes when a customer submits a booking request. The **documented** rules above already include these fields in the public `bookings` create rule's `hasOnly([...])` field whitelist — but that's only this file. **Your actual, deployed Firestore Security Rules (in the Firebase console, or wherever your live rules file is) must be updated to match before you publish these updated `index.html`/`admin.html`/`pricing.js` files.** If you deploy the new site code against the old, un-updated rules, every customer booking request will fail with a permission-denied error because the write contains fields the live rule doesn't recognize. Copy the updated `allow create` rule for `/bookings/{bookingId}` above into your live rules and publish it first.
 
 ## Suggested test pass
 Covers the full 24-hour/48-slot range including 12:00/12:30 AM and 11:00/11:30 PM, a booking that crosses midnight, all three facilities independently, customer name/phone validation (including spaces-only names and non-BD numbers), pending → approve/reject → booked/rejected on the public calendar, an admin-direct booking appearing instantly as Booked, a corporate series with a deliberate conflict on one date (confirm "Skip Conflicting Dates" behavior), cancelling a single occurrence vs. the whole series, editing an approved booking to a new valid time, and confirming phone/email/notes never appear in the public calendar or its detail panel.
+
+
+## Partial payments, invoices, and reports
+
+The admin dashboard now treats `calculatedPrice` as the immutable total booking value and adds `paidAmount`, `paymentMethod`, and `paymentStatus` to new and updated booking records. `dueAmount` is derived at render/export time as `max(total booking amount - paid amount, 0)`, so legacy records without payment fields remain readable as unpaid. Payment status is derived consistently as `UNPAID`, `PARTIAL PAYMENT`, or `PAID`; the admin UI prevents a paid amount greater than the booking total.
+
+The existing admin navigation and booking workflow remain intact. The All Bookings table adds a compact payment summary, while the existing Edit action provides payment entry for approved bookings. Approval and New Booking also accept a paid amount and payment method. Corporate/recurring occurrences are created as unpaid and can be updated through the existing occurrence booking records. Supported methods are bKash, Nagad, Cash, Bank Transfer, Card, and Other.
+
+Each booking now has additive Invoice and WhatsApp actions. The invoice preview includes booking value, paid amount, payment method, due amount, payment status, and booking status, and deliberately contains no discount section. The WhatsApp action opens a pre-filled confirmation message containing the same payment details; it does not send a message automatically. Reports exclude rejected and cancelled records and separate Total Revenue (booking value) from Paid Amount (collected cash) and Due Amount (outstanding balance). CSV export retains all existing columns and adds Total Amount, Paid Amount, Due Amount, Payment Method, Payment Status, and Booking Status.
+
+Before deploying, update the live Firestore rules' `/bookings/{bookingId}` public-create `hasOnly([...])` whitelist to include `paidAmount`, `paymentMethod`, and `paymentStatus`. Keep those fields constrained in public submissions to `paidAmount: 0`, `paymentMethod: null`, and `paymentStatus: "unpaid"` if you duplicate the field-level checks; admin updates remain protected by `isAdmin()`. The client-side calculation is for display and data consistency, while Firestore authorization remains the security boundary.

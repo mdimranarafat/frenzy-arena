@@ -166,6 +166,37 @@
   .action-btn:disabled{opacity:0.5; cursor:not-allowed;}
 
   .notes-cell{max-width:160px; font-size:0.8rem; color:var(--muted);}
+  .payment-cell{min-width:145px; white-space:nowrap;}
+  .payment-cell strong{display:block; color:var(--navy);}
+  .payment-meta{font-size:0.74rem; color:var(--muted); margin-top:2px;}
+  .payment-pill{display:inline-block; padding:3px 8px; border-radius:12px; font-size:0.68rem; font-weight:700; font-family:var(--mono); text-transform:uppercase;}
+  .payment-pill.unpaid{background:rgba(255,90,54,0.12); color:#a83a1f;}
+  .payment-pill.partial{background:rgba(242,183,5,0.18); color:#8a6800;}
+  .payment-pill.paid{background:rgba(31,162,92,0.14); color:#166b3f;}
+  .payment-box{border:1px solid rgba(255,255,255,0.16); border-radius:7px; padding:12px; background:rgba(0,0,0,0.12);}
+  .payment-box-title{font-family:var(--mono); font-size:0.72rem; letter-spacing:0.05em; color:var(--pool-bright); text-transform:uppercase; margin-bottom:10px;}
+  .payment-summary{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:10px;}
+  .payment-summary div{background:rgba(255,255,255,0.06); border-radius:5px; padding:8px;}
+  .payment-summary span{display:block; font-size:0.7rem; color:#8ba0a9;}
+  .payment-summary strong{display:block; margin-top:2px; font-size:0.92rem;}
+  .reports-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:10px;}
+  .report-card{background:#fff; border:1px solid #e2e8e7; border-radius:8px; padding:14px;}
+  .report-card-label{font-family:var(--mono); color:var(--muted); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em;}
+  .report-card-value{font-family:var(--display); color:var(--navy); font-size:1.35rem; margin-top:6px;}
+  .report-panel{background:#fff; border:1px solid #e2e8e7; border-radius:8px; padding:16px; margin-bottom:20px;}
+  .report-panel h3{font-family:var(--display); color:var(--navy); font-size:1rem; text-transform:uppercase; margin-bottom:12px;}
+  .report-methods{display:flex; flex-wrap:wrap; gap:10px; color:var(--muted); font-size:0.82rem;}
+  .invoice-paper{background:#fff; color:var(--ink); border-radius:6px; padding:24px; max-width:560px; margin:0 auto; font-size:0.88rem;}
+  .invoice-brand{font-family:var(--display); color:var(--navy); font-size:1.2rem; text-align:center;}
+  .invoice-title{text-align:center; color:var(--muted); font-family:var(--mono); font-size:0.75rem; margin:4px 0 18px;}
+  .invoice-rule{border-top:1px solid #d7dfde; margin:14px 0;}
+  .invoice-row{display:flex; justify-content:space-between; gap:16px; padding:4px 0;}
+  .invoice-row span:first-child{color:var(--muted);}
+  .invoice-total{font-weight:800; font-size:1rem;}
+  .invoice-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
+  @media (max-width:900px){.reports-grid{grid-template-columns:repeat(3,1fr);}}
+  @media (max-width:520px){.payment-summary{grid-template-columns:1fr;}.reports-grid{grid-template-columns:1fr 1fr;}.invoice-paper{padding:16px;}}
+  @media print{body *{visibility:hidden !important;}#invoiceOverlay,#invoiceOverlay *{visibility:visible !important;}#invoiceOverlay{position:static;background:#fff;padding:0;}#invoiceOverlay .adm-panel{max-width:none;border:0;color:#000;}#invoiceOverlay .adm-panel-head,#invoiceOverlay .invoice-actions{display:none;}#invoiceOverlay .adm-body{max-height:none;overflow:visible;padding:0;}#invoiceOverlay .invoice-paper{max-width:none;border:0;}}
   .empty-state{padding:40px 20px; text-align:center; color:var(--muted);}
   .loading-state{padding:40px 20px; text-align:center; color:var(--muted);}
 
@@ -238,6 +269,7 @@
       <div class="admin-nav-right">
         <span class="admin-badge" id="roleBadge" style="background:rgba(255,255,255,0.12);"></span>
         <span class="admin-badge" id="newBadge">0 NEW</span>
+        <button class="nav-btn" id="openReportsBtn">Reports</button>
         <button class="nav-btn primary" id="openNewBookingBtn">+ New Booking</button>
         <button class="nav-btn" id="openCorporateBtn">+ Corporate / Recurring</button>
         <button class="logout-btn" id="logoutBtn">Log Out</button>
@@ -301,6 +333,7 @@
                 <th>Date &amp; Time</th>
                 <th>Type</th>
                 <th>Price</th>
+                <th>Payment</th>
                 <th>Fee</th>
                 <th>Notes</th>
                 <th>Requested</th>
@@ -354,6 +387,14 @@
     </div>
     <div class="adm-body">
       <p class="cell-sub" id="approveCalculatedPrice" style="margin-bottom:10px;"></p>
+      <div class="payment-box">
+        <div class="payment-box-title">Payment</div>
+        <div class="payment-summary"><div><span>Total</span><strong id="approveTotal">৳0</strong></div><div><span>Paid</span><strong id="approvePaidPreview">৳0</strong></div><div><span>Due</span><strong id="approveDuePreview">৳0</strong></div></div>
+        <div class="field"><label for="approvePaidAmount">Paid Amount</label><input type="number" id="approvePaidAmount" min="0" step="1" value="0"></div>
+        <div class="field"><label for="approvePaymentMethod">Payment Method</label><select id="approvePaymentMethod"><option value="">Not recorded</option><option>bKash</option><option>Nagad</option><option>Cash</option><option>Bank Transfer</option><option>Card</option><option>Other</option></select></div>
+        <div class="field"><label for="approvePaymentStatus">Payment Status</label><select id="approvePaymentStatus" disabled><option value="unpaid">UNPAID</option><option value="partial">PARTIAL PAYMENT</option><option value="paid">PAID</option></select></div>
+        <p class="adm-warning" id="approvePaymentWarning" hidden></p>
+      </div>
       <div class="field">
         <label for="approveFee">Booking Fee (optional)</label>
         <input type="number" id="approveFee" min="0" step="1" placeholder="e.g. 1500">
@@ -396,6 +437,13 @@
       <p id="nbEndPreview" class="cell-sub" style="margin:-6px 0 10px;"></p>
       <p id="nbWarning" class="adm-warning" hidden></p>
       <div class="field"><label for="nbNotes">Notes</label><textarea id="nbNotes"></textarea></div>
+      <div class="payment-box">
+        <div class="payment-box-title">Payment</div>
+        <div class="payment-summary"><div><span>Total</span><strong id="nbTotal">৳0</strong></div><div><span>Paid</span><strong id="nbPaidPreview">৳0</strong></div><div><span>Due</span><strong id="nbDuePreview">৳0</strong></div></div>
+        <div class="field-row-2"><div class="field"><label for="nbPaidAmount">Paid Amount</label><input type="number" id="nbPaidAmount" min="0" step="1" value="0"></div><div class="field"><label for="nbPaymentMethod">Payment Method</label><select id="nbPaymentMethod"><option value="">Not recorded</option><option>bKash</option><option>Nagad</option><option>Cash</option><option>Bank Transfer</option><option>Card</option><option>Other</option></select></div></div>
+        <div class="field"><label for="nbPaymentStatus">Payment Status</label><select id="nbPaymentStatus" disabled><option value="unpaid">UNPAID</option><option value="partial">PARTIAL PAYMENT</option><option value="paid">PAID</option></select></div>
+        <p class="adm-warning" id="nbPaymentWarning" hidden></p>
+      </div>
       <div class="field-row-2">
         <div class="field"><label for="nbFee">Booking Fee</label><input type="number" id="nbFee" min="0" step="1"></div>
         <label class="adm-checkbox-row" style="align-self:end; padding-bottom:10px;"><input type="checkbox" id="nbShowFee"> Show fee publicly</label>
@@ -436,6 +484,13 @@
       <p id="ebEndPreview" class="cell-sub" style="margin:-6px 0 10px;"></p>
       <p id="ebWarning" class="adm-warning" hidden></p>
       <div class="field"><label for="ebNotes">Notes</label><textarea id="ebNotes"></textarea></div>
+      <div class="payment-box">
+        <div class="payment-box-title">Payment</div>
+        <div class="payment-summary"><div><span>Total</span><strong id="ebTotal">৳0</strong></div><div><span>Paid</span><strong id="ebPaidPreview">৳0</strong></div><div><span>Due</span><strong id="ebDuePreview">৳0</strong></div></div>
+        <div class="field-row-2"><div class="field"><label for="ebPaidAmount">Paid Amount</label><input type="number" id="ebPaidAmount" min="0" step="1" value="0"></div><div class="field"><label for="ebPaymentMethod">Payment Method</label><select id="ebPaymentMethod"><option value="">Not recorded</option><option>bKash</option><option>Nagad</option><option>Cash</option><option>Bank Transfer</option><option>Card</option><option>Other</option></select></div></div>
+        <p class="adm-warning" id="ebPaymentWarning" hidden></p>
+        <div class="field"><label for="ebPaymentStatus">Payment Status</label><select id="ebPaymentStatus" disabled><option value="unpaid">UNPAID</option><option value="partial">PARTIAL PAYMENT</option><option value="paid">PAID</option></select></div>
+      </div>
       <div class="field-row-2">
         <div class="field"><label for="ebFee">Booking Fee</label><input type="number" id="ebFee" min="0" step="1"></div>
         <label class="adm-checkbox-row" style="align-self:end; padding-bottom:10px;"><input type="checkbox" id="ebShowFee"> Show fee publicly</label>
@@ -516,6 +571,19 @@
   </div>
 </div>
 
+<!-- ===== REPORTS MODAL ===== -->
+<div class="adm-overlay" id="reportsOverlay" hidden>
+  <div class="adm-panel wide">
+    <div class="adm-panel-head"><div><div class="adm-panel-title">Revenue &amp; Reports</div><div class="adm-panel-sub">Booking value is separate from collected cash.</div></div><button class="adm-close" data-close="reportsOverlay">&times;</button></div>
+    <div class="adm-body"><div class="report-panel"><h3>Payment Summary</h3><div class="reports-grid"><div class="report-card"><div class="report-card-label">Total Bookings</div><div class="report-card-value" id="reportBookings">0</div></div><div class="report-card"><div class="report-card-label">Total Hours</div><div class="report-card-value" id="reportHours">0</div></div><div class="report-card"><div class="report-card-label">Total Revenue</div><div class="report-card-value" id="reportRevenue">৳0</div></div><div class="report-card"><div class="report-card-label">Paid Amount</div><div class="report-card-value" id="reportPaid">৳0</div></div><div class="report-card"><div class="report-card-label">Due Amount</div><div class="report-card-value" id="reportDue">৳0</div></div></div></div><div class="report-panel"><h3>Collected by Method</h3><div class="report-methods" id="reportMethods"></div></div></div>
+  </div>
+</div>
+
+<!-- ===== INVOICE MODAL ===== -->
+<div class="adm-overlay" id="invoiceOverlay" hidden>
+  <div class="adm-panel wide"><div class="adm-panel-head"><div><div class="adm-panel-title">Booking Invoice</div><div class="adm-panel-sub" id="invoiceSub"></div></div><button class="adm-close" data-close="invoiceOverlay">&times;</button></div><div class="adm-body"><div class="invoice-paper" id="invoicePaper"></div><div class="invoice-actions"><button class="btn btn-outline" id="printInvoiceBtn">Print Invoice</button><button class="btn btn-turf" id="invoiceWhatsAppBtn">WhatsApp Bill</button></div></div></div>
+</div>
+
 <!-- ===== RECURRING OCCURRENCES MODAL ===== -->
 <div class="adm-overlay" id="occOverlay" hidden>
   <div class="adm-panel wide">
@@ -570,6 +638,23 @@
   const TYPE_LABEL = { customer_request: 'Customer Request', admin_direct: 'Admin Direct', corporate_recurring: 'Corporate' };
 
   function formatBDT(amount) { return `৳${Number(amount).toLocaleString()}`; }
+  const PAYMENT_METHODS = ["bKash", "Nagad", "Cash", "Bank Transfer", "Card", "Other"];
+  function paymentSnapshot(booking, paidOverride) {
+    const total = Math.max(0, Number(booking && booking.calculatedPrice) || 0);
+    const paid = Math.max(0, Number(paidOverride !== undefined ? paidOverride : booking && booking.paidAmount) || 0);
+    const due = Math.max(0, total - paid);
+    const status = total > 0 && due === 0 ? "paid" : paid > 0 ? "partial" : "unpaid";
+    return { total, paid, due, status, method: booking && booking.paymentMethod ? booking.paymentMethod : "" };
+  }
+  function paymentStatusLabel(status) { return status === "partial" ? "PARTIAL PAYMENT" : status.toUpperCase(); }
+  function validatePaidAmount(booking, paid) {
+    const total = paymentSnapshot(booking).total;
+    return Number.isFinite(paid) && paid >= 0 && paid <= total;
+  }
+  function paymentFields(booking, paidOverride) {
+    const p = paymentSnapshot(booking, paidOverride);
+    return { paidAmount: p.paid, paymentMethod: p.method || null, paymentStatus: p.status };
+  }
 
   function pad(n) { return String(n).padStart(2, "0"); }
   function dhakaNow() {
@@ -880,6 +965,7 @@
       const tr = document.createElement('tr');
       if (r.status === 'pending') tr.classList.add('new-row');
       const feeText = r.bookingFee ? `৳${Number(r.bookingFee).toLocaleString()}${r.showFeePublicly ? '' : ' (hidden)'}` : '—';
+      const payment = paymentSnapshot(r);
       tr.innerHTML = `
         <td>
           <div class="cell-name">${escapeHtml(r.customerName || '—')}</div>
@@ -892,6 +978,7 @@
         </td>
         <td><span class="type-pill">${TYPE_LABEL[r.bookingType] || r.bookingType}</span></td>
         <td class="cell-sub">${r.calculatedPrice != null ? formatBDT(r.calculatedPrice) : '—'}</td>
+        <td class="payment-cell"><strong>${formatBDT(payment.paid)} / ${formatBDT(payment.total)}</strong><div class="payment-meta">Due ${formatBDT(payment.due)}</div><span class="payment-pill ${payment.status}">${paymentStatusLabel(payment.status)}</span></td>
         <td class="cell-sub">${feeText}</td>
         <td class="notes-cell">${r.notes ? escapeHtml(r.notes) : '—'}</td>
         <td class="cell-sub">${fmtTimestamp(r.createdAt)}</td>
@@ -919,6 +1006,7 @@
     } else {
       html += `<span class="cell-sub">No actions</span>`;
     }
+    html += `<button class="action-btn edit" data-action="invoice">Invoice</button><button class="action-btn complete" data-action="whatsapp">WhatsApp</button>`;
     return html;
   }
 
@@ -939,6 +1027,9 @@
           r.calculatedPrice != null ? `Calculated Price: ${formatBDT(r.calculatedPrice)}` : 'Calculated Price: not available for this booking';
         document.getElementById('approveFee').value = '';
         document.getElementById('approveShowFee').checked = false;
+        document.getElementById('approvePaidAmount').value = Number(r.paidAmount) || 0;
+        document.getElementById('approvePaymentMethod').value = r.paymentMethod || '';
+        updateApprovePaymentPreview();
         openOverlay('approveOverlay');
       } else if (action === 'reject') {
         const batch = writeBatch(db);
@@ -960,6 +1051,10 @@
         await deleteDoc(ref);
       } else if (action === 'edit') {
         openEditModal(r);
+      } else if (action === 'invoice') {
+        openInvoice(r);
+      } else if (action === 'whatsapp') {
+        window.open(`https://wa.me/?text=${encodeURIComponent(invoiceMessage(r))}`, '_blank', 'noopener');
       }
     } catch (err) {
       console.error(err);
@@ -967,18 +1062,39 @@
     }
   }
 
+  function updateApprovePaymentPreview() {
+    if (!pendingApproveBooking) return;
+    const paid = Number(document.getElementById('approvePaidAmount').value) || 0;
+    const payment = paymentSnapshot(pendingApproveBooking, paid);
+    document.getElementById('approvePaymentStatus').value = payment.status;
+    document.getElementById('approveTotal').textContent = formatBDT(payment.total);
+    document.getElementById('approvePaidPreview').textContent = formatBDT(paid);
+    document.getElementById('approveDuePreview').textContent = formatBDT(payment.due);
+    const warning = document.getElementById('approvePaymentWarning');
+    warning.hidden = validatePaidAmount(pendingApproveBooking, paid);
+    warning.textContent = `Paid amount cannot exceed the booking total of ${formatBDT(payment.total)}.`;
+    document.getElementById('approveConfirmBtn').disabled = !validatePaidAmount(pendingApproveBooking, paid);
+  }
+  document.getElementById('approvePaidAmount').addEventListener('input', updateApprovePaymentPreview);
+
   document.getElementById('approveConfirmBtn').addEventListener('click', async () => {
     if (!pendingApproveBooking) return;
     const r = pendingApproveBooking;
     const feeRaw = document.getElementById('approveFee').value;
     const fee = feeRaw ? Number(feeRaw) : null;
     const showFee = document.getElementById('approveShowFee').checked;
+    const paidAmount = Number(document.getElementById('approvePaidAmount').value) || 0;
+    const paymentMethod = document.getElementById('approvePaymentMethod').value || null;
+    if (!validatePaidAmount(r, paidAmount)) { updateApprovePaymentPreview(); return; }
+    const payments = paymentFields(r, paidAmount);
+    payments.paymentMethod = paymentMethod;
     try {
       const batch = writeBatch(db);
       const ref = doc(db, 'bookings', r.id);
       batch.update(ref, {
         status: 'approved', approvedAt: serverTimestamp(), updatedAt: serverTimestamp(),
         bookingFee: fee, showFeePublicly: !!showFee,
+        ...payments,
       });
       coveredIntervals(r.bookingDate, r.startSlot, r.durationSlots).forEach(({date, slot}) => {
         batch.update(doc(db, 'slots', slotDocId(r.facility, date, slot)), {
@@ -1001,6 +1117,8 @@
     date: document.getElementById('nbDate'), start: document.getElementById('nbStart'),
     duration: document.getElementById('nbDuration'), notes: document.getElementById('nbNotes'),
     fee: document.getElementById('nbFee'), showFee: document.getElementById('nbShowFee'),
+    paid: document.getElementById('nbPaidAmount'), method: document.getElementById('nbPaymentMethod'), paymentStatus: document.getElementById('nbPaymentStatus'), paymentWarning: document.getElementById('nbPaymentWarning'),
+    total: document.getElementById('nbTotal'), paidPreview: document.getElementById('nbPaidPreview'), duePreview: document.getElementById('nbDuePreview'),
     warning: document.getElementById('nbWarning'), submitBtn: document.getElementById('nbSubmitBtn'),
     endPreview: document.getElementById('nbEndPreview'),
   };
@@ -1057,6 +1175,7 @@
     const crosses = end.date !== nb.date.value;
     const price = calculateBookingPrice({ facility: nb.facility.value, bookingDate: nb.date.value, startSlot: start, durationSlots: duration });
     nb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''} · Calculated Price: ${formatBDT(price.finalPrice)}`;
+    updateNbPaymentPreview(price.finalPrice);
   }
   nb.facility.addEventListener('change', refreshNbAvailability);
   nb.date.addEventListener('change', refreshNbAvailability);
@@ -1068,6 +1187,15 @@
     updateNbDuration(occupied, occupiedNext);
   });
   nb.duration.addEventListener('change', updateNbEndPreview);
+  nb.paid.addEventListener('input', updateNbEndPreview);
+  nb.method.addEventListener('change', updateNbEndPreview);
+
+  function updateNbPaymentPreview(total) {
+    const payment = paymentSnapshot({ calculatedPrice: total }, Number(nb.paid.value) || 0);
+    nb.total.textContent = formatBDT(payment.total); nb.paidPreview.textContent = formatBDT(payment.paid); nb.duePreview.textContent = formatBDT(payment.due); nb.paymentStatus.value = payment.status;
+    nb.paymentWarning.hidden = validatePaidAmount({ calculatedPrice: total }, payment.paid);
+    nb.paymentWarning.textContent = `Paid amount cannot exceed ${formatBDT(payment.total)}.`;
+  }
 
   document.getElementById('newBookingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1082,6 +1210,8 @@
     const end = endPoint(date, start, duration);
     const price = calculateBookingPrice({ facility, bookingDate: date, startSlot: start, durationSlots: duration });
 
+    const paymentDraft = paymentSnapshot({ calculatedPrice: price.finalPrice }, Number(nb.paid.value) || 0);
+    if (!validatePaidAmount({ calculatedPrice: price.finalPrice }, Number(nb.paid.value) || 0)) { nb.paymentWarning.hidden = false; nb.paymentWarning.textContent = `Paid amount cannot exceed ${formatBDT(price.finalPrice)}.`; return; }
     nb.submitBtn.disabled = true; nb.submitBtn.textContent = 'Checking availability…';
     try {
       // Re-verify each interval is still free right before writing (backend-enforced by create-only rule too).
@@ -1100,6 +1230,7 @@
         endDate: end.date, endSlot: end.slot,
         status: 'approved', bookingType: 'admin_direct', bookingSource: 'admin',
         bookingFee: fee, feeCurrency: 'BDT', showFeePublicly: !!showFee, calculatedPrice: price.finalPrice, recurringBookingId: null,
+        ...paymentFields({ calculatedPrice: price.finalPrice, paymentMethod: nb.method.value }, paymentDraft.paid),
         notes: nb.notes.value.trim() || null,
         createdAt: serverTimestamp(), updatedAt: serverTimestamp(), approvedAt: serverTimestamp(), rejectedAt: null,
       });
@@ -1126,6 +1257,8 @@
     date: document.getElementById('ebDate'), start: document.getElementById('ebStart'),
     duration: document.getElementById('ebDuration'), notes: document.getElementById('ebNotes'),
     fee: document.getElementById('ebFee'), showFee: document.getElementById('ebShowFee'),
+    paid: document.getElementById('ebPaidAmount'), method: document.getElementById('ebPaymentMethod'), paymentStatus: document.getElementById('ebPaymentStatus'), paymentWarning: document.getElementById('ebPaymentWarning'),
+    total: document.getElementById('ebTotal'), paidPreview: document.getElementById('ebPaidPreview'), duePreview: document.getElementById('ebDuePreview'),
     warning: document.getElementById('ebWarning'), submitBtn: document.getElementById('ebSubmitBtn'),
     endPreview: document.getElementById('ebEndPreview'),
   };
@@ -1136,6 +1269,7 @@
     eb.name.value = r.customerName || ''; eb.phone.value = r.phone || ''; eb.email.value = r.email || '';
     eb.facility.value = r.facility; eb.date.value = r.bookingDate; eb.date.min = todayKey();
     eb.notes.value = r.notes || ''; eb.fee.value = r.bookingFee || ''; eb.showFee.checked = !!r.showFeePublicly;
+    eb.paid.value = Number(r.paidAmount) || 0; eb.method.value = r.paymentMethod || '';
     eb.warning.hidden = true;
     await refreshEbAvailability(r.startSlot, r.durationSlots);
     openOverlay('editBookingOverlay');
@@ -1179,11 +1313,21 @@
     const crosses = end.date !== eb.date.value;
     const price = calculateBookingPrice({ facility: eb.facility.value, bookingDate: eb.date.value, startSlot: start, durationSlots: duration });
     eb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''} · Calculated Price: ${formatBDT(price.finalPrice)}`;
+    updateEbPaymentPreview(price.finalPrice);
   }
   eb.facility.addEventListener('change', () => refreshEbAvailability());
   eb.date.addEventListener('change', () => refreshEbAvailability());
   eb.start.addEventListener('change', () => refreshEbAvailability(Number(eb.start.value)));
   eb.duration.addEventListener('change', updateEbEndPreview);
+  eb.paid.addEventListener('input', () => updateEbPaymentPreview(Number(eb.total.dataset.total) || 0));
+  eb.method.addEventListener('change', () => updateEbPaymentPreview(Number(eb.total.dataset.total) || 0));
+  function updateEbPaymentPreview(total) {
+    eb.total.dataset.total = total;
+    const payment = paymentSnapshot({ calculatedPrice: total }, Number(eb.paid.value) || 0);
+    eb.total.textContent = formatBDT(payment.total); eb.paidPreview.textContent = formatBDT(payment.paid); eb.duePreview.textContent = formatBDT(payment.due); eb.paymentStatus.value = payment.status;
+    eb.paymentWarning.hidden = validatePaidAmount({ calculatedPrice: total }, payment.paid);
+    eb.paymentWarning.textContent = `Paid amount cannot exceed ${formatBDT(payment.total)}.`;
+  }
 
   document.getElementById('editBookingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1206,6 +1350,8 @@
       // Recomputed because the admin edited this specific booking's own parameters (facility/date/
       // start/duration) — not a retroactive repricing of history if the pricing table itself changes.
       const price = calculateBookingPrice({ facility, bookingDate: date, startSlot: start, durationSlots: duration });
+      const paidAmount = Number(eb.paid.value) || 0;
+      if (!validatePaidAmount({ calculatedPrice: price.finalPrice }, paidAmount)) { eb.paymentWarning.hidden = false; eb.paymentWarning.textContent = `Paid amount cannot exceed ${formatBDT(price.finalPrice)}.`; return; }
 
       const batch = writeBatch(db);
       oldIntervals.forEach(({date, slot}) => batch.delete(doc(db, 'slots', slotDocId(editingBooking.facility, date, slot))));
@@ -1221,6 +1367,7 @@
         facility, businessId: BUSINESS_ID, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
         endDate: end.date, endSlot: end.slot, notes: eb.notes.value.trim() || null,
         bookingFee: fee, showFeePublicly: !!showFee, calculatedPrice: price.finalPrice, updatedAt: serverTimestamp(),
+        ...paymentFields({ calculatedPrice: price.finalPrice, paymentMethod: eb.method.value }, paidAmount),
       });
       await batch.commit();
       closeOverlay('editBookingOverlay');
@@ -1232,6 +1379,36 @@
       eb.submitBtn.disabled = false; eb.submitBtn.textContent = 'Save Changes';
     }
   });
+
+  // ---------- REPORTS, INVOICE, AND WHATSAPP ----------
+  let currentInvoiceBooking = null;
+  function reportBookings() { return allBookings.filter(b => b.status !== 'rejected' && b.status !== 'cancelled'); }
+  function renderReports() {
+    const rows = reportBookings();
+    const totals = rows.reduce((acc, b) => { const p = paymentSnapshot(b); acc.hours += (Number(b.durationSlots) || 0) * 0.5; acc.revenue += p.total; acc.paid += p.paid; acc.due += p.due; if (p.method) acc.methods[p.method] = (acc.methods[p.method] || 0) + p.paid; return acc; }, { hours: 0, revenue: 0, paid: 0, due: 0, methods: {} });
+    document.getElementById('reportBookings').textContent = rows.length;
+    document.getElementById('reportHours').textContent = `${totals.hours % 1 ? totals.hours.toFixed(1) : totals.hours}`;
+    document.getElementById('reportRevenue').textContent = formatBDT(totals.revenue);
+    document.getElementById('reportPaid').textContent = formatBDT(totals.paid);
+    document.getElementById('reportDue').textContent = formatBDT(totals.due);
+    document.getElementById('reportMethods').innerHTML = PAYMENT_METHODS.map(method => `<span><strong>${escapeHtml(method)}:</strong> ${formatBDT(totals.methods[method] || 0)}</span>`).join('');
+  }
+  function invoiceNumber(r) { return `FRZ-${String(r.bookingDate || todayKey()).replace(/-/g, '')}-${String(r.id || '').slice(0, 6).toUpperCase()}`; }
+  function bookingTimeText(r) { return `${slotLabel(r.startSlot)} - ${slotLabel(r.endSlot)}${r.endDate && r.endDate !== r.bookingDate ? ' (+1 day)' : ''}`; }
+  function invoiceMessage(r) {
+    const p = paymentSnapshot(r);
+    return `FRENZY SPORTS ARENA\\n\\nBOOKING CONFIRMATION\\n\\nCustomer: ${r.customerName || ''}\\nFacility: ${FACILITY_LABELS[r.facility] || r.facility || ''}\\nDate: ${r.bookingDate || ''}\\nTime: ${bookingTimeText(r)}\\nDuration: ${durationLabel(r.durationSlots)}\\n\\nTotal: ${formatBDT(p.total)}\\nPaid: ${formatBDT(p.paid)}\\nPayment Method: ${p.method || 'Not recorded'}\\nDue: ${formatBDT(p.due)}\\nPayment Status: ${paymentStatusLabel(p.status)}\\nBooking ID: ${invoiceNumber(r)}\\n\\nThank you for choosing FRENZY!`;
+  }
+  function openInvoice(r) {
+    currentInvoiceBooking = r;
+    const p = paymentSnapshot(r);
+    document.getElementById('invoiceSub').textContent = `${r.customerName || 'Booking'} · ${invoiceNumber(r)}`;
+    document.getElementById('invoicePaper').innerHTML = `<div class="invoice-brand">FRENZY SPORTS</div><div class="invoice-title">BOOKING INVOICE</div><div class="invoice-rule"></div><div class="invoice-row"><span>Invoice No</span><strong>${invoiceNumber(r)}</strong></div><div class="invoice-row"><span>Customer</span><strong>${escapeHtml(r.customerName || '—')}</strong></div><div class="invoice-row"><span>Phone</span><strong>${escapeHtml(r.phone || '—')}</strong></div><div class="invoice-row"><span>Facility</span><strong>${escapeHtml(FACILITY_LABELS[r.facility] || r.facility || '—')}</strong></div><div class="invoice-row"><span>Date</span><strong>${escapeHtml(r.bookingDate || '—')}</strong></div><div class="invoice-row"><span>Time</span><strong>${escapeHtml(bookingTimeText(r))}</strong></div><div class="invoice-row"><span>Duration</span><strong>${escapeHtml(durationLabel(r.durationSlots))}</strong></div><div class="invoice-rule"></div><div class="invoice-row"><span>Booking Price</span><strong>${formatBDT(p.total)}</strong></div><div class="invoice-row"><span>Paid Amount</span><strong>${formatBDT(p.paid)}</strong></div><div class="invoice-row"><span>Payment Method</span><strong>${escapeHtml(p.method || 'Not recorded')}</strong></div><div class="invoice-rule"></div><div class="invoice-row invoice-total"><span>Due Amount</span><strong>${formatBDT(p.due)}</strong></div><div class="invoice-row"><span>Payment Status</span><strong>${paymentStatusLabel(p.status)}</strong></div><div class="invoice-row"><span>Booking Status</span><strong>${escapeHtml(String(r.status || '').toUpperCase())}</strong></div><div class="invoice-rule"></div><div style="text-align:center;margin-top:18px;">Thank you for choosing FRENZY!</div>`;
+    openOverlay('invoiceOverlay');
+  }
+  document.getElementById('openReportsBtn').addEventListener('click', () => { renderReports(); openOverlay('reportsOverlay'); });
+  document.getElementById('printInvoiceBtn').addEventListener('click', () => window.print());
+  document.getElementById('invoiceWhatsAppBtn').addEventListener('click', () => { if (currentInvoiceBooking) window.open(`https://wa.me/?text=${encodeURIComponent(invoiceMessage(currentInvoiceBooking))}`, '_blank', 'noopener'); });
 
   // ---------- CORPORATE / RECURRING BOOKING ----------
   const cb = {
@@ -1368,6 +1545,7 @@
           bookingFee: plan.feeType === 'perOccurrence' ? plan.fee : null,
           feeCurrency: 'BDT', showFeePublicly: plan.showFee, recurringBookingId: seriesRef.id,
           calculatedPrice: price.finalPrice,
+          paidAmount: 0, paymentMethod: null, paymentStatus: 'unpaid',
           notes: plan.notes, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
           approvedAt: serverTimestamp(), rejectedAt: null,
         });
@@ -1576,6 +1754,12 @@
         type: TYPE_LABEL[b.bookingType] || b.bookingType || "",
         status: b.status || "",
         price: b.calculatedPrice != null ? String(b.calculatedPrice) : "",
+        totalAmount: String(paymentSnapshot(b).total),
+        paidAmount: String(paymentSnapshot(b).paid),
+        dueAmount: String(paymentSnapshot(b).due),
+        paymentMethod: b.paymentMethod || "",
+        paymentStatus: paymentStatusLabel(paymentSnapshot(b).status),
+        bookingStatus: b.status || "",
         fee: b.bookingFee != null ? String(b.bookingFee) : "",
         notes: b.notes || "",
         createdAt: csvTimestamp(b.createdAt),
@@ -1601,6 +1785,12 @@
         { key: "type",         label: "Type" },
         { key: "status",       label: "Status" },
         { key: "price",        label: "Price (BDT)" },
+        { key: "totalAmount",  label: "Total Amount (BDT)" },
+        { key: "paidAmount",   label: "Paid Amount (BDT)" },
+        { key: "dueAmount",    label: "Due Amount (BDT)" },
+        { key: "paymentMethod",label: "Payment Method" },
+        { key: "paymentStatus",label: "Payment Status" },
+        { key: "bookingStatus",label: "Booking Status" },
         { key: "fee",          label: "Fee (BDT)" },
         { key: "notes",        label: "Notes" },
         { key: "createdAt",    label: "Created At" },
