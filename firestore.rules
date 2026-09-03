@@ -113,6 +113,25 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    match /academyRequests/{requestId} {
+      // Public visitors may submit only a new registration with the required participant fields.
+      allow create: if request.resource.data.keys().hasOnly([
+        "requestId", "participantName", "phone", "age", "gender", "dressSize",
+        "status", "source", "notes", "createdAt", "updatedAt"
+      ])
+      && request.resource.data.requestId is string
+      && request.resource.data.participantName is string
+      && request.resource.data.phone is string
+      && request.resource.data.age is number
+      && request.resource.data.age >= 4
+      && request.resource.data.age <= 80
+      && request.resource.data.gender in ["Male", "Female"]
+      && request.resource.data.dressSize in ["S", "M", "L", "XL"]
+      && request.resource.data.status == "new"
+      && request.resource.data.source == "website_whatsapp";
+      allow read, update, delete: if isAdmin();
+    }
+
     match /recurringBookings/{seriesId} {
       allow read, write: if isAdmin();
     }
