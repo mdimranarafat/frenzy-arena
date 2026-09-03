@@ -1469,7 +1469,33 @@
   function invoiceMessage(r) {
     const price = invoicePriceBreakdown(r);
     const p = paymentSnapshot(r);
-    return `FRENZY SPORTS ARENA\\n\\nBOOKING CONFIRMATION\\n\\nCustomer: ${r.customerName || ''}\\nFacility: ${FACILITY_LABELS[r.facility] || r.facility || ''}\\nDate: ${r.bookingDate || ''}\\nTime: ${bookingTimeText(r)}\\nDuration: ${durationLabel(r.durationSlots)}\\n\\nTotal Fee / Original Price: ${formatBDT(price.originalPrice)}\\nDiscount: -${formatBDT(price.discount)}\\nNet Total / Final Price: ${formatBDT(price.finalPrice)}\\n\\nAmount Paid: ${formatBDT(p.paid)}\\nPayment Method: ${p.method || 'Not recorded'}\\nBalance Due: ${formatBDT(p.due)}\\nPayment Status: ${paymentStatusLabel(p.status)}\\nBooking ID: ${invoiceNumber(r)}\\n\\nThank you for choosing FRENZY!`;
+    const statusIcon = p.status === 'paid' ? '✅' : p.status === 'partial' ? '🟡' : '⚠️';
+    const paymentMethod = p.method || 'Not recorded';
+    return `━━━━━━━━━━━━━━━━━━━━
+🧾 *FRENZY SPORTS ARENA*
+     *BOOKING INVOICE*
+━━━━━━━━━━━━━━━━━━━━
+
+👤 *CUSTOMER DETAILS*
+• *Name:* ${r.customerName || '—'}
+• *Booking ID:* \`${invoiceNumber(r)}\`
+
+🏟️ *RESERVATION DETAILS*
+• *Facility:* ${FACILITY_LABELS[r.facility] || r.facility || '—'}
+• *Date:* ${r.bookingDate || '—'}
+• *Time:* ${bookingTimeText(r)}
+• *Duration:* ${durationLabel(r.durationSlots)}
+
+💳 *PAYMENT BREAKDOWN*
+• Total Price: ${formatBDT(price.originalPrice)}
+• Discount Applied: -${formatBDT(price.discount)}
+• *Net Payable:* *${formatBDT(price.finalPrice)}*
+───────────────
+• Paid Amount: ${formatBDT(p.paid)} (via ${paymentMethod})
+• *Balance Due:* *${formatBDT(p.due)}*
+• *Status:* ${statusIcon} *${paymentStatusLabel(p.status)}*
+━━━━━━━━━━━━━━━━━━━━
+✨ *Thank you for choosing Frenzy Sports Arena!*`;
   }
   function openInvoice(r) {
     currentInvoiceBooking = r;
