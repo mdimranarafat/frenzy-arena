@@ -277,10 +277,8 @@
   .cal-slot.booked .cal-slot-status{color:var(--slot-booked-status);}
   .cal-slot.past .cal-slot-time{color:var(--slot-past-time);}
   .cal-slot.past .cal-slot-status{color:var(--slot-past-status);}
-  /* Informational-only card: shows a previous booking's end boundary at the same
-     time label as the next slot's actionable Open card. Not clickable. */
-  .cal-slot.end-boundary{opacity:0.55; cursor:default;}
-  .cal-slot.booking-segment{min-width:0; align-items:center; justify-content:center; text-align:center;}
+  .cal-slot.booked{align-items:center; justify-content:center; text-align:center;}
+  .cal-slot.booking-segment{min-width:0;}
   .cal-slot.booking-segment.continuation{border-top-left-radius:0; border-bottom-left-radius:0;}
   .cal-slot.booking-segment.segment-end{border-top-right-radius:0; border-bottom-right-radius:0;}
   .cal-slot.booking-segment.continuation.segment-end{border-radius:0;}
@@ -292,7 +290,6 @@
   .cal-slot.booking-segment.continuation .cal-slot-name{font-size:0.68rem; color:var(--slot-booked-name);}
   .cal-slot-time{font-size:0.85rem; font-weight:800; color:#fff;}
   .cal-slot-status{font-size:0.72rem; color:#b9c9d1; font-family:var(--mono);}
-  .cal-slot-endtag{color:#8ba0a9; font-weight:600;}
 
   .cal-overlay{
     position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:100;
@@ -960,23 +957,6 @@
     return count;
   }
 
-  // Purely a display card — shows that the immediately preceding booking ends
-  // exactly at this time label. Not a real slot, not clickable, writes nothing
-  // and reserves nothing; the actual availability is still decided by
-  // `latestSlots[slot]` alone, same as always.
-  function renderEndBoundaryCard(slot, prevSlotData) {
-    const card = document.createElement('div');
-    card.className = 'cal-slot booked end-boundary';
-    const nameLine = prevSlotData.customerName
-      ? `<span class="cal-slot-name">${escapeHtml(prevSlotData.customerName)}</span>` : '';
-    card.innerHTML = `
-      <span class="cal-slot-time">${slotLabel(slot)}</span>
-      <span class="cal-slot-status">Booked <span class="cal-slot-endtag">· ends here</span></span>
-      ${nameLine}
-    `;
-    return card;
-  }
-
     function calendarColumnCount() {
     return window.matchMedia('(min-width:900px)').matches ? 7
       : window.matchMedia('(min-width:600px)').matches ? 4 : 2;
@@ -1020,14 +1000,6 @@
     for (let slot = 0; slot < SLOTS_PER_DAY;) {
       const s = latestSlots[slot];
       const isPast = isToday && slot < nowSlot;
-      // If this slot is free, but the preceding slot is the exact end boundary
-      // of an approved booking, show the informational end card before Open.
-      if (!s && !isPast) {
-        const prev = latestSlots[slot - 1];
-        if (prev && prev.status === 'approved' && prev.startSlot + prev.durationSlots === slot) {
-          els.grid.appendChild(renderEndBoundaryCard(slot, prev));
-        }
-      }
       let stateClass = 'open', label = 'Open';
       if (isPast) { stateClass = 'past'; label = 'Past'; }
       else if (s && s.status === 'approved') { stateClass = 'booked'; label = 'Booked'; }
