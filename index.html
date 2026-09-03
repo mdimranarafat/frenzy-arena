@@ -782,7 +782,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getFirestore, collection, doc, writeBatch, serverTimestamp, onSnapshot, query, where
+    getFirestore, collection, doc, getDoc, writeBatch, serverTimestamp, onSnapshot, query, where
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
   import { FACILITY_LABELS, calculateBookingPrice } from "./pricing.js";
 
@@ -886,8 +886,8 @@
     return d.innerHTML;
   }
 
-  const TODAY = dhakaNow().dateStr;
-  let currentDate = TODAY;
+  function todayDhaka() { return dhakaNow().dateStr; }
+  let currentDate = todayDhaka();
   let currentFacility = "sixASideTurf";
   let unsubscribe = null;
   let unsubscribeNextDay = null;
@@ -940,10 +940,10 @@
 
   function renderDateHeader() {
     els.dateLabel.textContent = prettyDate(currentDate);
-    els.todayTag.textContent = currentDate === TODAY ? 'Today' : '';
+    els.todayTag.textContent = currentDate === todayDhaka() ? 'Today' : '';
     els.dateInput.value = currentDate;
-    els.dateInput.min = TODAY;
-    els.prevDay.disabled = currentDate <= TODAY;
+    els.dateInput.min = todayDhaka();
+    els.prevDay.disabled = currentDate <= todayDhaka();
   }
 
   // How many consecutive open 30-minute slots exist starting at `slot` on `dateStr`, continuing past
@@ -952,7 +952,7 @@
   // never reaches past 71 — i.e. never more than one day ahead — so only `latestSlotsNextDay` (not a
   // second day further out) is ever needed here.
   function consecutiveOpenFrom(slot, dateStr) {
-    const isToday = dateStr === TODAY;
+    const isToday = dateStr === todayDhaka();
     const { slot: nowSlot } = dhakaNow();
     let count = 0;
     for (let i = 0; i < MAX_DURATION_SLOTS; i++) {
@@ -1007,16 +1007,17 @@
     return btn;
   }
   function renderGrid() {
-    const isToday = currentDate === TODAY;
+    const isToday = currentDate === todayDhaka();
     const { slot: nowSlot } = dhakaNow();
     const columns = calendarColumnCount();
     els.grid.innerHTML = '';
     for (let slot = 0; slot < SLOTS_PER_DAY;) {
       const s = latestSlots[slot];
       const isPast = isToday && slot < nowSlot;
+      // Filter expired customer-facing intervals before creating any DOM cards.
+      if (isPast) { slot++; continue; }
       let stateClass = 'open', label = 'Open';
-      if (isPast) { stateClass = 'past'; label = 'Past'; }
-      else if (s && s.status === 'approved') { stateClass = 'booked'; label = 'Booked'; }
+      if (s && s.status === 'approved') { stateClass = 'booked'; label = 'Booked'; }
       else if (s && s.status === 'pending') { stateClass = 'pending'; label = 'Pending'; }
 
       if (s && (stateClass === 'booked' || stateClass === 'pending') && s.bookingId) {
@@ -1076,7 +1077,7 @@
   }
 
   function goToDate(dateStr) {
-    if (dateStr < TODAY) return;
+    if (dateStr < todayDhaka()) return;
     currentDate = dateStr;
     renderDateHeader();
     subscribeToDate(currentDate);
@@ -1096,7 +1097,7 @@
   });
 
   function populateStartOptions(preferredSlot) {
-    const isToday = currentDate === TODAY;
+    const isToday = currentDate === todayDhaka();
     const { slot: nowSlot } = dhakaNow();
     els.bfStart.innerHTML = '';
     for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
@@ -1227,6 +1228,12 @@
     els.bookSubmitBtn.disabled = true;
     els.bookSubmitBtn.textContent = 'Sending…';
     try {
+      const latestChecks = await Promise.all(intervals.map(({ date, slot }) => getDoc(doc(db, 'slots', slotDocId(currentFacility, date, slot)))));
+      if (latestChecks.some(snapshot => snapshot.exists())) {
+        showToast('That slot was just taken — availability has been refreshed. Please choose another time.', true);
+        subscribeToDate(currentDate);
+        return;
+      }
       const batch = writeBatch(db);
       const bookingRef = doc(collection(db, 'bookings'));
       batch.set(bookingRef, {
