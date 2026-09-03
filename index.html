@@ -186,21 +186,37 @@
 
   /* ---------- FACILITIES ---------- */
   .facilities{background:var(--paper);}
-  .facility-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:22px;}
-  @media (max-width:800px){.facility-grid{grid-template-columns:1fr 1fr;}}
-  @media (max-width:520px){.facility-grid{grid-template-columns:1fr;}}
-  .facility-card{
-    background:#fff; border-radius:6px; padding:26px 22px;
-    border:1px solid #e2e8e7;
-  }
-  .facility-card .ico{
-    width:44px; height:44px; border-radius:8px;
-    background:rgba(0,184,217,0.12); color:var(--pool);
-    display:flex; align-items:center; justify-content:center; margin-bottom:16px;
-  }
-  .facility-card .ico svg{width:22px; height:22px;}
-  .facility-card h4{font-size:1.02rem; font-weight:800; margin-bottom:6px;}
-  .facility-card p{font-size:0.88rem; color:var(--muted);}
+  .facility-grid{display:grid; grid-template-columns:1.15fr 0.85fr; grid-template-rows:auto auto; gap:18px; align-items:stretch;}
+  .facility-card{position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; min-height:180px; background:#fff; border:1px solid #dbe6e5; border-radius:10px; padding:24px; box-shadow:0 10px 24px rgba(6,26,43,.06); transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease;}
+  .facility-card--hero{min-height:254px; background:linear-gradient(140deg,#fff 0%,#f6fbfb 64%,#e9f9fb 100%);}
+  .facility-card--hero:first-child{grid-row:span 2;}
+  .facility-card--hero:nth-child(2){min-height:218px;}
+  .facility-card--hero:nth-child(3){min-height:218px;}
+  .facility-card--hero:after{content:"";position:absolute;width:150px;height:150px;right:-60px;bottom:-70px;border:1px solid rgba(0,184,217,.18);border-radius:50%;box-shadow:0 0 0 22px rgba(0,184,217,.04),0 0 0 44px rgba(0,184,217,.03);pointer-events:none;}
+  .facility-card--support{min-height:132px;padding:18px 20px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;border-radius:8px;background:rgba(255,255,255,.72);box-shadow:0 5px 14px rgba(6,26,43,.035);}
+  .facility-card--support .ico{margin:0;width:38px;height:38px;border-radius:7px;}
+  .facility-card--support .facility-card-copy{min-width:0;}
+  .facility-card--support h4{font-size:.92rem;margin-bottom:3px;}
+  .facility-card--support p{font-size:.78rem;}
+  .facility-card:hover{transform:translateY(-5px);border-color:rgba(0,184,217,.58);box-shadow:0 16px 30px rgba(6,26,43,.11);}
+  .facility-card:hover .ico{transform:translateY(-3px) rotate(-4deg);background:rgba(0,184,217,.2);}
+  .facility-card:hover .facility-explore{color:var(--flare);transform:translateX(4px);}
+  .facility-card .ico{position:relative;z-index:1;width:52px;height:52px;border-radius:10px;background:rgba(0,184,217,.12);color:var(--pool);display:flex;align-items:center;justify-content:center;margin-bottom:22px;transition:transform .24s ease,background .24s ease;}
+  .facility-card .ico svg{width:25px;height:25px;}
+  .facility-card h4{position:relative;z-index:1;font-size:1.14rem;font-weight:800;margin-bottom:7px;color:var(--navy);}
+  .facility-card p{position:relative;z-index:1;font-size:.9rem;line-height:1.55;color:var(--muted);max-width:38ch;}
+  .facility-card-copy{position:relative;z-index:1;}
+  .facility-card-top{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+  .facility-card-top .ico{margin-bottom:0;}
+  .facility-status{display:inline-flex;align-items:center;gap:6px;font:600 .63rem var(--mono);letter-spacing:.03em;color:var(--good);text-transform:uppercase;white-space:nowrap;}
+  .facility-status:before{content:"";width:6px;height:6px;border-radius:50%;background:#1fa25c;box-shadow:0 0 0 4px rgba(31,162,92,.12);}
+  .facility-explore{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px;margin-top:20px;color:var(--pool);font:700 .7rem var(--mono);text-transform:uppercase;letter-spacing:.04em;transition:color .2s ease,transform .2s ease;}
+  .facility-card--support .facility-explore{margin:0;font-size:.64rem;}
+  .facility-grid > .facility-card:nth-child(4){grid-column:1;}
+  .facility-grid > .facility-card:nth-child(5){grid-column:1;}
+  .facility-grid > .facility-card:nth-child(6){grid-column:2;grid-row:3;}
+  @media (max-width:900px){.facility-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;}.facility-card--hero:first-child{grid-row:auto;grid-column:span 2;min-height:220px;}.facility-card--hero:nth-child(2),.facility-card--hero:nth-child(3){min-height:210px;}.facility-grid > .facility-card:nth-child(4),.facility-grid > .facility-card:nth-child(5),.facility-grid > .facility-card:nth-child(6){grid-column:auto;grid-row:auto;}}
+  @media (max-width:560px){.facility-grid{grid-template-columns:1fr;gap:12px;}.facility-card--hero:first-child,.facility-card--hero:nth-child(2),.facility-card--hero:nth-child(3){grid-column:auto;min-height:190px;}.facility-card--support{min-height:112px;padding:16px;}.facility-card--support .facility-explore{display:none;}}
 
   /* ---------- REVIEWS ---------- */
   .reviews{background:var(--navy); color:#fff; text-align:center;}
@@ -491,41 +507,37 @@
         <h2>Facilities</h2>
         <p>The essentials for a proper match or a swim session.</p>
       </div>
-      <!-- Exactly six facilities → clean 3×2 grid on desktop, 2 columns on tablet, 1 on mobile.
-           Icons share one consistent stroke style (24×24 viewBox, stroke-width 2, round caps/joins)
-           inside the shared light-blue rounded .ico container; they're decorative, so the visible
-           <h4> titles carry the accessible labels. -->
       <div class="facility-grid">
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="m12 7.5 4 2.9-1.5 4.7h-5L8 10.4Z"/><path d="M12 3v4.5M20.6 9.2l-4.6 1.2M17.4 19.6l-2.9-4.5M6.6 19.6l2.9-4.5M3.4 9.2l4.6 1.2"/></svg></span>
-          <h4>Artificial Futsal Turf</h4>
-          <p>A dedicated turf pitch for five-a-side and practice matches.</p>
-        </div>
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 13V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v7"/><path d="M9 7.5h6M9 11h6"/><path d="M2 16.5c1.5 1.5 3 1.5 4.5 0s3-1.5 4.5 0 3 1.5 4.5 0 3-1.5 4.5 0"/><path d="M2 20c1.5 1.5 3 1.5 4.5 0s3-1.5 4.5 0 3-1.5 4.5 0 3-1.5 4.5 0"/></svg></span>
-          <h4>Swimming Pool</h4>
-          <p>An on-site pool for laps or a cool-down after your match.</p>
-        </div>
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7.5" y="7.5" width="9" height="9" rx="1"/><circle cx="12" cy="12" r="1.75"/></svg></span>
-          <h4>Carrom</h4>
-          <p>Indoor carrom boards for a quick game between matches.</p>
-        </div>
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
-          <h4>Always Open</h4>
-          <p>No fixed hours — call ahead to lock in your slot any time.</p>
-        </div>
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
-          <h4>Book by Phone</h4>
-          <p>Call or message on Facebook to check availability and confirm your slot.</p>
-        </div>
-        <div class="facility-card">
-          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
-          <h4>Easy to Find</h4>
-          <p>Beside Joy Nagar Jame Masjid, opposite the north Greenview gate on Port Connecting Road.</p>
-        </div>
+        <article class="facility-card facility-card--hero">
+          <div>
+            <div class="facility-card-top"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="m12 7.5 4 2.9-1.5 4.7h-5L8 10.4Z"/><path d="M12 3v4.5M20.6 9.2l-4.6 1.2M17.4 19.6l-2.9-4.5M6.6 19.6l2.9-4.5M3.4 9.2l4.6 1.2"/></svg></span><span class="facility-status">Available to book</span></div>
+            <div class="facility-card-copy"><h4>Artificial Futsal Turf</h4><p>A dedicated turf pitch for five-a-side and practice matches.</p></div>
+          </div>
+          <span class="facility-explore">Explore <span aria-hidden="true">→</span></span>
+        </article>
+        <article class="facility-card facility-card--hero">
+          <div>
+            <div class="facility-card-top"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 13V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v7"/><path d="M9 7.5h6M9 11h6"/><path d="M2 16.5c1.5 1.5 3 1.5 4.5 0s3-1.5 4.5 0 3 1.5 4.5 0 3-1.5 4.5 0"/><path d="M2 20c1.5 1.5 3 1.5 4.5 0s3-1.5 4.5 0 3 1.5 4.5 0 3-1.5 4.5 0"/></svg></span><span class="facility-status">Available to book</span></div>
+            <div class="facility-card-copy"><h4>Swimming Pool</h4><p>An on-site pool for laps or a cool-down after your match.</p></div>
+          </div>
+          <span class="facility-explore">Explore <span aria-hidden="true">→</span></span>
+        </article>
+        <article class="facility-card facility-card--hero">
+          <div>
+            <div class="facility-card-top"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7.5" y="7.5" width="9" height="9" rx="1"/><circle cx="12" cy="12" r="1.75"/></svg></span><span class="facility-status">Available to book</span></div>
+            <div class="facility-card-copy"><h4>Carrom</h4><p>Indoor carrom boards for a quick game between matches.</p></div>
+          </div>
+          <span class="facility-explore">Explore <span aria-hidden="true">→</span></span>
+        </article>
+        <article class="facility-card facility-card--support">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span><div class="facility-card-copy"><h4>Always Open</h4><p>No fixed hours — call ahead to lock in your slot any time.</p></div><span class="facility-explore">View <span aria-hidden="true">→</span></span>
+        </article>
+        <article class="facility-card facility-card--support">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span><div class="facility-card-copy"><h4>Book by Phone</h4><p>Call or message on Facebook to check availability and confirm your slot.</p></div><span class="facility-explore">Contact <span aria-hidden="true">→</span></span>
+        </article>
+        <article class="facility-card facility-card--support">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg></span><div class="facility-card-copy"><h4>Easy to Find</h4><p>Beside Joy Nagar Jame Masjid, opposite the north Greenview gate on Port Connecting Road.</p></div><span class="facility-explore">Directions <span aria-hidden="true">→</span></span>
+        </article>
       </div>
     </div>
   </section>
