@@ -125,6 +125,12 @@
     font-size:1.08rem; color:#b9c9d1; max-width:520px; margin-bottom:32px;
   }
   .hero-cta{display:flex; gap:14px; flex-wrap:wrap;}
+  .academy-promo{display:flex; align-items:center; justify-content:space-between; gap:18px; max-width:720px; margin:22px 0 24px; padding:12px 16px; border:1px solid rgba(63,224,255,.42); border-left:3px solid var(--pool-bright); border-radius:7px; background:linear-gradient(100deg,rgba(0,184,217,.15),rgba(6,26,43,.56)); box-shadow:0 0 24px rgba(0,184,217,.12);}
+  .academy-promo-copy{display:flex; align-items:center; gap:10px; flex-wrap:wrap; color:#d8f9ff; font-size:.9rem; line-height:1.45;}
+  .academy-promo-copy strong{color:#fff;}
+  .academy-promo-link{flex:0 0 auto; color:var(--pool-bright); font-family:var(--mono); font-size:.76rem; font-weight:800; letter-spacing:.04em; text-decoration:none; white-space:nowrap;}
+  .academy-promo-link:hover{color:#fff; text-decoration:underline;}
+  @media (max-width:560px){.academy-promo{align-items:flex-start; flex-direction:column; gap:8px;}.academy-promo-link{padding-top:2px;}}
   .btn{
     display:inline-flex; align-items:center; gap:8px;
     font-family:var(--body); font-weight:700; font-size:0.92rem;
@@ -434,6 +440,10 @@
     </svg>
     <div class="wrap hero-inner">
       <span class="status-pill"><span class="blip"></span>Always Open</span>
+      <a class="academy-promo" href="academy.html" aria-label="Join the Swimming Academy">
+        <span class="academy-promo-copy"><span aria-hidden="true">🌊</span><strong>Join Swimming Academy</strong><span>| 1 Month - 3,900 BDT <span>(Free Swimming Dress included!)</span></span></span>
+        <span class="academy-promo-link">Join Now &rarr;</span>
+      </a>
       <p class="eyebrow">Pahartali &middot; Chittagong, Bangladesh</p>
       <h1>Frenzy <span>Sports Arena</span></h1>
       <p class="lede">Artificial futsal turf and a swimming pool, side by side in Pahartali. Book your slot and bring the energy.</p>
