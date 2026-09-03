@@ -513,6 +513,14 @@
       <p id="ebEndPreview" class="cell-sub" style="margin:-6px 0 10px;"></p>
       <p id="ebWarning" class="adm-warning" hidden></p>
       <div class="field"><label for="ebNotes">Notes</label><textarea id="ebNotes"></textarea></div>
+      <div class="booking-pricing-box">
+        <div class="payment-box-title">Booking Price</div>
+        <div class="booking-pricing-row"><span>Total Fee</span><strong class="booking-pricing-readonly" id="ebOriginalFee">৳0</strong></div>
+        <div class="booking-pricing-row"><label for="ebFee">Booking Fee <span class="adm-form-note">(final payable price)</span></label><input class="booking-pricing-input" type="number" id="ebFee" min="0" step="1" required></div>
+        <div class="booking-pricing-row"><span>Discount</span><strong class="booking-pricing-readonly" id="ebDiscount">৳0</strong></div>
+        <div class="booking-pricing-row final"><span>Final Price</span><strong class="booking-pricing-readonly" id="ebFinalPrice">৳0</strong></div>
+        <p class="adm-form-note" style="margin-top:8px;">Discount = Total Fee − Booking Fee. Booking Fee cannot exceed Total Fee.</p>
+      </div>
       <div class="payment-box">
         <div class="payment-box-title">Payment</div>
         <div class="payment-summary"><div><span>Total</span><strong id="ebTotal">৳0</strong></div><div><span>Paid</span><strong id="ebPaidPreview">৳0</strong></div><div><span>Due</span><strong id="ebDuePreview">৳0</strong></div></div>
@@ -521,7 +529,6 @@
         <div class="field"><label for="ebPaymentStatus">Payment Status</label><select id="ebPaymentStatus" disabled><option value="unpaid">UNPAID</option><option value="partial">PARTIAL PAYMENT</option><option value="paid">PAID</option></select></div>
       </div>
       <div class="field-row-2">
-        <div class="field"><label for="ebFee">Booking Fee</label><input type="number" id="ebFee" min="0" step="1"></div>
         <label class="adm-checkbox-row" style="align-self:end; padding-bottom:10px;"><input type="checkbox" id="ebShowFee"> Show fee publicly</label>
       </div>
       <button type="submit" class="btn btn-flare full" id="ebSubmitBtn">Save Changes</button>
@@ -669,7 +676,7 @@
   function formatBDT(amount) { return `৳${Number(amount).toLocaleString()}`; }
   const PAYMENT_METHODS = ["bKash", "Nagad", "Cash", "Bank Transfer", "Card", "Other"];
   function paymentSnapshot(booking, paidOverride) {
-    const payableTotal = booking && booking.bookingType === 'admin_direct' && booking.bookingFee != null
+    const payableTotal = booking && booking.bookingFee != null
       ? booking.bookingFee
       : booking && booking.calculatedPrice;
     const total = Math.max(0, Number(payableTotal) || 0);
@@ -996,8 +1003,10 @@
     filtered.forEach(r => {
       const tr = document.createElement('tr');
       if (r.status === 'pending') tr.classList.add('new-row');
-      const feeText = r.bookingFee ? `৳${Number(r.bookingFee).toLocaleString()}${r.showFeePublicly ? '' : ' (hidden)'}` : '—';
       const payment = paymentSnapshot(r);
+      const originalPrice = Math.max(0, Number(r.calculatedPrice) || 0);
+      const discount = Math.max(0, originalPrice - payment.total);
+      const feeText = r.bookingFee != null ? `${formatBDT(payment.total)}${discount > 0 ? ` · Discount ${formatBDT(discount)}` : ''}${r.showFeePublicly ? '' : ' (hidden)'}` : '—';
       tr.innerHTML = `
         <td>
           <div class="cell-name">${escapeHtml(r.customerName || '—')}</div>
@@ -1009,7 +1018,7 @@
           <div class="cell-sub">${slotLabel(r.startSlot)} – ${slotLabel(r.endSlot)}${r.endDate && r.endDate !== r.bookingDate ? ' (+1 day)' : ''} (${durationLabel(r.durationSlots)})</div>
         </td>
         <td><span class="type-pill">${TYPE_LABEL[r.bookingType] || r.bookingType}</span></td>
-        <td class="cell-sub">${r.calculatedPrice != null ? formatBDT(r.calculatedPrice) : '—'}</td>
+        <td class="cell-sub">${formatBDT(payment.total)}</td>
         <td class="payment-cell"><strong>${formatBDT(payment.paid)} / ${formatBDT(payment.total)}</strong><div class="payment-meta">Due ${formatBDT(payment.due)}</div><span class="payment-pill ${payment.status}">${paymentStatusLabel(payment.status)}</span></td>
         <td class="cell-sub">${feeText}</td>
         <td class="notes-cell">${r.notes ? escapeHtml(r.notes) : '—'}</td>
@@ -1300,6 +1309,7 @@
     date: document.getElementById('ebDate'), start: document.getElementById('ebStart'),
     duration: document.getElementById('ebDuration'), notes: document.getElementById('ebNotes'),
     fee: document.getElementById('ebFee'), showFee: document.getElementById('ebShowFee'),
+    originalFee: document.getElementById('ebOriginalFee'), discount: document.getElementById('ebDiscount'), finalPrice: document.getElementById('ebFinalPrice'),
     paid: document.getElementById('ebPaidAmount'), method: document.getElementById('ebPaymentMethod'), paymentStatus: document.getElementById('ebPaymentStatus'), paymentWarning: document.getElementById('ebPaymentWarning'),
     total: document.getElementById('ebTotal'), paidPreview: document.getElementById('ebPaidPreview'), duePreview: document.getElementById('ebDuePreview'),
     warning: document.getElementById('ebWarning'), submitBtn: document.getElementById('ebSubmitBtn'),
@@ -1311,7 +1321,7 @@
     editingBooking = r;
     eb.name.value = r.customerName || ''; eb.phone.value = r.phone || ''; eb.email.value = r.email || '';
     eb.facility.value = r.facility; eb.date.value = r.bookingDate; eb.date.min = todayKey();
-    eb.notes.value = r.notes || ''; eb.fee.value = r.bookingFee || ''; eb.showFee.checked = !!r.showFeePublicly;
+    eb.notes.value = r.notes || ''; eb.fee.value = r.bookingFee != null ? r.bookingFee : (r.calculatedPrice != null ? r.calculatedPrice : ''); eb.showFee.checked = !!r.showFeePublicly;
     eb.paid.value = Number(r.paidAmount) || 0; eb.method.value = r.paymentMethod || '';
     eb.warning.hidden = true;
     await refreshEbAvailability(r.startSlot, r.durationSlots);
@@ -1355,20 +1365,29 @@
     const end = endPoint(eb.date.value, start, duration);
     const crosses = end.date !== eb.date.value;
     const price = calculateBookingPrice({ facility: eb.facility.value, bookingDate: eb.date.value, startSlot: start, durationSlots: duration });
-    eb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''} · Calculated Price: ${formatBDT(price.finalPrice)}`;
+    eb.endPreview.textContent = `Ends ${slotLabel(end.slot)}${crosses ? ' (+1 day)' : ''}`;
     updateEbPaymentPreview(price.finalPrice);
   }
   eb.facility.addEventListener('change', () => refreshEbAvailability());
   eb.date.addEventListener('change', () => refreshEbAvailability());
   eb.start.addEventListener('change', () => refreshEbAvailability(Number(eb.start.value)));
   eb.duration.addEventListener('change', updateEbEndPreview);
-  eb.paid.addEventListener('input', () => updateEbPaymentPreview(Number(eb.total.dataset.total) || 0));
-  eb.method.addEventListener('change', () => updateEbPaymentPreview(Number(eb.total.dataset.total) || 0));
+  eb.fee.addEventListener('input', () => updateEbPaymentPreview(Number(eb.total.dataset.original) || 0));
+  eb.paid.addEventListener('input', () => updateEbPaymentPreview(Number(eb.total.dataset.original) || 0));
+  eb.method.addEventListener('change', () => updateEbPaymentPreview(Number(eb.total.dataset.original) || 0));
   function updateEbPaymentPreview(total) {
-    eb.total.dataset.total = total;
-    const payment = paymentSnapshot({ calculatedPrice: total }, Number(eb.paid.value) || 0);
+    const original = Math.max(0, Number(total) || 0);
+    const entered = Number(eb.fee.value);
+    const bookingFee = Number.isFinite(entered) ? Math.min(Math.max(entered, 0), original) : original;
+    if (eb.fee.value === '' || entered > original) eb.fee.value = String(original);
+    const discount = original - bookingFee;
+    eb.total.dataset.original = original;
+    eb.originalFee.textContent = formatBDT(original);
+    eb.discount.textContent = formatBDT(discount);
+    eb.finalPrice.textContent = formatBDT(bookingFee);
+    const payment = paymentSnapshot({ calculatedPrice: bookingFee }, Number(eb.paid.value) || 0);
     eb.total.textContent = formatBDT(payment.total); eb.paidPreview.textContent = formatBDT(payment.paid); eb.duePreview.textContent = formatBDT(payment.due); eb.paymentStatus.value = payment.status;
-    eb.paymentWarning.hidden = validatePaidAmount({ calculatedPrice: total }, payment.paid);
+    eb.paymentWarning.hidden = validatePaidAmount({ calculatedPrice: bookingFee }, payment.paid);
     eb.paymentWarning.textContent = `Paid amount cannot exceed ${formatBDT(payment.total)}.`;
   }
 
@@ -1388,13 +1407,13 @@
       const oldIntervals = coveredIntervals(editingBooking.bookingDate, editingBooking.startSlot, editingBooking.durationSlots);
       const newIntervals = coveredIntervals(date, start, duration);
       const end = endPoint(date, start, duration);
-      const fee = eb.fee.value ? Number(eb.fee.value) : null;
       const showFee = eb.showFee.checked;
       // Recomputed because the admin edited this specific booking's own parameters (facility/date/
       // start/duration) — not a retroactive repricing of history if the pricing table itself changes.
       const price = calculateBookingPrice({ facility, bookingDate: date, startSlot: start, durationSlots: duration });
+      const fee = Math.min(Math.max(Number(eb.fee.value) || 0, 0), price.finalPrice);
       const paidAmount = Number(eb.paid.value) || 0;
-      if (!validatePaidAmount({ calculatedPrice: price.finalPrice }, paidAmount)) { eb.paymentWarning.hidden = false; eb.paymentWarning.textContent = `Paid amount cannot exceed ${formatBDT(price.finalPrice)}.`; return; }
+      if (!validatePaidAmount({ calculatedPrice: fee }, paidAmount)) { eb.paymentWarning.hidden = false; eb.paymentWarning.textContent = `Paid amount cannot exceed ${formatBDT(fee)}.`; return; }
 
       const batch = writeBatch(db);
       oldIntervals.forEach(({date, slot}) => batch.delete(doc(db, 'slots', slotDocId(editingBooking.facility, date, slot))));
@@ -1409,8 +1428,8 @@
         customerName: eb.name.value.trim(), phone: normalizePhone(eb.phone.value), email: eb.email.value.trim() || null,
         facility, businessId: BUSINESS_ID, bookingDate: date, startSlot: start, durationSlots: duration, durationMinutes: duration * 30,
         endDate: end.date, endSlot: end.slot, notes: eb.notes.value.trim() || null,
-        bookingFee: fee, showFeePublicly: !!showFee, calculatedPrice: price.finalPrice, updatedAt: serverTimestamp(),
-        ...paymentFields({ calculatedPrice: price.finalPrice, paymentMethod: eb.method.value }, paidAmount),
+        bookingFee: fee, showFeePublicly: !!showFee, calculatedPrice: price.finalPrice, discount: price.finalPrice - fee, updatedAt: serverTimestamp(),
+        ...paymentFields({ calculatedPrice: fee, paymentMethod: eb.method.value }, paidAmount),
       });
       await batch.commit();
       closeOverlay('editBookingOverlay');
