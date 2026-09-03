@@ -1002,7 +1002,7 @@
     const statusText = continuation ? '↳ Continues' : label;
     const nameLine = stateClass === 'booked' && s.customerName
       ? `<span class="cal-slot-name">${escapeHtml(s.customerName)}</span>` : '';
-    btn.setAttribute('aria-label', `${timeText} | ${label}${s.customerName ? ` | ${s.customerName}` : ''}`);
+    btn.setAttribute('aria-label', `${timeText} | ${label}${s && s.customerName ? ` | ${s.customerName}` : ''}`);
     btn.innerHTML = `
       <span class="cal-slot-time">${timeText}</span>
       <span class="cal-slot-status">${statusText}</span>
