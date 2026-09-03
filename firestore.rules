@@ -1,0 +1,120 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && userDoc().role == "super_admin";
+    }
+
+    function isManagerRole() {
+      return isSignedIn() && userDoc().role == "manager";
+    }
+
+    function business() {
+      return get(/databases/$(database)/documents/businesses/frenzy_001).data;
+    }
+
+    function isActiveManager() {
+      return isManagerRole()
+        && userDoc().businessId == "frenzy_001"
+        && business().subscriptionStatus == "active"
+        && business().subscriptionEnd > request.time;
+    }
+
+    function isAdmin() {
+      return isSuperAdmin() || isActiveManager();
+    }
+
+    match /users/{uid} {
+      allow read: if isSuperAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    match /businesses/{businessId} {
+      allow read: if isSuperAdmin()
+        || (isManagerRole() && userDoc().businessId == businessId);
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    match /slots/{slotId} {
+      allow read: if true;
+
+      // Admins can create approved slots. Public users can only create a pending hold
+      // with the exact restricted shape below.
+      allow create: if isAdmin() || (
+        !exists(/databases/$(database)/documents/slots/$(slotId))
+        && request.resource.data.status == "pending"
+        && request.resource.data.showFeePublicly == false
+        && request.resource.data.bookingFee == null
+        && request.resource.data.businessId == "frenzy_001"
+        && request.resource.data.keys().hasOnly([
+          "facility", "date", "slot", "status", "bookingId", "customerName",
+          "startSlot", "durationSlots", "bookingFee", "showFeePublicly", "businessId"
+        ])
+      );
+
+      allow update, delete: if isAdmin();
+    }
+
+    match /bookings/{bookingId} {
+      // Admin-created bookings may include the negotiated final Booking Fee and
+      // its derived discount. The admin panel stores the original system price in
+      // calculatedPrice, the final payable price in bookingFee, and the difference
+      // in discount. Paid Amount remains separate from Booking Fee.
+      allow create: if (
+        isAdmin()
+        && request.resource.data.keys().hasOnly([
+          "customerName", "phone", "email", "facility", "businessId",
+          "bookingDate", "startSlot", "durationSlots", "durationMinutes",
+          "endDate", "endSlot", "status", "bookingType", "bookingSource",
+          "bookingFee", "feeCurrency", "showFeePublicly", "calculatedPrice",
+          "discount", "paidAmount", "paymentMethod", "paymentStatus",
+          "recurringBookingId", "notes", "createdAt", "updatedAt",
+          "approvedAt", "rejectedAt"
+        ])
+        && request.resource.data.businessId == "frenzy_001"
+        && request.resource.data.bookingFee is number
+        && request.resource.data.calculatedPrice is number
+        && request.resource.data.discount is number
+        && request.resource.data.bookingFee >= 0
+        && request.resource.data.bookingFee <= request.resource.data.calculatedPrice
+        && request.resource.data.discount == request.resource.data.calculatedPrice - request.resource.data.bookingFee
+        && request.resource.data.paidAmount is number
+        && request.resource.data.paidAmount >= 0
+        && request.resource.data.paidAmount <= request.resource.data.bookingFee
+      ) || (
+        // Public customer requests cannot set an admin-negotiated fee or discount.
+        request.resource.data.status == "pending"
+        && request.resource.data.bookingType == "customer_request"
+        && request.resource.data.bookingSource == "website"
+        && request.resource.data.bookingFee == null
+        && request.resource.data.showFeePublicly == false
+        && request.resource.data.recurringBookingId == null
+        && request.resource.data.businessId == "frenzy_001"
+        && request.resource.data.keys().hasOnly([
+          "customerName", "phone", "email", "facility", "bookingDate",
+          "startSlot", "durationSlots", "durationMinutes", "endDate", "endSlot",
+          "status", "bookingType", "bookingSource", "bookingFee", "feeCurrency",
+          "showFeePublicly", "calculatedPrice", "paidAmount", "paymentMethod",
+          "paymentStatus", "recurringBookingId", "notes", "businessId", "createdAt",
+          "updatedAt", "approvedAt", "rejectedAt"
+        ])
+        && !request.resource.data.keys().hasAny(["discount"])
+      );
+
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /recurringBookings/{seriesId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

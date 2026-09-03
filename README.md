@@ -397,6 +397,10 @@ git push -u origin main
 - This was built and reviewed as code; it hasn't been exercised against a live Firebase project in this environment (no network access here), so run through the test list below once your Firebase project is wired up.
 
 ## ⚠️ Required Firestore rules update before deploying this version
+The complete deployable rules are also included in [`firestore.rules`](./firestore.rules). Copy that file into Firebase Console → Firestore Database → Rules, or deploy it with the Firebase CLI.
+
+The admin booking rule now allows and validates the `discount` field. It requires `discount = calculatedPrice - bookingFee`, requires `bookingFee <= calculatedPrice`, and keeps `paidAmount` separate with `paidAmount <= bookingFee`.
+
 This update added `calculatedPrice`, `paidAmount`, `paymentMethod`, and `paymentStatus` to what the public site writes when a customer submits a booking request. The **documented** rules above already include these fields in the public `bookings` create rule's `hasOnly([...])` field whitelist — but that's only this file. **Your actual, deployed Firestore Security Rules (in the Firebase console, or wherever your live rules file is) must be updated to match before you publish these updated `index.html`/`admin.html`/`pricing.js` files.** If you deploy the new site code against the old, un-updated rules, every customer booking request will fail with a permission-denied error because the write contains fields the live rule doesn't recognize. Copy the updated `allow create` rule for `/bookings/{bookingId}` above into your live rules and publish it first.
 
 ## Suggested test pass
