@@ -193,7 +193,7 @@
   .facility-card--hero:nth-child(2){min-height:218px;}
   .facility-card--hero:nth-child(3){min-height:218px;}
   .facility-card--hero:after{content:"";position:absolute;width:150px;height:150px;right:-60px;bottom:-70px;border:1px solid rgba(0,184,217,.18);border-radius:50%;box-shadow:0 0 0 22px rgba(0,184,217,.04),0 0 0 44px rgba(0,184,217,.03);pointer-events:none;z-index:-1;}
-  .facility-illustration{position:absolute;right:-18px;bottom:-10px;width:56%;height:72%;color:var(--pool);opacity:.17;pointer-events:none;z-index:-1;transition:transform .3s ease,opacity .3s ease;}
+  .facility-illustration{position:absolute;right:-18px;bottom:-10px;width:56%;height:72%;color:var(--pool);opacity:.17;pointer-events:none;z-index:0;transition:transform .3s ease,opacity .3s ease;}
   .facility-illustration.futsal{color:var(--flare);}.facility-illustration.pool{color:var(--pool);}.facility-illustration.carrom{color:#1fa25c;}
   .facility-card:hover .facility-illustration{opacity:.26;transform:translate(-4px,-4px) scale(1.03);}
   .facility-card--support .facility-illustration{right:-8px;bottom:-12px;width:42%;height:82%;opacity:.1;}.facility-card--support:hover .facility-illustration{opacity:.18;}
@@ -223,6 +223,24 @@
   .facility-grid > .facility-card:nth-child(6){grid-column:2;grid-row:3;}
   @media (max-width:900px){.facility-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;}.facility-card--hero:first-child{grid-row:auto;grid-column:span 2;min-height:220px;}.facility-card--hero:nth-child(2),.facility-card--hero:nth-child(3){min-height:210px;}.facility-grid > .facility-card:nth-child(4),.facility-grid > .facility-card:nth-child(5),.facility-grid > .facility-card:nth-child(6){grid-column:auto;grid-row:auto;}}
   @media (max-width:560px){.facility-grid{grid-template-columns:1fr;gap:12px;}.facility-card--hero:first-child,.facility-card--hero:nth-child(2),.facility-card--hero:nth-child(3){grid-column:auto;min-height:190px;}.facility-card--support{min-height:112px;padding:16px;}.facility-card--support .facility-explore{display:none;}}
+  /* Facilities editorial refinement: a deliberate big-to-small composition with no empty cells. */
+  .facility-grid{grid-template-columns:1.2fr 1fr .9fr;grid-template-rows:repeat(4,minmax(120px,auto));gap:18px;}
+  .facility-card--hero:first-child{grid-column:1;grid-row:1 / span 4;min-height:100%;}
+  .facility-card--hero:nth-child(2){grid-column:2;grid-row:1 / span 2;min-height:100%;}
+  .facility-card--hero:nth-child(3){grid-column:3;grid-row:1;min-height:100%;}
+  .facility-grid > .facility-card:nth-child(4){grid-column:3;grid-row:2;min-height:100%;}
+  .facility-grid > .facility-card:nth-child(5){grid-column:2;grid-row:3;min-height:100%;}
+  .facility-grid > .facility-card:nth-child(6){grid-column:3;grid-row:3;}
+  .facility-grid > .facility-card:nth-child(7){grid-column:2;grid-row:4;}
+  .facility-grid > .facility-card:nth-child(8){grid-column:3;grid-row:4;}
+  .facility-card--coming{background:linear-gradient(145deg,#eef7f7,#e4eeee);border-style:dashed;opacity:.86;}
+  .facility-card--coming .facility-card-copy{opacity:.82;}
+  .facility-card--coming .facility-illustration{color:var(--navy);opacity:.12;}
+  .facility-card--coming:hover{opacity:1;}
+  .coming-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid rgba(255,90,54,.35);border-radius:4px;color:var(--flare);font:700 .6rem var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;}
+  .coming-badge:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--flare);}
+  @media (max-width:900px){.facility-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;}.facility-grid > .facility-card{grid-column:auto !important;grid-row:auto !important;min-height:180px;}}
+  @media (max-width:560px){.facility-grid{grid-template-columns:1fr;grid-template-rows:auto;gap:12px;}.facility-grid > .facility-card{grid-column:auto !important;grid-row:auto !important;min-height:170px;}.facility-card--hero:first-child{min-height:210px;}}
 
   /* ---------- REVIEWS ---------- */
   .reviews{background:var(--navy); color:#fff; text-align:center;}
@@ -534,6 +552,12 @@
             <div class="facility-card-copy"><h4>Carrom</h4><p>Indoor carrom boards for a quick game between matches.</p></div><svg class="facility-illustration carrom" viewBox="0 0 220 160" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="48" y="18" width="124" height="124" rx="9"/><rect x="62" y="32" width="96" height="96" rx="5"/><circle cx="76" cy="46" r="8"/><circle cx="144" cy="46" r="8"/><circle cx="76" cy="114" r="8"/><circle cx="144" cy="114" r="8"/><circle cx="110" cy="80" r="10" fill="currentColor"/><circle cx="93" cy="65" r="7"/><circle cx="129" cy="96" r="7"/><path d="M92 64l-17-18M128 95l20 18"/><circle cx="69" cy="37" r="4" fill="currentColor"/><circle cx="151" cy="123" r="4" fill="currentColor"/></svg>
           </div>
           <button type="button" class="facility-explore">Explore <span aria-hidden="true">→</span></button>
+        </article>
+        <article class="facility-card facility-card--coming">
+          <div class="facility-card-top"><span class="coming-badge">Coming Soon</span></div><div class="facility-card-copy"><h4>Billiard Pool</h4><p>A premium billiards space is coming soon for relaxed competitive play.</p></div><svg class="facility-illustration" viewBox="0 0 180 130" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="28" y="38" width="124" height="58" rx="7"/><path d="M42 52h96M42 82h96"/><circle cx="68" cy="68" r="6"/><circle cx="115" cy="68" r="6"/><path d="M18 115l58-44M162 18l-42 36"/><circle cx="18" cy="115" r="4" fill="currentColor"/><circle cx="162" cy="18" r="4" fill="currentColor"/></svg>
+        </article>
+        <article class="facility-card facility-card--coming">
+          <div class="facility-card-top"><span class="coming-badge">Coming Soon</span></div><div class="facility-card-copy"><h4>Gaming Zone / Gaming Station</h4><p>A dedicated gaming station for high-energy sessions is coming soon.</p></div><svg class="facility-illustration" viewBox="0 0 180 130" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="48" y="18" width="84" height="56" rx="5"/><path d="M72 104h36M90 74v30M60 104h60"/><path d="M28 90c12-12 26-12 38 0M114 90c12-12 26-12 38 0"/><circle cx="49" cy="83" r="8"/><circle cx="131" cy="83" r="8"/></svg>
         </article>
         <article class="facility-card facility-card--support">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span><div class="facility-card-copy"><h4>Always Open</h4><p>No fixed hours — call ahead to lock in your slot any time.</p></div><svg class="facility-illustration" viewBox="0 0 160 120" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="80" cy="60" r="38"/><path d="M80 38v24l16 9"/><path d="M25 60h12M123 60h12M80 5v12M80 103v12"/></svg><button type="button" class="facility-explore">View <span aria-hidden="true">→</span></button>
