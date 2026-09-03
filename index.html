@@ -125,12 +125,18 @@
     font-size:1.08rem; color:#b9c9d1; max-width:520px; margin-bottom:32px;
   }
   .hero-cta{display:flex; gap:14px; flex-wrap:wrap;}
-  .academy-promo{display:flex; align-items:center; justify-content:space-between; gap:18px; max-width:720px; margin:22px 0 24px; padding:12px 16px; border:1px solid rgba(63,224,255,.42); border-left:3px solid var(--pool-bright); border-radius:7px; background:linear-gradient(100deg,rgba(0,184,217,.15),rgba(6,26,43,.56)); box-shadow:0 0 24px rgba(0,184,217,.12);}
-  .academy-promo-copy{display:flex; align-items:center; gap:10px; flex-wrap:wrap; color:#d8f9ff; font-size:.9rem; line-height:1.45;}
-  .academy-promo-copy strong{color:#fff;}
-  .academy-promo-link{flex:0 0 auto; color:var(--pool-bright); font-family:var(--mono); font-size:.76rem; font-weight:800; letter-spacing:.04em; text-decoration:none; white-space:nowrap;}
-  .academy-promo-link:hover{color:#fff; text-decoration:underline;}
-  @media (max-width:560px){.academy-promo{align-items:flex-start; flex-direction:column; gap:8px;}.academy-promo-link{padding-top:2px;}}
+  .academy-promo{position:relative; display:flex; align-items:center; justify-content:space-between; gap:22px; max-width:760px; margin:20px 0 28px; padding:15px 18px 15px 20px; overflow:hidden; border:1px solid rgba(63,224,255,.62); border-left:4px solid var(--pool-bright); border-radius:10px; background:linear-gradient(105deg,rgba(0,184,217,.22),rgba(6,26,43,.84) 68%); box-shadow:0 0 0 1px rgba(63,224,255,.08),0 0 30px rgba(0,184,217,.22),inset 0 1px rgba(255,255,255,.08); text-decoration:none; transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;}
+  .academy-promo:before{content:""; position:absolute; inset:0; background:linear-gradient(90deg,rgba(63,224,255,.1),transparent 45%); pointer-events:none;}
+  .academy-promo:hover{transform:translateY(-2px); border-color:var(--pool-bright); box-shadow:0 0 0 1px rgba(63,224,255,.14),0 0 42px rgba(0,184,217,.34),inset 0 1px rgba(255,255,255,.12);}
+  .academy-promo-copy{position:relative; z-index:1; display:grid; gap:4px; color:#d8f9ff; font-size:.86rem; line-height:1.4;}
+  .academy-promo-kicker{font-family:var(--mono); color:var(--pool-bright); font-size:.67rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase;}
+  .academy-promo-title{color:#fff; font-family:var(--display); font-size:1.2rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase;}
+  .academy-promo-offer{color:#cbeaf0; font-size:.8rem;}.academy-promo-offer strong{color:#fff;}
+  .academy-promo-link{position:relative; z-index:1; flex:0 0 auto; display:inline-flex; align-items:center; gap:7px; padding:10px 13px; border-radius:5px; background:var(--pool-bright); color:var(--navy); font-family:var(--mono); font-size:.74rem; font-weight:800; letter-spacing:.03em; text-decoration:none; white-space:nowrap;}
+  .academy-promo-link:hover{background:#fff; color:var(--navy);}
+  .academy-promo-art{position:absolute; right:-12px; bottom:-32px; width:142px; height:142px; object-fit:contain; opacity:.9; filter:drop-shadow(0 0 18px rgba(63,224,255,.5)); pointer-events:none;}
+  @media (max-width:650px){.academy-promo{align-items:flex-start; padding-right:14px;}.academy-promo-copy{padding-right:90px;}.academy-promo-art{width:112px;height:112px;right:-18px;bottom:-24px;opacity:.58;}.academy-promo-link{align-self:center;}}
+  @media (max-width:430px){.academy-promo{display:grid; gap:10px;}.academy-promo-copy{padding-right:70px;}.academy-promo-link{justify-self:start;}}
   .btn{
     display:inline-flex; align-items:center; gap:8px;
     font-family:var(--body); font-weight:700; font-size:0.92rem;
@@ -440,12 +446,13 @@
     </svg>
     <div class="wrap hero-inner">
       <span class="status-pill"><span class="blip"></span>Always Open</span>
-      <a class="academy-promo" href="academy.html" aria-label="Join the Swimming Academy">
-        <span class="academy-promo-copy"><span aria-hidden="true">🌊</span><strong>Join Swimming Academy</strong><span>| 1 Month - 3,900 BDT <span>(Free Swimming Dress included!)</span></span></span>
-        <span class="academy-promo-link">Join Now &rarr;</span>
-      </a>
       <p class="eyebrow">Pahartali &middot; Chittagong, Bangladesh</p>
       <h1>Frenzy <span>Sports Arena</span></h1>
+      <a class="academy-promo" href="academy.html" aria-label="Join the Swimming Academy">
+        <span class="academy-promo-copy"><span class="academy-promo-kicker">New at Frenzy · Limited academy intake</span><span class="academy-promo-title">🌊 Join Swimming Academy</span><span class="academy-promo-offer"><strong>1 Month · 12 Classes · 3,900 BDT</strong> · Free swimming dress included</span></span>
+        <span class="academy-promo-link">Join Now <span aria-hidden="true">&rarr;</span></span>
+        <img class="academy-promo-art" src="assets/swimming-academy-wave.png" alt="" aria-hidden="true">
+      </a>
       <p class="lede">Artificial futsal turf and a swimming pool, side by side in Pahartali. Book your slot and bring the energy.</p>
       <div class="hero-cta">
         <a href="#book" class="btn btn-flare">Request a Slot</a>
