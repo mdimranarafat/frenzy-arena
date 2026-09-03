@@ -1006,7 +1006,9 @@
       const payment = paymentSnapshot(r);
       const originalPrice = Math.max(0, Number(r.calculatedPrice) || 0);
       const discount = Math.max(0, originalPrice - payment.total);
-      const feeText = r.bookingFee != null ? `${formatBDT(payment.total)}${discount > 0 ? ` · Discount ${formatBDT(discount)}` : ''}${r.showFeePublicly ? '' : ' (hidden)'}` : '—';
+      const feeText = r.bookingFee != null
+        ? `${discount > 0 ? `${formatBDT(discount)} Discount · ` : ''}${formatBDT(payment.total)}${r.showFeePublicly ? '' : ' (hidden)'}`
+        : '—';
       tr.innerHTML = `
         <td>
           <div class="cell-name">${escapeHtml(r.customerName || '—')}</div>
@@ -1018,7 +1020,7 @@
           <div class="cell-sub">${slotLabel(r.startSlot)} – ${slotLabel(r.endSlot)}${r.endDate && r.endDate !== r.bookingDate ? ' (+1 day)' : ''} (${durationLabel(r.durationSlots)})</div>
         </td>
         <td><span class="type-pill">${TYPE_LABEL[r.bookingType] || r.bookingType}</span></td>
-        <td class="cell-sub">${formatBDT(payment.total)}</td>
+        <td class="cell-sub">${formatBDT(originalPrice)}</td>
         <td class="payment-cell"><strong>${formatBDT(payment.paid)} / ${formatBDT(payment.total)}</strong><div class="payment-meta">Due ${formatBDT(payment.due)}</div><span class="payment-pill ${payment.status}">${paymentStatusLabel(payment.status)}</span></td>
         <td class="cell-sub">${feeText}</td>
         <td class="notes-cell">${r.notes ? escapeHtml(r.notes) : '—'}</td>
