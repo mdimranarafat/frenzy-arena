@@ -1653,7 +1653,7 @@
         occurrences.push({ date, intervals, conflict: checks.some(s => s.exists()) });
       }
       pendingCorpPlan = {
-        occurrences, facility, start, duration,
+        occurrences, facility, start, duration, startDate: cb.startDate.value, endDate: cb.endDate.value, daysOfWeek: [...selectedDays],
         name: cb.name.value.trim(), phone: normalizePhone(cb.phone.value), email: cb.email.value.trim() || null,
         feeType: cb.feeType.value, fee: cb.fee.value ? Number(cb.fee.value) : null, showFee: cb.showFee.checked,
         notes: cb.notes.value.trim() || null,
@@ -1695,52 +1695,68 @@
 
   async function createRecurringSeries(plan, occurrences, skippedDates = []) {
     if (!occurrences.length) { alert('No open dates left to book — series cancelled.'); closeOverlay('corpOverlay'); return; }
+    const createdDates = [];
     try {
-      const seriesRef = doc(collection(db, 'recurringBookings'));
-      await writeBatch(db).set(seriesRef, {
-        customerName: plan.name, phone: plan.phone, email: plan.email, facility: plan.facility, businessId: BUSINESS_ID,
-        pattern: 'weekly', daysOfWeek: [...selectedDays], startDate: cb.startDate.value, endDate: cb.endDate.value,
-        startSlot: plan.start, durationSlots: plan.duration,
-        feeType: plan.feeType, bookingFee: plan.fee, feeCurrency: 'BDT', showFeePublicly: plan.showFee,
-        notes: plan.notes, status: 'active', occurrenceCount: occurrences.length, skippedDates,
-        createdAt: serverTimestamp(),
-      }).commit();
-
+      // Re-check immediately before writing so a slot taken after the availability screen cannot be overwritten.
+      const latest = [];
       for (const occ of occurrences) {
-        const end = endPoint(occ.date, plan.start, plan.duration);
-        // Priced per-occurrence, not once for the whole series — a pattern spanning more than one
-        // day of the week (e.g. Sunday AND Thursday) can have different prices on different dates.
-        const price = calculateBookingPrice({ facility: plan.facility, bookingDate: occ.date, startSlot: plan.start, durationSlots: plan.duration });
-        const perOccBatch = writeBatch(db);
-        const bookingRef = doc(collection(db, 'bookings'));
-        perOccBatch.set(bookingRef, {
-          customerName: plan.name, phone: plan.phone, email: plan.email, facility: plan.facility, businessId: BUSINESS_ID,
-          bookingDate: occ.date, startSlot: plan.start, durationSlots: plan.duration, durationMinutes: plan.duration * 30,
-          endDate: end.date, endSlot: end.slot,
-          status: 'approved', bookingType: 'corporate_recurring', bookingSource: 'admin',
-          bookingFee: plan.feeType === 'perOccurrence' ? plan.fee : null,
-          feeCurrency: 'BDT', showFeePublicly: plan.showFee, recurringBookingId: seriesRef.id,
-          calculatedPrice: price.finalPrice,
-          paidAmount: 0, paymentMethod: null, paymentStatus: 'unpaid',
-          notes: plan.notes, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
-          approvedAt: serverTimestamp(), rejectedAt: null,
-        });
-        occ.intervals.forEach(({date, slot}) => {
-          perOccBatch.set(doc(db, 'slots', slotDocId(plan.facility, date, slot)), {
-            facility: plan.facility, businessId: BUSINESS_ID, date, slot, status: 'approved', bookingId: bookingRef.id, customerName: plan.name,
-            startSlot: plan.start, durationSlots: plan.duration,
-            bookingFee: plan.feeType === 'perOccurrence' ? plan.fee : null, showFeePublicly: plan.showFee,
-          });
-        });
-        await perOccBatch.commit();
+        const checks = await Promise.all(occ.intervals.map(iv => getDoc(doc(db, 'slots', slotDocId(plan.facility, iv.date, iv.slot)))));
+        if (checks.some(s => s.exists())) skippedDates.push(occ.date); else latest.push(occ);
       }
-      pendingCorpPlan = null;
-      closeOverlay('corpOverlay');
+      if (!latest.length) {
+        pendingCorpPlan = null; closeOverlay('corpOverlay');
+        alert(`No occurrences were created. Conflicting dates: ${skippedDates.join(', ')}.`); return;
+      }
+
+      // Keep each batch below Firestore's 500-operation limit. A batch writes the series, bookings, and slots atomically.
+      const seriesRef = doc(collection(db, 'recurringBookings'));
+      const bookingEntries = [];
+      let batch = writeBatch(db); let operationCount = 0; let seriesWritten = false;
+      const flush = async () => { if (operationCount) { await batch.commit(); batch = writeBatch(db); operationCount = 0; } };
+      const add = (fn, count = 1) => { fn(batch); operationCount += count; };
+      add(b => b.set(seriesRef, {
+        customerName: plan.name, phone: plan.phone, email: plan.email, facility: plan.facility, businessId: BUSINESS_ID,
+        pattern: 'weekly', daysOfWeek: plan.daysOfWeek || [], startDate: plan.startDate, endDate: plan.endDate,
+        startSlot: plan.start, durationSlots: plan.duration, feeType: plan.feeType,
+        bookingFee: plan.feeType === 'perOccurrence' ? Number(plan.fee) || 0 : null, feeCurrency: 'BDT', showFeePublicly: !!plan.showFee,
+        notes: plan.notes || null, status: 'active', occurrenceCount: latest.length, skippedDates: [...new Set(skippedDates)],
+        createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+      }));
+      seriesWritten = true;
+      for (const occ of latest) {
+        // Use the same calculation as New Booking: original calculated price, final booking fee, derived discount.
+        const end = endPoint(occ.date, plan.start, plan.duration);
+        const price = calculateBookingPrice({ facility: plan.facility, bookingDate: occ.date, startSlot: plan.start, durationSlots: plan.duration });
+        const bookingFee = plan.feeType === 'perOccurrence' ? Math.min(Math.max(Number(plan.fee) || 0, 0), price.finalPrice) : price.finalPrice;
+        const bookingRef = doc(collection(db, 'bookings'));
+        if (operationCount + 1 + occ.intervals.length > 490) await flush();
+        add(b => b.set(bookingRef, {
+          customerName: plan.name, phone: plan.phone, email: plan.email || null, facility: plan.facility, businessId: BUSINESS_ID,
+          bookingDate: occ.date, startSlot: plan.start, durationSlots: plan.duration, durationMinutes: plan.duration * 30,
+          endDate: end.date, endSlot: end.slot, status: 'approved', bookingType: 'corporate_recurring', bookingSource: 'admin',
+          bookingFee, feeCurrency: 'BDT', showFeePublicly: !!plan.showFee, recurringBookingId: seriesRef.id,
+          calculatedPrice: price.finalPrice, discount: price.finalPrice - bookingFee, paidAmount: 0, paymentMethod: null, paymentStatus: 'unpaid',
+          notes: plan.notes || null, createdAt: serverTimestamp(), updatedAt: serverTimestamp(), approvedAt: serverTimestamp(), rejectedAt: null,
+        }));
+        occ.intervals.forEach(({date, slot}) => add(b => b.set(doc(db, 'slots', slotDocId(plan.facility, date, slot)), {
+          facility: plan.facility, businessId: BUSINESS_ID, date, slot, status: 'approved', bookingId: bookingRef.id, customerName: plan.name,
+          startSlot: plan.start, durationSlots: plan.duration, bookingFee, showFeePublicly: !!plan.showFee,
+        })));
+        bookingEntries.push({ date: occ.date, bookingId: bookingRef.id });
+      }
+      await flush();
+      createdDates.push(...bookingEntries.map(entry => entry.date));
+      pendingCorpPlan = null; closeOverlay('corpOverlay');
+      const conflictMessage = skippedDates.length ? ` Skipped conflicting dates: ${[...new Set(skippedDates)].join(', ')}.` : '';
+      alert(`Recurring series created successfully. ${createdDates.length} occurrence(s) created.${conflictMessage}`);
     } catch (err) {
-      console.error(err);
-      alert('Could not create the recurring series — see console. Some occurrences may already be booked.');
+      console.error('Recurring series creation failed:', err);
+      pendingCorpPlan = null; closeOverlay('corpOverlay');
+      const partialMessage = createdDates.length ? ` ${createdDates.length} occurrence(s) were saved before the failure: ${createdDates.join(', ')}.` : '';
+      alert(`Recurring series creation stopped because of a database error.${partialMessage} Error: ${err && err.message ? err.message : 'unknown Firestore error'}`);
     }
   }
+
 
   // ---------- RECURRING TABLE + OCCURRENCES ----------
   function renderRecurringTable() {
