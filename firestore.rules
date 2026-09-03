@@ -115,7 +115,7 @@ service cloud.firestore {
 
     match /academyRequests/{requestId} {
       // Public visitors may submit only a new registration with the required participant fields.
-      allow create: if request.resource.data.keys().hasOnly([
+      allow create: if isAdmin() || request.resource.data.keys().hasOnly([
         "requestId", "participantName", "phone", "age", "gender", "dressSize",
         "status", "source", "notes", "createdAt", "updatedAt"
       ])
@@ -130,6 +130,18 @@ service cloud.firestore {
       && request.resource.data.status == "new"
       && request.resource.data.source == "website_whatsapp";
       allow read, update, delete: if isAdmin();
+    }
+
+    match /academyStudents/{studentId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /academyCourses/{courseId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /academyPayments/{paymentId} {
+      allow read, write: if isAdmin();
     }
 
     match /recurringBookings/{seriesId} {
