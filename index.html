@@ -280,13 +280,16 @@
   /* Informational-only card: shows a previous booking's end boundary at the same
      time label as the next slot's actionable Open card. Not clickable. */
   .cal-slot.end-boundary{opacity:0.55; cursor:default;}
-  .cal-slot.booking-segment{min-width:0;}
+  .cal-slot.booking-segment{min-width:0; align-items:center; justify-content:center; text-align:center;}
   .cal-slot.booking-segment.continuation{border-top-left-radius:0; border-bottom-left-radius:0;}
   .cal-slot.booking-segment.segment-end{border-top-right-radius:0; border-bottom-right-radius:0;}
   .cal-slot.booking-segment.continuation.segment-end{border-radius:0;}
+  .cal-slot.booking-segment .cal-slot-time,
+  .cal-slot.booking-segment .cal-slot-status,
+  .cal-slot.booking-segment .cal-slot-name{max-width:100%; min-width:0; overflow-wrap:anywhere; white-space:normal;}
   .cal-slot.booking-segment.continuation .cal-slot-time,
   .cal-slot.booking-segment.continuation .cal-slot-status,
-  .cal-slot.booking-segment.continuation .cal-slot-name{visibility:hidden;}
+  .cal-slot.booking-segment.continuation .cal-slot-name{font-size:0.68rem; color:var(--slot-booked-name);}
   .cal-slot-time{font-size:0.85rem; font-weight:800; color:#fff;}
   .cal-slot-status{font-size:0.72rem; color:#b9c9d1; font-family:var(--mono);}
   .cal-slot-endtag{color:#8ba0a9; font-weight:600;}
@@ -981,17 +984,28 @@
   function sameBookingSlot(a, b) {
     return !!a && !!b && !!a.bookingId && a.bookingId === b.bookingId && a.status === b.status;
   }
-  function renderSlotCard(slot, s, stateClass, label, span, continuation = false, segmentEnd = false) {
+  function bookingTimeRange(s) {
+    const start = Number(s.startSlot);
+    const duration = Number(s.durationSlots);
+    if (!Number.isFinite(start) || !Number.isFinite(duration)) return slotLabel(start);
+    const end = endPoint(currentDate, start, duration);
+    return `${slotLabel(start)} - ${slotLabel(end.slot)}${end.date !== currentDate ? ' (+1 day)' : ''}`;
+  }
+  function renderSlotCard(slot, s, stateClass, label, span, continuation = false, segmentEnd = false, columns = calendarColumnCount()) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = `cal-slot ${stateClass}${span > 1 || continuation ? ' booking-segment' : ''}${continuation ? ' continuation' : ''}${segmentEnd ? ' segment-end' : ''}`;
-    btn.style.gridColumn = `span ${span}`;
+    const columnStart = (slot % columns) + 1;
+    btn.style.gridColumn = `${columnStart} / span ${span}`;
     btn.disabled = stateClass === 'past' || stateClass === 'pending';
-    const nameLine = (!continuation && stateClass === 'booked' && s.customerName)
+    const timeText = stateClass === 'booked' ? bookingTimeRange(s) : slotLabel(slot);
+    const statusText = continuation ? '↳ Continues' : label;
+    const nameLine = stateClass === 'booked' && s.customerName
       ? `<span class="cal-slot-name">${escapeHtml(s.customerName)}</span>` : '';
+    btn.setAttribute('aria-label', `${timeText} | ${label}${s.customerName ? ` | ${s.customerName}` : ''}`);
     btn.innerHTML = `
-      <span class="cal-slot-time">${continuation ? '' : slotLabel(slot)}</span>
-      <span class="cal-slot-status">${continuation ? '' : label}</span>
+      <span class="cal-slot-time">${timeText}</span>
+      <span class="cal-slot-status">${statusText}</span>
       ${nameLine}
     `;
     if (stateClass === 'open') btn.addEventListener('click', () => openRequestPanel(slot));
@@ -1026,7 +1040,7 @@
         const span = Math.min(runLength, rowRemaining);
         const continuation = slot > 0 && sameBookingSlot(s, latestSlots[slot - 1]);
         const segmentEnd = span === rowRemaining || span === runLength;
-        els.grid.appendChild(renderSlotCard(slot, s, stateClass, label, span, continuation, segmentEnd));
+        els.grid.appendChild(renderSlotCard(slot, s, stateClass, label, span, continuation, segmentEnd, columns));
         slot += span;
         continue;
       }
@@ -1035,11 +1049,11 @@
       slot++;
     }
     els.status.hidden = true;
-    els.grid.hidden = false;
+        els.grid.hidden = false;
   }
-
-
+  window.addEventListener('resize', () => { if (!els.grid.hidden) renderGrid(); });
   function subscribeToDate(dateStr) {
+
     if (unsubscribe) unsubscribe();
     if (unsubscribeNextDay) unsubscribeNextDay();
     els.status.hidden = false;
