@@ -201,8 +201,21 @@
   .payment-summary div{background:rgba(255,255,255,0.06); border-radius:5px; padding:8px;}
   .payment-summary span{display:block; font-size:0.7rem; color:#8ba0a9;}
   .payment-summary strong{display:block; margin-top:2px; font-size:0.92rem;}
-  .reports-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:10px;}
-  .report-card{background:#fff; border:1px solid #e2e8e7; border-radius:8px; padding:14px;}
+  .reports-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:10px; position:relative;}
+  .report-card{background:#fff; border:1px solid #e2e8e7; border-radius:8px; padding:14px; transition:opacity .18s ease, transform .18s ease;}
+  .reports-grid.is-loading .report-card{opacity:.35; transform:translateY(2px);}
+  .reports-grid.is-loading::after{content:'Updating report…'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--navy); font-family:var(--mono); font-size:.78rem; letter-spacing:.04em; background:rgba(255,255,255,.62); border-radius:8px; z-index:1;}
+  .report-toolbar{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:14px;}
+  .report-toolbar h3{margin-bottom:4px;}
+  .report-filter-tabs{display:flex; gap:4px; padding:4px; background:var(--paper); border:1px solid #d7dfde; border-radius:7px;}
+  .report-filter-tab{border:0; border-radius:5px; background:transparent; color:var(--muted); padding:8px 12px; font:700 .76rem var(--body); cursor:pointer;}
+  .report-filter-tab.active{background:var(--navy); color:#fff; box-shadow:0 1px 3px rgba(6,26,43,.18);}
+  .report-range-controls{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:14px;}
+  .report-range-controls select, .report-range-controls input{height:36px; padding:7px 10px; border:1px solid #d7dfde; border-radius:5px; background:var(--paper); color:var(--ink); font:600 .8rem var(--body);}
+  .report-range-controls input[type="date"]{min-width:145px;}
+  .report-range-controls input[type="month"]{min-width:145px;}
+  .report-range-controls [hidden]{display:none;}
+  .report-scope{font-size:.76rem; color:var(--muted); margin-left:auto;}
   .report-card-label{font-family:var(--mono); color:var(--muted); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em;}
   .report-card-value{font-family:var(--display); color:var(--navy); font-size:1.35rem; margin-top:6px;}
   .report-panel{background:#fff; border:1px solid #e2e8e7; border-radius:8px; padding:16px; margin-bottom:20px;}
@@ -217,6 +230,7 @@
   .invoice-total{font-weight:800; font-size:1rem;}
   .invoice-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
   @media (max-width:900px){.reports-grid{grid-template-columns:repeat(3,1fr);}}
+  @media (max-width:650px){.report-toolbar{flex-direction:column;}.report-filter-tabs{width:100%;}.report-filter-tab{flex:1;}.report-scope{margin-left:0;}}
   @media (max-width:520px){.payment-summary{grid-template-columns:1fr;}.reports-grid{grid-template-columns:1fr 1fr;}.invoice-paper{padding:16px;}}
   @media print{body *{visibility:hidden !important;}#invoiceOverlay,#invoiceOverlay *{visibility:visible !important;}#invoiceOverlay{position:static;background:#fff;padding:0;}#invoiceOverlay .adm-panel{max-width:none;border:0;color:#000;}#invoiceOverlay .adm-panel-head,#invoiceOverlay .invoice-actions{display:none;}#invoiceOverlay .adm-body{max-height:none;overflow:visible;padding:0;}#invoiceOverlay .invoice-paper{max-width:none;border:0;}}
   .empty-state{padding:40px 20px; text-align:center; color:var(--muted);}
@@ -611,7 +625,7 @@
 <div class="adm-overlay" id="reportsOverlay" hidden>
   <div class="adm-panel wide">
     <div class="adm-panel-head"><div><div class="adm-panel-title">Revenue &amp; Reports</div><div class="adm-panel-sub">Booking value is separate from collected cash.</div></div><button class="adm-close" data-close="reportsOverlay">&times;</button></div>
-    <div class="adm-body"><div class="report-panel"><h3>Payment Summary</h3><div class="reports-grid"><div class="report-card"><div class="report-card-label">Total Bookings</div><div class="report-card-value" id="reportBookings">0</div></div><div class="report-card"><div class="report-card-label">Total Hours</div><div class="report-card-value" id="reportHours">0</div></div><div class="report-card"><div class="report-card-label">Total Revenue</div><div class="report-card-value" id="reportRevenue">৳0</div></div><div class="report-card"><div class="report-card-label">Paid Amount</div><div class="report-card-value" id="reportPaid">৳0</div></div><div class="report-card"><div class="report-card-label">Due Amount</div><div class="report-card-value" id="reportDue">৳0</div></div></div></div><div class="report-panel"><h3>Collected by Method</h3><div class="report-methods" id="reportMethods"></div></div></div>
+    <div class="adm-body"><div class="report-panel"><div class="report-toolbar"><div><h3>Payment Summary</h3><div class="report-scope" id="reportScope">Today</div></div><div class="report-filter-tabs" role="group" aria-label="Report timeframe"><button type="button" class="report-filter-tab active" data-report-mode="daily">Daily</button><button type="button" class="report-filter-tab" data-report-mode="weekly">Weekly</button><button type="button" class="report-filter-tab" data-report-mode="monthly">Monthly</button></div></div><div class="report-range-controls"><select id="reportPreset" aria-label="Report period"></select><input type="date" id="reportDate" aria-label="Report date"><input type="date" id="reportStartDate" aria-label="Report start date" hidden><span id="reportRangeSeparator" hidden>to</span><input type="date" id="reportEndDate" aria-label="Report end date" hidden><input type="month" id="reportMonth" aria-label="Report month" hidden></div><div class="reports-grid" id="reportsGrid"><div class="report-card"><div class="report-card-label">Total Bookings</div><div class="report-card-value" id="reportBookings">0</div></div><div class="report-card"><div class="report-card-label">Total Hours</div><div class="report-card-value" id="reportHours">0</div></div><div class="report-card"><div class="report-card-label">Total Revenue</div><div class="report-card-value" id="reportRevenue">৳0</div></div><div class="report-card"><div class="report-card-label">Paid Amount</div><div class="report-card-value" id="reportPaid">৳0</div></div><div class="report-card"><div class="report-card-label">Due Amount</div><div class="report-card-value" id="reportDue">৳0</div></div></div></div><div class="report-panel"><h3>Collected by Method</h3><div class="report-methods" id="reportMethods"></div></div></div>
   </div>
 </div>
 
@@ -1447,16 +1461,78 @@
   // ---------- REPORTS, INVOICE, AND WHATSAPP ----------
   let currentInvoiceBooking = null;
   function reportBookings() { return allBookings.filter(b => b.status !== 'rejected' && b.status !== 'cancelled'); }
-  function renderReports() {
-    const rows = reportBookings();
-    const totals = rows.reduce((acc, b) => { const p = paymentSnapshot(b); acc.hours += (Number(b.durationSlots) || 0) * 0.5; acc.revenue += p.total; acc.paid += p.paid; acc.due += p.due; if (p.method) acc.methods[p.method] = (acc.methods[p.method] || 0) + p.paid; return acc; }, { hours: 0, revenue: 0, paid: 0, due: 0, methods: {} });
-    document.getElementById('reportBookings').textContent = rows.length;
-    document.getElementById('reportHours').textContent = `${totals.hours % 1 ? totals.hours.toFixed(1) : totals.hours}`;
-    document.getElementById('reportRevenue').textContent = formatBDT(totals.revenue);
-    document.getElementById('reportPaid').textContent = formatBDT(totals.paid);
-    document.getElementById('reportDue').textContent = formatBDT(totals.due);
-    document.getElementById('reportMethods').innerHTML = PAYMENT_METHODS.map(method => `<span><strong>${escapeHtml(method)}:</strong> ${formatBDT(totals.methods[method] || 0)}</span>`).join('');
+  let reportMode = 'daily';
+  let reportPreset = 'today';
+  let reportRefreshTimer = null;
+  const reportControls = {
+    preset: document.getElementById('reportPreset'), date: document.getElementById('reportDate'),
+    start: document.getElementById('reportStartDate'), end: document.getElementById('reportEndDate'),
+    separator: document.getElementById('reportRangeSeparator'), month: document.getElementById('reportMonth'),
+    scope: document.getElementById('reportScope'), grid: document.getElementById('reportsGrid'),
+  };
+  function monthStart(monthKey) { return `${monthKey}-01`; }
+  function nextMonthStart(monthKey) {
+    const d = new Date(`${monthKey}-01T00:00:00Z`); d.setUTCMonth(d.getUTCMonth() + 1);
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-01`;
   }
+  function reportPeriod() {
+    const today = todayKey();
+    if (reportMode === 'daily') {
+      const date = reportPreset === 'yesterday' ? addDays(today, -1) : reportPreset === 'custom' ? (reportControls.date.value || today) : today;
+      return { start: date, end: date, label: date === today ? 'Today' : date === addDays(today, -1) ? 'Yesterday' : date };
+    }
+    if (reportMode === 'weekly') {
+      const thisWeekStart = addDays(today, -dayOfWeek(today));
+      if (reportPreset === 'lastWeek') { const start = addDays(thisWeekStart, -7); return { start, end: addDays(start, 6), label: `Last Week · ${start} – ${addDays(start, 6)}` }; }
+      if (reportPreset === 'custom') { const start = reportControls.start.value || thisWeekStart; const end = reportControls.end.value || start; return { start: start <= end ? start : end, end: start <= end ? end : start, label: `${start <= end ? start : end} – ${start <= end ? end : start}` }; }
+      return { start: thisWeekStart, end: addDays(thisWeekStart, 6), label: `This Week · ${thisWeekStart} – ${addDays(thisWeekStart, 6)}` };
+    }
+    let month = today.slice(0, 7);
+    if (reportPreset === 'lastMonth') { const d = new Date(`${month}-01T00:00:00Z`); d.setUTCMonth(d.getUTCMonth() - 1); month = `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}`; }
+    if (reportPreset === 'custom') month = reportControls.month.value || month;
+    const start = monthStart(month); return { start, end: addDays(nextMonthStart(month), -1), label: month === today.slice(0, 7) ? `This Month · ${month}` : `Month · ${month}` };
+  }
+  function configureReportControls() {
+    const options = reportMode === 'daily' ? [['today','Today'],['yesterday','Yesterday'],['custom','Select Date']]
+      : reportMode === 'weekly' ? [['thisWeek','This Week'],['lastWeek','Last Week'],['custom','Custom Range']]
+      : [['thisMonth','This Month'],['lastMonth','Last Month'],['custom','Select Month']];
+    if (!options.some(([value]) => value === reportPreset)) reportPreset = options[0][0];
+    reportControls.preset.innerHTML = options.map(([value, label]) => `<option value="${value}">${label}</option>`).join('');
+    reportControls.preset.value = reportPreset;
+    reportControls.date.hidden = !(reportMode === 'daily' && reportPreset === 'custom');
+    reportControls.start.hidden = !(reportMode === 'weekly' && reportPreset === 'custom');
+    reportControls.end.hidden = !(reportMode === 'weekly' && reportPreset === 'custom');
+    reportControls.separator.hidden = !(reportMode === 'weekly' && reportPreset === 'custom');
+    reportControls.month.hidden = !(reportMode === 'monthly' && reportPreset === 'custom');
+  }
+  function renderReports() {
+    configureReportControls();
+    reportControls.grid.classList.add('is-loading');
+    clearTimeout(reportRefreshTimer);
+    reportRefreshTimer = setTimeout(() => {
+      const period = reportPeriod();
+      const rows = reportBookings().filter(b => b.bookingDate >= period.start && b.bookingDate <= period.end);
+      const totals = rows.reduce((acc, b) => { const p = paymentSnapshot(b); acc.hours += (Number(b.durationSlots) || 0) * 0.5; acc.revenue += p.total; acc.paid += p.paid; acc.due += p.due; if (p.method) acc.methods[p.method] = (acc.methods[p.method] || 0) + p.paid; return acc; }, { hours: 0, revenue: 0, paid: 0, due: 0, methods: {} });
+      document.getElementById('reportBookings').textContent = rows.length;
+      document.getElementById('reportHours').textContent = `${totals.hours % 1 ? totals.hours.toFixed(1) : totals.hours}`;
+      document.getElementById('reportRevenue').textContent = formatBDT(totals.revenue);
+      document.getElementById('reportPaid').textContent = formatBDT(totals.paid);
+      document.getElementById('reportDue').textContent = formatBDT(totals.due);
+      document.getElementById('reportMethods').innerHTML = PAYMENT_METHODS.map(method => `<span><strong>${escapeHtml(method)}:</strong> ${formatBDT(totals.methods[method] || 0)}</span>`).join('');
+      reportControls.scope.textContent = `${period.label} · ${rows.length} booking${rows.length === 1 ? '' : 's'}`;
+      reportControls.grid.classList.remove('is-loading');
+    }, 120);
+  }
+  document.querySelectorAll('[data-report-mode]').forEach(tab => tab.addEventListener('click', () => {
+    reportMode = tab.dataset.reportMode; reportPreset = reportMode === 'daily' ? 'today' : reportMode === 'weekly' ? 'thisWeek' : 'thisMonth';
+    document.querySelectorAll('[data-report-mode]').forEach(t => t.classList.toggle('active', t === tab)); renderReports();
+  }));
+  reportControls.preset.addEventListener('change', () => { reportPreset = reportControls.preset.value; renderReports(); });
+  [reportControls.date, reportControls.start, reportControls.end, reportControls.month].forEach(input => input.addEventListener('change', renderReports));
+  reportControls.date.value = todayKey();
+  reportControls.start.value = addDays(todayKey(), -dayOfWeek(todayKey()));
+  reportControls.end.value = addDays(reportControls.start.value, 6);
+  reportControls.month.value = todayKey().slice(0, 7);
   function invoiceNumber(r) { return `FRZ-${String(r.bookingDate || todayKey()).replace(/-/g, '')}-${String(r.id || '').slice(0, 6).toUpperCase()}`; }
   function bookingTimeText(r) { return `${slotLabel(r.startSlot)} - ${slotLabel(r.endSlot)}${r.endDate && r.endDate !== r.bookingDate ? ' (+1 day)' : ''}`; }
   function invoicePriceBreakdown(r) {
