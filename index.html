@@ -280,6 +280,13 @@
   /* Informational-only card: shows a previous booking's end boundary at the same
      time label as the next slot's actionable Open card. Not clickable. */
   .cal-slot.end-boundary{opacity:0.55; cursor:default;}
+  .cal-slot.booking-segment{min-width:0;}
+  .cal-slot.booking-segment.continuation{border-top-left-radius:0; border-bottom-left-radius:0;}
+  .cal-slot.booking-segment.segment-end{border-top-right-radius:0; border-bottom-right-radius:0;}
+  .cal-slot.booking-segment.continuation.segment-end{border-radius:0;}
+  .cal-slot.booking-segment.continuation .cal-slot-time,
+  .cal-slot.booking-segment.continuation .cal-slot-status,
+  .cal-slot.booking-segment.continuation .cal-slot-name{visibility:hidden;}
   .cal-slot-time{font-size:0.85rem; font-weight:800; color:#fff;}
   .cal-slot-status{font-size:0.72rem; color:#b9c9d1; font-family:var(--mono);}
   .cal-slot-endtag{color:#8ba0a9; font-weight:600;}
@@ -967,50 +974,70 @@
     return card;
   }
 
+    function calendarColumnCount() {
+    return window.matchMedia('(min-width:900px)').matches ? 7
+      : window.matchMedia('(min-width:600px)').matches ? 4 : 2;
+  }
+  function sameBookingSlot(a, b) {
+    return !!a && !!b && !!a.bookingId && a.bookingId === b.bookingId && a.status === b.status;
+  }
+  function renderSlotCard(slot, s, stateClass, label, span, continuation = false, segmentEnd = false) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `cal-slot ${stateClass}${span > 1 || continuation ? ' booking-segment' : ''}${continuation ? ' continuation' : ''}${segmentEnd ? ' segment-end' : ''}`;
+    btn.style.gridColumn = `span ${span}`;
+    btn.disabled = stateClass === 'past' || stateClass === 'pending';
+    const nameLine = (!continuation && stateClass === 'booked' && s.customerName)
+      ? `<span class="cal-slot-name">${escapeHtml(s.customerName)}</span>` : '';
+    btn.innerHTML = `
+      <span class="cal-slot-time">${continuation ? '' : slotLabel(slot)}</span>
+      <span class="cal-slot-status">${continuation ? '' : label}</span>
+      ${nameLine}
+    `;
+    if (stateClass === 'open') btn.addEventListener('click', () => openRequestPanel(slot));
+    if (stateClass === 'booked') btn.addEventListener('click', () => openDetailPanel(s));
+    return btn;
+  }
   function renderGrid() {
     const isToday = currentDate === TODAY;
     const { slot: nowSlot } = dhakaNow();
-
+    const columns = calendarColumnCount();
     els.grid.innerHTML = '';
-    for (let slot = 0; slot < SLOTS_PER_DAY; slot++) {
+    for (let slot = 0; slot < SLOTS_PER_DAY;) {
       const s = latestSlots[slot];
       const isPast = isToday && slot < nowSlot;
-
-      // If this slot is itself free, but the slot right before it was the tail
-      // end of an approved booking whose duration ends exactly here, show that
-      // booking's end boundary as its own informational card first — then the
-      // real, actionable Open card for this same time label right after it.
+      // If this slot is free, but the preceding slot is the exact end boundary
+      // of an approved booking, show the informational end card before Open.
       if (!s && !isPast) {
         const prev = latestSlots[slot - 1];
         if (prev && prev.status === 'approved' && prev.startSlot + prev.durationSlots === slot) {
           els.grid.appendChild(renderEndBoundaryCard(slot, prev));
         }
       }
-
       let stateClass = 'open', label = 'Open';
       if (isPast) { stateClass = 'past'; label = 'Past'; }
       else if (s && s.status === 'approved') { stateClass = 'booked'; label = 'Booked'; }
       else if (s && s.status === 'pending') { stateClass = 'pending'; label = 'Pending'; }
 
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = `cal-slot ${stateClass}`;
-      btn.disabled = stateClass === 'past' || stateClass === 'pending';
-      const nameLine = (stateClass === 'booked' && s.customerName)
-        ? `<span class="cal-slot-name">${escapeHtml(s.customerName)}</span>` : '';
-      btn.innerHTML = `
-        <span class="cal-slot-time">${slotLabel(slot)}</span>
-        <span class="cal-slot-status">${label}</span>
-        ${nameLine}
-      `;
-      if (stateClass === 'open') btn.addEventListener('click', () => openRequestPanel(slot));
-      if (stateClass === 'booked') btn.addEventListener('click', () => openDetailPanel(s));
-      els.grid.appendChild(btn);
-    }
+      if (s && (stateClass === 'booked' || stateClass === 'pending') && s.bookingId) {
+        let runLength = 1;
+        while (slot + runLength < SLOTS_PER_DAY && sameBookingSlot(s, latestSlots[slot + runLength])) runLength++;
+        const rowRemaining = columns - (slot % columns);
+        const span = Math.min(runLength, rowRemaining);
+        const continuation = slot > 0 && sameBookingSlot(s, latestSlots[slot - 1]);
+        const segmentEnd = span === rowRemaining || span === runLength;
+        els.grid.appendChild(renderSlotCard(slot, s, stateClass, label, span, continuation, segmentEnd));
+        slot += span;
+        continue;
+      }
 
+      els.grid.appendChild(renderSlotCard(slot, s, stateClass, label, 1));
+      slot++;
+    }
     els.status.hidden = true;
     els.grid.hidden = false;
   }
+
 
   function subscribeToDate(dateStr) {
     if (unsubscribe) unsubscribe();
