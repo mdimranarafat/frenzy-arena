@@ -37,25 +37,31 @@
     const app = initializeApp({apiKey:'AIzaSyDCtXGoYt1znhi1wyUhgoOYLiNS-xekiYk',authDomain:'frenzy-arena.firebaseapp.com',projectId:'frenzy-arena',storageBucket:'frenzy-arena.firebasestorage.app',messagingSenderId:'921384529735',appId:'1:921384529735:web:0f8228d244034cbc07a662'});
     const db = getFirestore(app);
     document.getElementById('year').textContent = new Date().getFullYear();
-    const BD_PHONE_RE = /^(?:\\+?880|0)1[3-9]\\d{8}$/;
+    function normalizeBangladeshPhone(value) {
+      const digits = String(value || '').replace(/\D/g, '');
+      if (/^01[3-9]\d{8}$/.test(digits)) return `880${digits.slice(1)}`;
+      if (/^8801[3-9]\d{8}$/.test(digits)) return digits;
+      return '';
+    }
     document.getElementById('academyForm').addEventListener('submit', async event => {
       event.preventDefault();
       const form = event.currentTarget; const submit = form.querySelector('button[type="submit"]'); const data = new FormData(form);
-      const name = String(data.get('name') || '').trim(); const phone = String(data.get('phone') || '').replace(/[\\s-]/g, '');
-      const age = Number(data.get('age')); const gender = String(data.get('gender') || ''); const dressSize = String(data.get('dressSize') || '');
+      const name = String(data.get('name') || '').trim(); const phone = normalizeBangladeshPhone(data.get('phone'));
+      const age = Number(data.get('age')); const gender = String(data.get('gender') || '').trim(); const dressSize = String(data.get('dressSize') || '').trim();
       const status = document.getElementById('academyMessage');
-      if (!name || !BD_PHONE_RE.test(phone) || !Number.isInteger(age) || age < 4 || age > 80 || !gender || !dressSize) { status.textContent = 'Please complete every field with a valid Bangladesh phone number.'; status.classList.add('show'); return; }
+      if (!name || !phone || !Number.isInteger(age) || age < 4 || age > 80 || !gender || !dressSize) { status.textContent = 'Please complete every field with a valid Bangladesh phone number.'; status.classList.add('show'); return; }
       submit.disabled = true; submit.textContent = 'Saving details…'; status.classList.remove('show');
+      const whatsappTab = window.open('about:blank', '_blank');
       try {
         const requestRef = doc(collection(db, 'academyRequests'));
         const requestId = `SWA-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${requestRef.id.slice(0,6).toUpperCase()}`;
         await setDoc(requestRef, { requestId, participantName: name, phone, age, gender, dressSize, status: 'new', source: 'website_whatsapp', notes: null, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
-        // The request is saved first; WhatsApp is only a follow-up convenience and cannot erase the record.
-        const message = `Hello Frenzy Sports Arena, I want to confirm a Swimming Academy seat.\\n\\nRequest ID: ${requestId}\\nParticipant: ${name}\\nPhone: ${phone}\\nAge: ${age}\\nGender: ${gender}\\nDress Size: ${dressSize}\\n\\nProgram: 1 Month / 12 Classes\\nFee: 3,900 BDT\\n\\nPlease confirm my registration.`;
+        const message = `Hello Frenzy Sports Arena, I want to confirm a Swimming Academy seat.\n\nRequest ID: ${requestId}\nParticipant: ${name}\nPhone: +${phone}\nAge: ${age}\nGender: ${gender}\nDress Size: ${dressSize}\n\nProgram: 1 Month / 12 Classes\nFee: 3,900 BDT\n\nPlease confirm my registration.`;
+        const whatsappUrl = `https://wa.me/8801881271887?text=${encodeURIComponent(message)}`;
         status.textContent = `Request ${requestId} saved. WhatsApp will open so our team can confirm your seat.`; status.classList.add('show');
-        window.open(`https://wa.me/8801881271887?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
+        if (whatsappTab) whatsappTab.location.href = whatsappUrl; else window.open(whatsappUrl, '_blank', 'noopener');
         form.reset();
-      } catch (error) { console.error(error); status.textContent = 'We could not save your request. Please call 01881-271887 to confirm your seat.'; status.classList.add('show'); }
+      } catch (error) { if (whatsappTab) whatsappTab.close(); console.error(error); status.textContent = 'We could not save your request. Please call 01881-271887 to confirm your seat.'; status.classList.add('show'); }
       finally { submit.disabled = false; submit.textContent = 'Send Details on WhatsApp →'; }
     });
   </script>
