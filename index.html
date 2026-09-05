@@ -148,12 +148,14 @@
   .btn-ghost{border-color:rgba(255,255,255,0.35); color:#fff;}
   .btn-ghost:hover{border-color:var(--pool-bright); color:var(--pool-bright);}
 
-  .stat-strip{
-    margin-top:56px; display:flex; flex-wrap:wrap; gap:0;
-    border-top:0; padding-top:22px;
-  }
-  .stat-strip div{flex:1 1 140px; font-family:var(--mono); font-size:0.78rem; color:#9db1bb; padding-right:18px;}
-  .stat-strip strong{display:block; font-family:var(--body); font-weight:800; font-size:1.15rem; color:#fff; margin-top:4px;}
+  .stat-strip{margin-top:48px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+  .stat-strip > div{min-width:0;min-height:92px;padding:14px 15px;border:1px solid rgba(63,224,255,.16);border-radius:9px;background:rgba(6,26,43,.34);box-shadow:inset 0 1px rgba(255,255,255,.05);font-family:var(--mono);font-size:.66rem;line-height:1.35;letter-spacing:.06em;text-transform:uppercase;color:#8faab5;}
+  .stat-strip > div:before{content:"";display:block;width:7px;height:7px;margin-bottom:11px;border-radius:2px;background:var(--pool-bright);box-shadow:0 0 12px rgba(63,224,255,.45);}
+  .stat-strip > div:nth-child(3):before{background:#6be8a3;box-shadow:0 0 12px rgba(107,232,163,.35);}
+  .stat-strip > div:nth-child(4):before{background:var(--flare);box-shadow:0 0 12px rgba(255,90,54,.35);}
+  .stat-strip strong{display:block;margin-top:6px;font-family:var(--body);font-weight:800;font-size:.94rem;line-height:1.35;letter-spacing:0;text-transform:none;color:#fff;}
+  @media (max-width:900px){.stat-strip{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  @media (max-width:430px){.stat-strip{grid-template-columns:1fr;gap:9px;margin-top:38px;}.stat-strip > div{min-height:0;padding:12px 14px;}.stat-strip > div:before{display:inline-block;margin:0 8px 0 0;vertical-align:middle;}}
 
   /* ---------- SECTIONS ---------- */
   section{padding:78px 0;}
@@ -492,11 +494,11 @@
         <a href="#book" class="btn btn-flare">Request a Slot</a>
         <a href="tel:+8801881271887" class="btn btn-ghost">Call: 01881-271887</a>
       </div>
-      <div class="stat-strip">
-        <div>Facilities<strong>Futsal · Pool · Carrom · More Activities</strong></div>
-        <div>Location<strong>Saraipara, Pahartali</strong></div>
-        <div>Hours<strong>Always Open</strong></div>
-        <div>Reviews<strong>72% recommend</strong></div>
+      <div class="stat-strip" aria-label="Frenzy Sports Arena highlights">
+        <div><span>Facilities</span><strong>Futsal · Pool · Carrom · More Activities</strong></div>
+        <div><span>Location</span><strong>Saraipara, Pahartali</strong></div>
+        <div><span>Hours</span><strong>Always Open</strong></div>
+        <div><span>Reviews</span><strong>72% recommend</strong></div>
       </div>
     </div>
   </section>
