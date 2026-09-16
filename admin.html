@@ -988,7 +988,31 @@
   [searchInput, dateFilter, facilityFilter, typeFilter, statusFilter].forEach(el => el.addEventListener('input', renderBookingsTable));
   document.getElementById('dashboardDateScope')?.addEventListener('change', renderAdminOverview);
   document.getElementById('dashboardFacilityScope')?.addEventListener('change', renderAdminOverview);
-  document.getElementById('dashboardSyncBtn')?.addEventListener('click', () => { const btn = document.getElementById('dashboardSyncBtn'); btn.disabled = true; btn.textContent = '↻ Syncing…'; if (bookingsUnsub) bookingsUnsub(); if (recurringUnsub) recurringUnsub(); subscribeBookings(); subscribeRecurring(); setTimeout(() => { btn.disabled = false; btn.textContent = '↻ Sync Now'; }, 700); });
+  document.getElementById('dashboardSyncBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('dashboardSyncBtn');
+    const originalText = '↻ Sync Now';
+    btn.disabled = true;
+    btn.textContent = '↻ Syncing…';
+    try {
+      if (bookingsUnsub) bookingsUnsub();
+      if (recurringUnsub) recurringUnsub();
+      subscribeBookings();
+      subscribeRecurring();
+      const dataset = CSV_DATASETS.bookings;
+      const rows = await withTimeout(dataset.fetchRows(), CSV_EXPORT_TIMEOUT_MS);
+      if (!rows.length) throw new Error('No booking records found');
+      const sync = await withTimeout(syncRowsToAppsScript('bookings', dataset, rows), CSV_EXPORT_TIMEOUT_MS + 1000);
+      renderAdminOverview();
+      btn.textContent = `✓ Synced ${sync.written != null ? sync.written : rows.length}`;
+      setTimeout(() => { btn.textContent = originalText; }, 1800);
+    } catch (error) {
+      console.error('Dashboard Google Sheet sync failed:', error);
+      btn.textContent = 'Sync failed';
+      setTimeout(() => { btn.textContent = originalText; }, 2200);
+    } finally {
+      btn.disabled = false;
+    }
+  });
   document.querySelectorAll('[data-dashboard-facility]').forEach(btn => btn.addEventListener('click', () => { facilityFilter.value = btn.dataset.dashboardFacility; searchInput.value = ''; dateFilter.value = ''; statusFilter.value = ''; document.querySelector('.view-tab[data-view="all"]')?.click(); document.getElementById('viewBookings')?.scrollIntoView({behavior:'smooth', block:'start'}); }));
 
   const facilityCardState = { sixASideTurf:{day:'today',type:''}, fourASideTurf:{day:'today',type:''}, carrom:{day:'today',type:''}, swimmingPool:{day:'today',type:''} };
