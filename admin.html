@@ -128,6 +128,10 @@
   .csv-status.ok{color:#166b3f;}
   .csv-status.err{color:#a83a1f;}
   .csv-status[hidden]{display:none;}
+  .dashboard-toast{position:fixed;right:24px;bottom:24px;z-index:100;display:flex;align-items:center;gap:9px;max-width:min(360px,calc(100vw - 32px));padding:13px 16px;border:1px solid #9edfc1;border-radius:9px;background:#eafaf1;color:#166b3f;box-shadow:0 10px 28px rgba(6,42,71,.18);font-size:.84rem;font-weight:800;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .2s ease,transform .2s ease;}
+  .dashboard-toast.show{opacity:1;transform:translateY(0);}
+  .dashboard-toast.error{border-color:#f0c9bf;background:#fff3ef;color:#a83a1f;}
+  @media(max-width:520px){.dashboard-toast{right:16px;bottom:16px;}}
 
   .table-wrap{width:100%; background:#fff; border:1px solid #e2e8e7; border-radius:8px; overflow-x:auto; box-shadow:0 3px 12px rgba(6,26,43,0.06);}
   table{width:100%; border-collapse:collapse; font-size:0.86rem; min-width:1180px;}
@@ -302,6 +306,7 @@
 </div>
 
 <div id="dashboard">
+  <div class="dashboard-toast" id="dashboardToast" role="status" aria-live="polite"></div>
   <header class="admin-nav">
     <div class="admin-nav-inner">
       <div class="brand" style="color:#fff;"><span class="spark"></span>FRENZY ADMIN</div>
@@ -1004,10 +1009,19 @@
       const sync = await withTimeout(syncRowsToAppsScript('bookings', dataset, rows), CSV_EXPORT_TIMEOUT_MS + 1000);
       renderAdminOverview();
       btn.textContent = `✓ Synced ${sync.written != null ? sync.written : rows.length}`;
+      const toast = document.getElementById('dashboardToast');
+      toast.textContent = 'Dashboard synced successfully.';
+      toast.classList.remove('error');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3200);
       setTimeout(() => { btn.textContent = originalText; }, 1800);
     } catch (error) {
       console.error('Dashboard Google Sheet sync failed:', error);
       btn.textContent = 'Sync failed';
+      const toast = document.getElementById('dashboardToast');
+      toast.textContent = 'Dashboard sync failed.';
+      toast.classList.add('error', 'show');
+      setTimeout(() => toast.classList.remove('show', 'error'), 3200);
       setTimeout(() => { btn.textContent = originalText; }, 2200);
     } finally {
       btn.disabled = false;
