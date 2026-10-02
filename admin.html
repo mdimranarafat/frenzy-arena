@@ -238,6 +238,8 @@
   .occurrence-summary-card{padding:11px 12px;border:1px solid rgba(0,184,217,.22);border-radius:8px;background:rgba(0,184,217,.07);}
   .occurrence-summary-card span{display:block;color:#8ba0a9;font:600 .66rem var(--mono);text-transform:uppercase;letter-spacing:.04em;}
   .occurrence-summary-card strong{display:block;margin-top:3px;color:#fff;font-size:1rem;}
+  .occ-head-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;margin-left:auto;padding-left:12px;}
+  .occ-head-actions .action-btn{width:auto;}
   .occurrence-note{padding:9px 11px;border:1px solid rgba(255,255,255,.12);border-radius:7px;background:rgba(255,255,255,.045);color:#b9c9d1;font-size:.76rem;}
   .occurrence-table{min-width:1160px;}
   .occurrence-table th,.occurrence-table td{padding:11px 12px;}
@@ -257,6 +259,7 @@
   .occ-payment-line.final strong{color:var(--pool-bright);font-size:1.05rem;}
   .occurrence-payment-preview{margin:0;}
   @media(max-width:700px){.occurrence-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  @media(max-width:620px){.occ-head-actions{width:100%;justify-content:flex-start;padding-left:0;margin-top:8px;}.occ-head-actions .action-btn{flex:1;}}
   @media (max-width:900px){.reports-grid{grid-template-columns:repeat(3,1fr);}}
   @media (max-width:650px){.report-toolbar{flex-direction:column;}.report-filter-tabs{width:100%;}.report-filter-tab{flex:1;}.report-scope{margin-left:0;}}
   @media (max-width:520px){.payment-summary{grid-template-columns:1fr;}.reports-grid{grid-template-columns:1fr 1fr;}.invoice-paper{padding:16px;}}
@@ -687,11 +690,12 @@
   <div class="adm-panel wide">
     <div class="adm-panel-head">
       <div><div class="adm-panel-title">Series Occurrences</div><div class="adm-panel-sub" id="occSummary"></div></div>
+      <div class="occ-head-actions"><button class="action-btn complete" id="occSeriesPaymentBtn" type="button">Payment Received</button><button class="action-btn edit" id="occSeriesInvoiceBtn" type="button">Series Invoice</button></div>
       <button class="adm-close" data-close="occOverlay">&times;</button>
     </div>
     <div class="adm-body">
       <div class="occurrence-summary-grid" id="occurrenceSummaryGrid"></div>
-      <div class="occurrence-note">Each occurrence is an independent booking. Payment totals use the final Booking Fee—not the original calculated price.</div>
+      <div class="occurrence-note">Payment is recorded once for the complete series. The received amount is automatically allocated date-wise, so every occurrence shows Paid, Partial, or Unpaid against its final Booking Fee.</div>
       <div class="table-wrap">
         <table class="occurrence-table">
           <thead><tr><th>Date / Time</th><th>Original</th><th>Discount</th><th>Final Price</th><th>Paid</th><th>Due</th><th>Payment</th><th>Booking</th><th>Actions</th></tr></thead>
@@ -706,16 +710,16 @@
 <div class="adm-overlay" id="occPaymentOverlay" hidden>
   <div class="adm-panel">
     <div class="adm-panel-head">
-      <div><div class="adm-panel-title">Record Payment</div><div class="adm-panel-sub" id="occPaymentSummary"></div></div>
+      <div><div class="adm-panel-title">Record Series Payment</div><div class="adm-panel-sub" id="occPaymentSummary"></div></div>
       <button class="adm-close" data-close="occPaymentOverlay">&times;</button>
     </div>
     <div class="adm-body">
       <div class="occ-payment-breakdown" id="occPaymentBreakdown"></div>
       <div class="field-row-2">
-        <div class="field"><label for="occPaidAmount">Amount Received (৳) *</label><input type="number" id="occPaidAmount" min="0" step="1" inputmode="decimal"></div>
+        <div class="field"><label for="occPaidAmount">New Amount Received (৳) *</label><input type="number" id="occPaidAmount" min="0" step="1" inputmode="decimal"></div>
         <div class="field"><label for="occPaymentMethod">Payment Method</label><select id="occPaymentMethod"><option value="">Select method</option><option>bKash</option><option>Nagad</option><option>Cash</option><option>Bank Transfer</option><option>Card</option><option>Other</option></select></div>
       </div>
-      <div class="payment-summary occurrence-payment-preview"><div><span>Final Price</span><strong id="occPaymentTotal">৳0</strong></div><div><span>Paid</span><strong id="occPaymentPaid">৳0</strong></div><div><span>Due</span><strong id="occPaymentDue">৳0</strong></div></div>
+      <div class="payment-summary occurrence-payment-preview"><div><span>Series Final Value</span><strong id="occPaymentTotal">৳0</strong></div><div><span>Total Received</span><strong id="occPaymentPaid">৳0</strong></div><div><span>Series Balance</span><strong id="occPaymentDue">৳0</strong></div></div>
       <div class="adm-warning" id="occPaymentWarning" hidden></div>
       <button class="btn btn-turf" id="occPaymentSaveBtn" type="button">Save Payment</button>
     </div>
@@ -1672,6 +1676,7 @@
 
   // ---------- REPORTS, INVOICE, AND WHATSAPP ----------
   let currentInvoiceBooking = null;
+  let currentInvoiceMessage = null;
   function reportBookings() { return allBookings.filter(b => b.status !== 'rejected' && b.status !== 'cancelled'); }
   let reportMode = 'daily';
   let reportPreset = 'today';
@@ -1787,6 +1792,7 @@
   }
   function openInvoice(r) {
     currentInvoiceBooking = r;
+    currentInvoiceMessage = invoiceMessage(r);
     const p = paymentSnapshot(r);
     const price = invoicePriceBreakdown(r);
     document.getElementById('invoiceSub').textContent = `${r.customerName || 'Booking'} · ${invoiceNumber(r)}`;
@@ -1795,7 +1801,7 @@
   }
   document.getElementById('openReportsBtn').addEventListener('click', () => { renderReports(); openOverlay('reportsOverlay'); });
   document.getElementById('printInvoiceBtn').addEventListener('click', () => window.print());
-  document.getElementById('invoiceWhatsAppBtn').addEventListener('click', () => { if (currentInvoiceBooking) window.open(`https://wa.me/?text=${encodeURIComponent(invoiceMessage(currentInvoiceBooking))}`, '_blank', 'noopener'); });
+  document.getElementById('invoiceWhatsAppBtn').addEventListener('click', () => { if (currentInvoiceMessage) window.open(`https://wa.me/?text=${encodeURIComponent(currentInvoiceMessage)}`, '_blank', 'noopener'); });
 
   // ---------- CORPORATE / RECURRING BOOKING ----------
   const cb = {
@@ -2008,20 +2014,45 @@
   }
 
   let currentOccurrenceSeriesId = null;
+  function billableOccurrences(occs) { return occs.filter(occurrence => occurrence.status !== 'cancelled' && occurrence.status !== 'rejected'); }
+  function occurrenceTotals(occs) {
+    return billableOccurrences(occs).reduce((acc, occurrence) => {
+      const price = invoicePriceBreakdown(occurrence); const payment = paymentSnapshot(occurrence);
+      acc.original += price.originalPrice; acc.discount += price.discount; acc.final += price.finalPrice; acc.paid += payment.paid; acc.due += payment.due;
+      return acc;
+    }, {original:0, discount:0, final:0, paid:0, due:0});
+  }
+  function seriesInvoiceMessage(series, occs, totals) {
+    const status = totals.due === 0 ? 'PAID' : totals.paid > 0 ? 'PARTIAL PAYMENT' : 'UNPAID';
+    return `━━━━━━━━━━━━━━━━━━━━
+🧾 *FRENZY SPORTS ARENA*
+     *CORPORATE SERIES INVOICE*
+━━━━━━━━━━━━━━━━━━━━
+
+👤 *CUSTOMER:* ${series.customerName || '—'}
+🏟️ *FACILITY:* ${FACILITY_LABELS[series.facility] || series.facility || '—'}
+📅 *OCCURRENCES:* ${occs.length}
+📆 *PERIOD:* ${series.startDate || '—'} → ${series.endDate || '—'}
+
+💳 *PAYMENT SUMMARY*
+• Original Value: ${formatBDT(totals.original)}
+• Discount Applied: -${formatBDT(totals.discount)}
+• *Final Series Value:* *${formatBDT(totals.final)}*
+• Received: ${formatBDT(totals.paid)}
+• *Balance Due:* *${formatBDT(totals.due)}*
+• *Status:* ${status}
+━━━━━━━━━━━━━━━━━━━━
+✨ *Thank you for choosing Frenzy Sports Arena!*`;
+  }
   function openOccurrencesModal(seriesId) {
     const series = allRecurring.find(s => s.id === seriesId);
     if (!series) return;
     currentOccurrenceSeriesId = seriesId;
     document.getElementById('occSummary').textContent = `${series.customerName || 'Corporate booking'} · ${FACILITY_LABELS[series.facility] || series.facility}`;
     const occs = allBookings.filter(b => b.recurringBookingId === seriesId).sort((a,b) => `${a.bookingDate}-${a.startSlot}`.localeCompare(`${b.bookingDate}-${b.startSlot}`));
-    const totals = occs.reduce((acc, occurrence) => {
-      const price = invoicePriceBreakdown(occurrence); const payment = paymentSnapshot(occurrence);
-      acc.original += price.originalPrice; acc.discount += price.discount; acc.final += price.finalPrice; acc.paid += payment.paid; acc.due += payment.due;
-      if (payment.status === 'paid') acc.paidCount += 1; else if (payment.status === 'partial') acc.partialCount += 1; else acc.unpaidCount += 1;
-      return acc;
-    }, {original:0, discount:0, final:0, paid:0, due:0, paidCount:0, partialCount:0, unpaidCount:0});
+    const totals = occurrenceTotals(occs);
     document.getElementById('occurrenceSummaryGrid').innerHTML = [
-      ['Occurrences', occs.length], ['Final Value', formatBDT(totals.final)], ['Collected', formatBDT(totals.paid)], ['Outstanding', formatBDT(totals.due)]
+      ['Occurrences', occs.length], ['Final Value', formatBDT(totals.final)], ['Received', formatBDT(totals.paid)], ['Balance Due', formatBDT(totals.due)]
     ].map(([label, value]) => `<div class="occurrence-summary-card"><span>${label}</span><strong>${value}</strong></div>`).join('');
     const tbody = document.getElementById('occBody');
     tbody.innerHTML = occs.map(o => {
@@ -2036,53 +2067,71 @@
         <td class="occurrence-due ${dueClass}">${formatBDT(payment.due)}</td>
         <td><span class="payment-pill ${payment.status}">${paymentStatusLabel(payment.status)}</span><div class="cell-sub">${escapeHtml(payment.method || 'Not recorded')}</div></td>
         <td><span class="status-pill ${escapeHtml(o.status || '')}">${escapeHtml(o.status || '—')}</span></td>
-        <td><div class="occurrence-payment-actions"><button class="action-btn complete" data-payment-occ-id="${escapeHtml(o.id)}">${payment.due > 0 ? 'Payment Received' : 'Update Payment'}</button><button class="action-btn edit" data-invoice-occ-id="${escapeHtml(o.id)}">Invoice</button>${o.status === 'approved' ? `<button class="action-btn cancel" data-occ-id="${escapeHtml(o.id)}">Cancel</button>` : ''}</div></td>
+        <td><div class="occurrence-payment-actions"><button class="action-btn edit" data-invoice-occ-id="${escapeHtml(o.id)}">Invoice</button>${o.status === 'approved' ? `<button class="action-btn cancel" data-occ-id="${escapeHtml(o.id)}">Cancel</button>` : ''}</div></td>
       </tr>`;
     }).join('') || '<tr><td colspan="9" class="cell-sub">No occurrences.</td></tr>';
     tbody.querySelectorAll('[data-occ-id]').forEach(btn => btn.addEventListener('click', () => cancelOccurrence(btn.dataset.occId, seriesId)));
     tbody.querySelectorAll('[data-invoice-occ-id]').forEach(btn => btn.addEventListener('click', () => { const occurrence = allBookings.find(item => item.id === btn.dataset.invoiceOccId); if (occurrence) openInvoice(occurrence); }));
-    tbody.querySelectorAll('[data-payment-occ-id]').forEach(btn => btn.addEventListener('click', () => { const occurrence = allBookings.find(item => item.id === btn.dataset.paymentOccId); if (occurrence) openOccurrencePayment(occurrence, seriesId); }));
+    document.getElementById('occSeriesPaymentBtn').onclick = () => openSeriesPayment(seriesId);
+    document.getElementById('occSeriesInvoiceBtn').onclick = () => openSeriesInvoice(seriesId);
+    const seriesPaymentBtn = document.getElementById('occSeriesPaymentBtn');
+    seriesPaymentBtn.disabled = totals.due <= 0 || !billableOccurrences(occs).length;
+    seriesPaymentBtn.textContent = totals.due <= 0 ? 'Fully Paid' : 'Payment Received';
     openOverlay('occOverlay');
   }
 
   let pendingOccurrencePayment = null;
-  function openOccurrencePayment(booking, seriesId) {
-    pendingOccurrencePayment = { booking, seriesId };
-    const price = invoicePriceBreakdown(booking); const payment = paymentSnapshot(booking);
-    document.getElementById('occPaymentSummary').textContent = `${booking.customerName || 'Booking'} · ${booking.bookingDate || '—'} · ${bookingTimeText(booking)}`;
-    document.getElementById('occPaymentBreakdown').innerHTML = `<div class="occ-payment-line"><span>Original Fee</span><strong>${formatBDT(price.originalPrice)}</strong></div><div class="occ-payment-line"><span>Discount</span><strong>-${formatBDT(price.discount)}</strong></div><div class="occ-payment-line final"><span>Final Booking Fee</span><strong>${formatBDT(price.finalPrice)}</strong></div>`;
-    document.getElementById('occPaidAmount').value = payment.paid;
-    document.getElementById('occPaymentMethod').value = payment.method || '';
+  function openSeriesPayment(seriesId) {
+    const series = allRecurring.find(s => s.id === seriesId); if (!series) return;
+    const occs = billableOccurrences(allBookings.filter(b => b.recurringBookingId === seriesId)).sort((a,b) => `${a.bookingDate}-${a.startSlot}`.localeCompare(`${b.bookingDate}-${b.startSlot}`));
+    const totals = occurrenceTotals(occs);
+    pendingOccurrencePayment = {series, occs, seriesId};
+    document.getElementById('occPaymentSummary').textContent = `${series.customerName || 'Corporate booking'} · ${occs.length} occurrence(s)`;
+    document.getElementById('occPaymentBreakdown').innerHTML = `<div class="occ-payment-line"><span>Original Series Value</span><strong>${formatBDT(totals.original)}</strong></div><div class="occ-payment-line"><span>Total Discount</span><strong>-${formatBDT(totals.discount)}</strong></div><div class="occ-payment-line final"><span>Final Series Value</span><strong>${formatBDT(totals.final)}</strong></div><div class="occ-payment-line"><span>Already Received</span><strong>${formatBDT(totals.paid)}</strong></div>`;
+    document.getElementById('occPaidAmount').value = '';
+    document.getElementById('occPaymentMethod').value = '';
     updateOccurrencePaymentPreview();
     openOverlay('occPaymentOverlay');
   }
   function updateOccurrencePaymentPreview() {
     if (!pendingOccurrencePayment) return;
-    const booking = pendingOccurrencePayment.booking;
-    const paid = Number(document.getElementById('occPaidAmount').value) || 0;
-    const payment = paymentSnapshot(booking, paid);
-    document.getElementById('occPaymentTotal').textContent = formatBDT(payment.total);
-    document.getElementById('occPaymentPaid').textContent = formatBDT(payment.paid);
-    document.getElementById('occPaymentDue').textContent = formatBDT(payment.due);
+    const totals = occurrenceTotals(pendingOccurrencePayment.occs);
+    const additional = Number(document.getElementById('occPaidAmount').value) || 0;
+    const totalReceived = totals.paid + Math.max(0, additional);
+    document.getElementById('occPaymentTotal').textContent = formatBDT(totals.final);
+    document.getElementById('occPaymentPaid').textContent = formatBDT(totalReceived);
+    document.getElementById('occPaymentDue').textContent = formatBDT(Math.max(0, totals.final - totalReceived));
     const warning = document.getElementById('occPaymentWarning');
-    const valid = validatePaidAmount(booking, paid);
+    const valid = Number.isFinite(additional) && additional > 0 && additional <= totals.due;
     warning.hidden = valid;
-    warning.textContent = `Amount received cannot exceed the final booking fee of ${formatBDT(payment.total)}.`;
+    warning.textContent = `New payment cannot exceed the series balance of ${formatBDT(totals.due)}.`;
     document.getElementById('occPaymentSaveBtn').disabled = !valid;
   }
   document.getElementById('occPaidAmount').addEventListener('input', updateOccurrencePaymentPreview);
   document.getElementById('occPaymentSaveBtn').addEventListener('click', async () => {
     if (!pendingOccurrencePayment) return;
-    const { booking, seriesId } = pendingOccurrencePayment;
-    const paid = Number(document.getElementById('occPaidAmount').value) || 0;
+    const { occs, seriesId } = pendingOccurrencePayment;
+    const additional = Number(document.getElementById('occPaidAmount').value) || 0;
     const method = document.getElementById('occPaymentMethod').value || null;
-    if (!validatePaidAmount(booking, paid)) { updateOccurrencePaymentPreview(); return; }
+    const totals = occurrenceTotals(occs);
+    if (!Number.isFinite(additional) || additional <= 0 || additional > totals.due) { updateOccurrencePaymentPreview(); return; }
     const saveBtn = document.getElementById('occPaymentSaveBtn'); saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
     try {
-      const paymentUpdate = paymentFields({bookingFee: invoicePriceBreakdown(booking).finalPrice, paymentMethod: method}, paid);
-      await updateDoc(doc(db, 'bookings', booking.id), {...paymentUpdate, updatedAt: serverTimestamp()});
-      const localBooking = allBookings.find(item => item.id === booking.id);
-      if (localBooking) Object.assign(localBooking, paymentUpdate);
+      let remaining = additional; const updates = [];
+      occs.forEach(occurrence => {
+        const current = paymentSnapshot(occurrence); const price = invoicePriceBreakdown(occurrence);
+        const allocation = Math.min(price.finalPrice, current.paid + remaining);
+        remaining = Math.max(0, remaining - Math.max(0, allocation - current.paid));
+        const appliedMethod = remaining < additional ? (method || current.method || null) : current.method || null;
+        const paymentUpdate = paymentFields({bookingFee: price.finalPrice, paymentMethod: appliedMethod}, allocation);
+        updates.push({ref: doc(db, 'bookings', occurrence.id), data: {...paymentUpdate, updatedAt: serverTimestamp()}});
+        const localBooking = allBookings.find(item => item.id === occurrence.id); if (localBooking) Object.assign(localBooking, paymentUpdate);
+      });
+      for (let start = 0; start < updates.length; start += 450) {
+        const batch = writeBatch(db);
+        updates.slice(start, start + 450).forEach(update => batch.update(update.ref, update.data));
+        await batch.commit();
+      }
       renderBookingsTable();
       closeOverlay('occPaymentOverlay'); pendingOccurrencePayment = null;
       openOccurrencesModal(seriesId);
@@ -2091,6 +2140,17 @@
       alert('Payment could not be saved. Check your connection and Firestore permissions.');
     } finally { saveBtn.disabled = false; saveBtn.textContent = 'Save Payment'; }
   });
+
+  function openSeriesInvoice(seriesId) {
+    const series = allRecurring.find(s => s.id === seriesId); if (!series) return;
+    const occs = billableOccurrences(allBookings.filter(b => b.recurringBookingId === seriesId)).sort((a,b) => `${a.bookingDate}-${a.startSlot}`.localeCompare(`${b.bookingDate}-${b.startSlot}`));
+    const totals = occurrenceTotals(occs); const status = totals.due === 0 ? 'PAID' : totals.paid > 0 ? 'PARTIAL PAYMENT' : 'UNPAID';
+    currentInvoiceBooking = null;
+    currentInvoiceMessage = seriesInvoiceMessage(series, occs, totals);
+    document.getElementById('invoiceSub').textContent = `${series.customerName || 'Corporate booking'} · ${occs.length} occurrence(s)`;
+    document.getElementById('invoicePaper').innerHTML = `<div class="invoice-brand">FRENZY SPORTS</div><div class="invoice-title">CORPORATE SERIES INVOICE</div><div class="invoice-rule"></div><div class="invoice-row"><span>Customer</span><strong>${escapeHtml(series.customerName || '—')}</strong></div><div class="invoice-row"><span>Facility</span><strong>${escapeHtml(FACILITY_LABELS[series.facility] || series.facility || '—')}</strong></div><div class="invoice-row"><span>Occurrences</span><strong>${occs.length}</strong></div><div class="invoice-row"><span>Period</span><strong>${escapeHtml(series.startDate || '—')} → ${escapeHtml(series.endDate || '—')}</strong></div><div class="invoice-rule"></div><div class="invoice-row"><span>Original Series Value</span><strong>${formatBDT(totals.original)}</strong></div><div class="invoice-row"><span>Total Discount</span><strong>-${formatBDT(totals.discount)}</strong></div><div class="invoice-row invoice-total"><span>Final Series Value</span><strong>${formatBDT(totals.final)}</strong></div><div class="invoice-rule"></div><div class="invoice-row"><span>Total Received</span><strong>${formatBDT(totals.paid)}</strong></div><div class="invoice-row invoice-total"><span>Balance Due</span><strong>${formatBDT(totals.due)}</strong></div><div class="invoice-row"><span>Payment Status</span><strong>${status}</strong></div><div class="invoice-rule"></div><div style="text-align:center;margin-top:18px;">Thank you for choosing FRENZY!</div>`;
+    openOverlay('invoiceOverlay');
+  }
 
   async function cancelOccurrence(bookingId, seriesId) {
     const r = allBookings.find(b => b.id === bookingId);
