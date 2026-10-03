@@ -1,6 +1,6 @@
 # Frenzy Sports Arena — Website
 
-A single-page site for Frenzy Sports Arena (6A Side Turf, 4A Side Turf, swimming pool, and carrom), Pahartali, Chittagong — with a request-based, admin-approved booking system covering all four facilities in 30-minute slots, 24 hours a day, and a centralized pricing engine that calculates each booking's price automatically.
+A single-page site for Frenzy Sports Arena (6A Side Turf, 4A Side Turf, swimming pool, carrom, and Billiard Pool), Pahartali, Chittagong — with a request-based, admin-approved booking system covering all five facilities in 30-minute slots, 24 hours a day, and a centralized pricing engine that calculates each booking's price automatically.
 
 ## What's in here
 - `index.html` — the public site, including the live booking calendar
@@ -24,7 +24,7 @@ Facility descriptions, FAQ answers, and section copy were written fresh for this
 This is **not** a self-serve, instant-booking system. Every customer booking starts as a request; only admin action makes it Booked. Admin can also create confirmed bookings directly, and set up recurring corporate bookings.
 
 ### Facilities
-6A Side Turf, 4A Side Turf, Swimming Pool, and Carrom, each with **fully independent** availability — booking one never blocks the others. 6A Side Turf and 4A Side Turf are two separate physical pitches and two separate facility records; a booking on one has no effect on the other's availability, pricing, or conflict detection.
+6A Side Turf, 4A Side Turf, Swimming Pool, Carrom, and Billiard Pool, each with **fully independent** availability — booking one never blocks the others. 6A Side Turf and 4A Side Turf are two separate physical pitches and two separate facility records; a booking on one has no effect on the other's availability, pricing, or conflict detection.
 
 > **Migration note — read before deploying this version.** This facility list replaces a previous single `"futsalTurf"` facility. Existing booking/slot records with `facility: "futsalTurf"` were **not modified or deleted** by this update (per the requirement not to remove existing data), but they also don't automatically become either `"sixASideTurf"` or `"fourASideTurf"` — there's no way to safely infer which physical turf an old booking was actually for. Until those historical records are manually reassigned (or simply left as historical/closed-out bookings, since they're already in the past), admin filtering by "6A Side Turf" or "4A Side Turf" won't surface them. If there are any *upcoming* bookings still on `"futsalTurf"`, reassign those manually in Firestore before go-live so they don't silently disappear from both new facility views.
 
@@ -34,6 +34,7 @@ Every price is calculated by the single shared function `calculateBookingPrice()
 - **6A Side Turf / 4A Side Turf** — priced by time-of-day period, based on the booking's **start time**: DAY (5:00 AM–4:59 PM), NIGHT (5:00 PM–11:59 PM), MIDNIGHT (12:00 AM–4:59 AM). A published 60-minute and 90-minute rate exists per period per turf; any other duration (2h, 2h30, 3h, …) is extrapolated **linearly** — each additional 30-minute block costs the same as the 60→90-minute step did. That extrapolation wasn't explicitly specified in the pricing brief; it's the most defensible interpretation of two data points, isolated to one spot (`TURF_BASE` in `pricing.js`) if the real per-block rate differs.
 - **Swimming Pool** — flat ৳200/hour, no time-of-day periods.
 - **Carrom** — flat ৳150/hour, no time-of-day periods.
+- **Billiard Pool** — flat ৳300/hour, no time-of-day periods. This is the provisional launch rate and can be changed in `pricing.js`.
 - **Thursday–Saturday surcharge** — the booking's **start date**'s weekday (never the end date, even if the booking crosses midnight or crosses into Thursday) determines the surcharge: `Math.floor((basePrice * 1.25) / 100) * 100`, always rounding **down** to the nearest ৳100, never `Math.round()`. Sunday–Wednesday bookings pay the base price with no adjustment.
 - **Midnight-crossing bookings are priced once, by their start time/date** — never split into a Night portion + Midnight portion, and never re-priced onto the next calendar date, matching the existing start-time-based pricing behavior this system already used for everything else.
 - **`calculatedPrice`** is computed and stored on the `bookings` document at creation time (customer request, admin direct booking, and individually per-occurrence for corporate/recurring series) and again if admin edits that specific booking's own facility/date/time/duration. It is **never** silently recalculated later if the pricing table in `pricing.js` changes — each booking keeps the price it was actually quoted at. This is separate from `bookingFee`/`showFeePublicly`, which remains an optional, admin-only manual override with its own public-visibility toggle, unchanged from before — the admin UI shows both side by side rather than merging them.
@@ -98,7 +99,7 @@ monthlyFee          2000
 ```
 bookingId          (doc id)
 customerName, phone, email
-facility            "sixASideTurf" | "fourASideTurf" | "swimmingPool" | "carrom"
+facility            "sixASideTurf" | "fourASideTurf" | "swimmingPool" | "carrom" | "billiardPool"
 businessId          "frenzy_001" — always this exact value; there is only one business
 bookingDate         "YYYY-MM-DD" (the start date)
 startSlot           0-47 (30-minute index into bookingDate)

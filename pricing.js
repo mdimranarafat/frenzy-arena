@@ -4,13 +4,14 @@
 // zero-build-tool architecture. Do not duplicate this logic inline in either file;
 // import from here so customer-facing and admin-facing prices can never drift apart.
 
-export const FACILITIES = ["sixASideTurf", "fourASideTurf", "swimmingPool", "carrom"];
+export const FACILITIES = ["sixASideTurf", "fourASideTurf", "swimmingPool", "carrom", "billiardPool"];
 
 export const FACILITY_LABELS = {
   sixASideTurf: "6A Side Turf",
   fourASideTurf: "4A Side Turf",
   swimmingPool: "Swimming Pool",
   carrom: "Carrom",
+  billiardPool: "Billiard Pool",
 };
 
 // 5:00 AM (slot 10) through 4:30 PM (slot 33) = DAY
@@ -58,6 +59,8 @@ const TURF_BASE = {
 const HOURLY_RATE = {
   swimmingPool: 200,
   carrom: 150,
+  // Provisional launch rate; change this single value when the venue confirms the live tariff.
+  billiardPool: 300,
 };
 
 function turfBasePrice(facility, startSlot, durationMinutes) {
@@ -86,7 +89,7 @@ function flatRateBasePrice(facility, durationMinutes) {
 export function calculateBookingPrice({ facility, bookingDate, startSlot, durationSlots }) {
   const durationMinutes = durationSlots * 30;
   let result;
-  if (facility === "swimmingPool" || facility === "carrom") {
+  if (facility === "swimmingPool" || facility === "carrom" || facility === "billiardPool") {
     result = flatRateBasePrice(facility, durationMinutes);
   } else if (facility === "sixASideTurf" || facility === "fourASideTurf") {
     result = turfBasePrice(facility, startSlot, durationMinutes);
