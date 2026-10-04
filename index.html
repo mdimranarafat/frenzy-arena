@@ -39,6 +39,7 @@
     background:var(--paper);
     line-height:1.55;
     -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
   }
   a{color:inherit;}
   img{max-width:100%; display:block;}
@@ -308,6 +309,11 @@
     background:transparent; color:#b9c9d1; font-family:var(--body); font-weight:700; font-size:0.85rem; cursor:pointer;
   }
   .cal-tab.active{background:var(--pool); border-color:var(--pool); color:var(--navy);}
+  @media (max-width:699px){
+    .cal-tabs{width:100%; min-width:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px;}
+    .cal-tab{min-width:0; width:100%; min-height:52px; padding:9px 8px; line-height:1.25;}
+    .cal-tab:last-child{grid-column:span 2;}
+  }
 
   .cal-loading{color:#b9c9d1; font-size:0.92rem; padding:24px 0;}
   .cal-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:10px;}
